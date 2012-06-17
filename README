@@ -1,0 +1,13 @@
+***************** FM JS Engine *****************
+
+FM JS Engine is a free and open source 2D game engine. Entirely built with JavaScript it is a full feature engine that allows you to build your games and prototypes quickly without having to develop the necessary elements of any games.
+
+Features :
+
+- States
+- Basic physics
+- Tiles
+- Asset loading
+- Render text
+- Render animated sprites
+- Easily create your own game objects with the components system

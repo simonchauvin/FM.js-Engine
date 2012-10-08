@@ -3,12 +3,10 @@
  * @author Simon Chauvin
  * List of component types
  */
-var fmComponentTypes = {
+var FMComponentTypes = {
 		spatial: "spatial",
-		collider: "collider",
 		renderer: "renderer",
-		dynamic: "dynamic",
+                physic: "physic",
                 sound: "sound",
-		controller: "controller",
-		script: "script"
+		controller: "controller"
 };

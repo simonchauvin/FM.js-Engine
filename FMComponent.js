@@ -5,12 +5,22 @@
  * @param componentOwner
  * @returns {___that0}
  */
-function fmComponent(componentName, componentOwner) {
+function FMComponent(pComponentName, pComponentOwner) {
     "use strict";
-    var that = Object.create({});
+    var that = {};
+    /**
+     * Component's name.
+     */
+    that.name = pComponentName;
+    /**
+     * Component's owner (a FmGameObject).
+     */
+    that.owner = pComponentOwner;
 
-    that.name = componentName;
-    that.owner = componentOwner;
+    /**
+     * Add the component to the owner.
+     */
+    that.owner.addComponent(that);
 
     return that;
 };

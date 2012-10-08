@@ -4,16 +4,37 @@
  * @param owner
  * @returns {___that0}
  */
-function fmSpatialComponent(owner) {
+function FMSpatialComponent(pX, pY, pOwner) {
     "use strict";
-    var that = Object.create(fmComponent(fmComponentTypes.spatial, owner));
+    var that = FMComponent(FMComponentTypes.spatial, pOwner);
+    /**
+     * x position.
+     */
+    that.x = pX;
+    /**
+     * y position.
+     */
+    that.y = pY;
 
-    that.x = 0;
-    that.y = 0;
+    /**
+     * Post initialization to ensure that all components are initialized
+     */
+    that.postInit = function () {
+        
+    };
 
-    that.init = function (x, y) {
-        that.x = x;
-        that.y = y;
+    /**
+     * Pre update taking place before the main update.
+     */
+    that.preUpdate = function () {
+        
+    };
+
+    /**
+     * Post update taking place after the main update.
+     */
+    that.postUpdate = function (game, alpha) {
+        
     };
 
     return that;

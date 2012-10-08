@@ -2,27 +2,57 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function fmAudioAsset(assetName, assetPath) {
+function FMAudioAsset(pName, pPath) {
     "use strict";
-    var that = Object.create(new Audio());
+    var that = new Audio(),
 
-    var name = assetName;
-    var path = assetPath;
+        /**
+         * Name of the given to the asset.
+         */
+        name = pName,
+        /**
+         * Path to the audio file.
+         */
+        path = pPath,
+        /**
+         * Specify the loading state of the audio file.
+         */
+        loaded = false;
 
     /**
-     * 
+     * Load the audio file.
      */
-    that.init = function () {
-        Object.getPrototypeOf(that).src = path;
+    that.load = function () {
+        that.src = path;
 
-        Object.getPrototypeOf(that).addEventListener("loadeddata", fmAssetManager.assetLoaded, false);
-        Object.getPrototypeOf(that).load();
+        that.addEventListener("loadeddata", loadComplete, false);
     };
 
+    /**
+     * Fired when the audio file has finished loading.
+     */
+    var loadComplete = function () {
+        loaded = true;
+        FMAssetManager.assetLoaded();
+    };
+
+    /**
+     * Check if this audio file has been loaded.
+     */
+    that.isLoaded = function () {
+        return loaded;
+    };
+
+    /**
+     * Get the name of the asset.
+     */
     that.getName = function () {
         return name;
     };
 
+    /**
+     * Get the path to the audio file.
+     */
     that.getPath = function () {
         return path;
     };

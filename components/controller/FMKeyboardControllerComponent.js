@@ -2,11 +2,11 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function fmKeyboardControllerComponent(owner) {
+function FMKeyboardControllerComponent(pOwner) {
     "use strict";
-    var that = Object.create(fmComponent(fmComponentTypes.controller, owner));
+    var that = fmComponent(fmComponentTypes.controller, pOwner);
 
-    var dynamic = owner.components[fmComponentTypes.dynamic];
+    var physic = pOwner.components[fmComponentTypes.physic];
 
     var up = 0;
     var down = 0;
@@ -20,29 +20,36 @@ function fmKeyboardControllerComponent(owner) {
         right = keyRight;
     };
 
+    /**
+     * Post initialization to ensure that all components are initialized
+     */
+    that.postInit = function () {
+        
+    }
+
     that.update = function (game) {
         if (game.isKeyPressed(up)) {
-            dynamic.moveUp();
+            physic.moveUp();
         }
 
         if (game.isKeyPressed(down)) {
-            dynamic.moveDown();
+            physic.moveDown();
         }
 
         if (game.isKeyPressed(left)) {
-            dynamic.moveLeft();
+            physic.moveLeft();
         }
 
         if (game.isKeyPressed(right)) {
-            dynamic.moveRight();
+            physic.moveRight();
         }
 
         if (!game.isKeyPressed(up) && !game.isKeyPressed(down)) {
-            dynamic.yVelocity = 0;
+            physic.yVelocity = 0;
         }
 
         if (!game.isKeyPressed(left) && !game.isKeyPressed(right)) {
-            dynamic.xVelocity = 0;
+            physic.xVelocity = 0;
         }
 
     };

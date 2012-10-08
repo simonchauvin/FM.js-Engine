@@ -2,7 +2,7 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-var fmKeyboard = {
+var FMKeyboard = {
 	backspace : 8,
 	tab : 9,
 	enter : 13,
@@ -12,6 +12,7 @@ var fmKeyboard = {
 	pause : 19,
 	caps : 20,
 	escape : 27,
+	space: 32,
 	pageUp : 33,
 	pageDown : 34,
 	end : 35,
@@ -57,8 +58,48 @@ var fmKeyboard = {
 	w : 87,
 	x : 88,
 	y : 89,
-	z : 90
-	
-	//TODO to be continued
-	//http://www.cambiaresearch.com/c4/702b8cd1-e5b0-42e6-83ac-25f0306e3e25/Javascript-Char-Codes-Key-Codes.aspx
+	z : 90,
+        leftSpecial : 91,
+        righSpecial : 92,
+        select : 93,
+        numZero : 96,
+        numOne : 97,
+        numTwo : 98,
+        numThree : 99,
+        numFour : 100,
+        numFive : 101,
+        numSix : 102,
+        numSeven : 103,
+        numEight : 104,
+        numNine : 105,
+        multiply : 106,
+        add : 107,
+        substract : 109,
+        decimalPoint : 110,
+        divide : 111,
+        f1 : 112,
+        f2 : 113,
+        f3 : 114,
+        f4 : 115,
+        f5 : 116,
+        f6 : 117,
+        f7 : 118,
+        f8 : 119,
+        f9 : 120,
+        f10 : 121,
+        f11 : 122,
+        f12 : 123,
+        numlock : 144,
+        scrollLock : 145,
+        semiColon : 186,
+        equalSign : 187,
+        comma : 188,
+        dash : 189,
+        period : 190,
+        forwardSlash : 191,
+        graveAccent : 192,
+        openBracket : 219,
+        backSlash : 220,
+        closeBracket : 221,
+        singleQuote : 222
 };

@@ -4,11 +4,11 @@
  * @param owner
  * @returns {___that0}
  */
-function fmSimpleShapeRendererComponent(owner) {
+function FMSimpleShapeRendererComponent(pOwner) {
     "use strict";
-    var that = Object.create(fmComponent(fmComponentTypes.renderer, owner));
+    var that = FMComponent(fmComponentTypes.renderer, pOwner);
 
-    that.spatial = owner.components[fmComponentTypes.spatial];
+    that.spatial = pOwner.components[FMComponentTypes.spatial];
 
     var width = 50, height = 50, isCircle = false;
     that.scrolled = true;
@@ -23,6 +23,13 @@ function fmSimpleShapeRendererComponent(owner) {
         height = radius;
         isCircle = true;
     };
+
+    /**
+     * Post initialization to ensure that all components are initialized
+     */
+    that.postInit = function () {
+        
+    }
 
     that.draw = function (bufferContext) {
         var xPosition = that.spatial.x, yPosition = that.spatial.y;

@@ -38,15 +38,9 @@ function include (filename) {
     head.appendChild(script);
 }
 
-/**
- * Time management
- */
-var lastUpdate = new Date();
-
-/**
- * Retrieve the time that has passed since the last frame
- */
-function elapsedTime () {
-    "use strict";
-    return (new Date() - lastUpdate);
-};
+function parseXml (content) {
+    //Parse file as XML
+    var parser = new DOMParser();
+    parser = parser.parseFromString(content, "text/xml");
+    return parser;
+}

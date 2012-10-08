@@ -5,12 +5,18 @@
  * @param y
  * @returns {___that0}
  */
-function fmPoint(x, y) {
+function FMPoint(pX, pY) {
     "use strict";
-    var that = Object.create({});
+    var that = {};
 
-    that.x = x;
-    that.y = y;
+    /**
+     * x position
+     */
+    that.x = pX;
+    /**
+     * y position
+     */
+    that.y = pY;
 
     return that;
 }

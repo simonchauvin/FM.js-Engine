@@ -2,9 +2,9 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function fmButton() {
+function FMGroup() {
     "use strict";
-    var that = Object.create({});
+    var that = {};
 
 
 

@@ -5,14 +5,54 @@
  * @param height
  * @returns {___that0}
  */
-function fmRectangle(width, height) {
+function FMRectangle(pX, pY, pWidth, pHeight) {
     "use strict";
-    var that = Object.create({});
+    var that_ = {},
+        /**
+         * Width
+         */
+        width = pWidth,
+        /**
+         * Height
+         */
+        height = pHeight;
 
-    that.spatial = fmSpatialComponent(that);
+    /**
+     * x position
+     */
+    that_.x = pX;
+    /**
+     * y position
+     */
+    that_.y = pY;
 
-    that.width = width;
-    that.height = height;
+    /**
+     * Get the width
+     */
+    that_.getWidth = function () {
+        return width;
+    }
 
-    return that;
+    /**
+     * Get the height
+     */
+    that_.getHeight = function () {
+        return height;
+    }
+
+    /**
+     * Set the width
+     */
+    that_.setWidth = function (pWidth) {
+        width = pWidth;
+    }
+
+    /**
+     * Set the height
+     */
+    that_.setHeight = function (pHeight) {
+        height = pHeight;
+    }
+
+    return that_;
 }

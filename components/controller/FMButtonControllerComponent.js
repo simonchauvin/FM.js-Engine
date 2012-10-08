@@ -2,9 +2,9 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function fmButtonControllerComponent(owner) {
+function FMButtonControllerComponent(pOwner) {
     "use strict";
-    var that = Object.create(fmComponent(fmComponentTypes.controller, owner));
+    var that = fmComponent(fmComponentTypes.controller, pOwner);
 
     var x = 0;
     var y = 0;
@@ -18,6 +18,13 @@ function fmButtonControllerComponent(owner) {
         width = buttonWidth;
         height = buttonHeight;
     };
+
+    /**
+     * Post initialization to ensure that all components are initialized
+     */
+    that.postInit = function () {
+        
+    }
 
     that.update = function(game) {
         var mouseX = game.getMouseX();
@@ -42,12 +49,12 @@ function fmButtonControllerComponent(owner) {
 
     };
 
-    that.isClicked = function() {
-        return clicked;
+    that.destroy = function() {
+        that = null
     };
 
-    that.destroy = function() {
-        text = null;
+    that.isClicked = function() {
+        return clicked;
     };
 
     return that;

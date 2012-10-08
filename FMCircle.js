@@ -4,13 +4,23 @@
  * @param radius
  * @returns {___that0}
  */
-function fmCircle(radius) {
+function FMCircle(pX, pY, pRadius) {
     "use strict";
-    var that = Object.create({});
+    var that = {};
 
-    that.spatial = fmSpatialComponent(that);
+    /**
+     * x position
+     */
+    that.x = pX;
+    /**
+     * y position
+     */
+    that.y = pY;
 
-    that.radius = radius;
+    /**
+     * Radius
+     */
+    that.radius = pRadius;
 
     return that;
 }

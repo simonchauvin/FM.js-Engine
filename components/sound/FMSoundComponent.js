@@ -4,30 +4,52 @@
  * @param owner
  * @returns {___that1}
  */
-function fmSoundComponent(owner) {
+function FMSoundComponent(pOwner) {
     "use strict";
-    var that = Object.create(fmComponent(fmComponentTypes.sound, owner));
+    var that_ = fmComponent(fmComponentTypes.sound, pOwner),
 
-    var sound = new Audio();
+        /**
+         *
+         */
+        sound = new Audio();
 
-    that.init = function (snd) {
+    /**
+     *
+     */
+    that_.init = function (snd) {
         sound = snd;
     };
 
-    that.play = function (volume, startingTime) {
-        Object.getPrototypeOf(sound).volume = volume;
+    /**
+     * Post initialization to ensure that all components are initialized
+     */
+    that_.postInit = function () {
+        
+    }
+
+    /**
+     *
+     */
+    that_.play = function (volume, startingTime) {
+        sound.volume = volume;
         //FIXME give current time
         //sound.currentTime = startingTime;
-        Object.getPrototypeOf(sound).play();
+        sound.play();
     };
 
-    that.pause = function () {
+    /**
+     *
+     */
+    that_.pause = function () {
         sound.pause();
     };
 
-    that.getSound = function () {
+    /**
+     *
+     */
+    that_.getSound = function () {
         return sound;
     };
 
-    return that;
+    return that_;
 }

@@ -10,22 +10,22 @@
  * @param firstState
  * @returns {FMGame}
  */
-function FMGame(pName, pWidth, pHeight, pFirstState) {
+function fmGame(n, w, h, firstState) {
     "use strict";
     var that = {},
     /**
     * Name of the game
     */
-    name = pName,
+    name = n,
     /**
     * Specifications of the current game
     */
-    screenWidth = pWidth,
-    screenHeight = pHeight,
+    screenWidth = w,
+    screenHeight = h,
     /**
     * State of the game
     */
-    currentState = FMPreloader(pFirstState),
+    currentState = fmPreloader(firstState),
     /**
     * Canvas elements
     */
@@ -55,9 +55,21 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
      */
     actualFps = 0,
     /**
+     * Total time passed since the start of the game
+     */
+    t = 0.0,
+    /**
+     * Fixed time between frames
+     */
+    DELTA_TIME = 1 / fmParameters.FPS,
+    /**
      * Current time
      */
     currentTime = (new Date()).getTime() / 1000,
+    /**
+     * Accumulator keeping tracks of the difference between frame rate and physics step
+     */
+    accumulator = 0.0,
     /**
     * Currently pressed keys
     */
@@ -88,52 +100,74 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     mouseY = 0,
 
     /**
-    * Main game loop Calling update and draw on game objects.
+    * Main game loop Calling update and draw on game objects
     */
     gameLoop = function () {
-        //Reset the screen
-        context.clearRect(0, 0, screenWidth, screenHeight);
-        context.fillStyle = FMParameters.backgroundColor;
-        context.fillRect(0, 0, currentState.world.getWidth(), currentState.world.getHeight());
+        setTimeout(function () {
+            //Reset the screen
+            context.clearRect(0, 0, screenWidth, screenHeight);
+            context.fillStyle = fmParameters.backgroundColor;
+            context.fillRect(0, 0, currentState.getWorld().getWidth(), currentState.getWorld().getHeight());
 
-        //Retrieve the current time
-        var newTime = (new Date()).getTime() / 1000,
-        //Compute the time since last frame
-        frameTime = newTime - currentTime;
-        currentTime = newTime;
+            //Retrieve the current time
+            var newTime = (new Date()).getTime() / 1000,
+            //Compute the time since last frame
+            frameTime = newTime - currentTime;
+            currentTime = newTime;
+            //Max frame time to avoid spiral of death
+            if (frameTime > 0.25) {
+              frameTime = 0.25;
+            }
+            //Add to the accumulator the actual time taken for this frame
+            accumulator += frameTime;
+            //Calculate the actual FPS at which the game is running
+            totalFrames++;
+            totalTimeElapsed += frameTime;
+            actualFps = Math.round(totalFrames / totalTimeElapsed);
 
-        //Calculate the actual FPS at which the game is running
-        totalFrames++;
-        totalTimeElapsed += frameTime;
-        actualFps = Math.round(totalFrames / totalTimeElapsed);
+            //Update state as many times as the accumulator is beyond the fixed time step
+            while (accumulator >= DELTA_TIME) {
+                //Update the current state of the game
+                currentState.update(that, DELTA_TIME);
+                t += DELTA_TIME;
+                accumulator -= DELTA_TIME;
+            }
 
-        //Update the current state of the game
-        currentState.update(that, frameTime);
-        //Draw the current state of the game
-        currentState.draw(bufferContext);
+            //Compute the ratio fixed time / accumulated difference
+            var alpha = accumulator / DELTA_TIME;
 
-        // If debug mode if active
-        if (FMParameters.debug) {
-            //Draw the number of frames per seconds
-            bufferContext.fillStyle = '#fcd116';
-            bufferContext.font = '30px sans-serif';
-            bufferContext.textBaseline = 'middle';
-            bufferContext.fillText(actualFps, 10, 20);
-        }
+            //Interpolate objects
+            currentState.postUpdate(that, alpha);
 
-        //Draw the buffer onto the screen
-        context.drawImage(bufferCanvas, 0, 0);
+            //Draw the current state of the game
+            currentState.draw(bufferContext);
 
-        //Reset keyboard and mouse inputs
-        mouseClicked = false;
-        currentReleasedKeys = [];
+            // If debug mode if active
+            if (fmParameters.debug) {
+                //Draw the number of frame per second
+                bufferContext.fillStyle = '#fcd116';
+                bufferContext.font = '30px sans-serif';
+                bufferContext.textBaseline = 'middle';
+                bufferContext.fillText(actualFps, 10, 20);
+            }
 
-        //Main loop call
-        requestAnimationFrame(gameLoop);
+            //Update the last frame time
+            lastUpdate = new Date();
+
+            //Draw the buffer onto the screen
+            context.drawImage(bufferCanvas, 0, 0);
+
+            //Reset mouse input
+            mouseClicked = false;
+            //Reset keyboard input
+            currentReleasedKeys = [];
+
+            gameLoop();
+        }, DELTA_TIME * 1000);
     };
 
     /**
-    * Start running the game.
+    * Start running the game
     */
     that.run = function () {
         //Create canvas context if it exists and use double buffering
@@ -184,35 +218,9 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
             currentState.init(that);
             currentState.postInit();
 
-            //Start the main loop
-            requestAnimationFrame(gameLoop);
+            gameLoop();
         }
     };
-
-    /**
-     * Hack to get the requestAnimationFrame work on every browser
-     */
-    (function() {
-        var x, lastTime = 0, vendors = ['ms', 'moz', 'webkit', 'o'];
-        for(x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-            window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-        }
-        if (!window.requestAnimationFrame) {
-            window.requestAnimationFrame = function(callback, element) {
-                var currTime = new Date().getTime();
-                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-                var id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
-                lastTime = currTime + timeToCall;
-                return id;
-            };
-        }
-        if (!window.cancelAnimationFrame) {
-            window.cancelAnimationFrame = function(id) {
-                clearTimeout(id);
-            };
-        }
-    }());
 
     /**
     * Switch between two states
@@ -353,22 +361,6 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     */
     that.getMouseY = function () {
         return mouseY;
-    };
-
-    /**
-    * Retrieve the mouse x position
-    * @returns {Number}
-    */
-    that.getMouseWorldX = function () {
-        return mouseX + currentState.world.xOffset;
-    };
-
-    /**
-    * Retrieve the mouse y position
-    * @returns {Number}
-    */
-    that.getMouseWorldY = function () {
-        return mouseY + currentState.world.yOffset;
     };
 
     /**

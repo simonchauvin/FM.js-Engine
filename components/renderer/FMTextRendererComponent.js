@@ -2,23 +2,30 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function fmTextRendererComponent(owner) {
+function FMTextRendererComponent(pTextToDisplay, pOwner) {
     "use strict";
-    var that = Object.create(fmComponent(fmComponentTypes.renderer, owner));
+    var that = FMComponent(FMComponentTypes.renderer, pOwner);
 
     //Retrieve the spatial component
-    that.spatial = owner.components[fmComponentTypes.spatial];
+    that.spatial = pOwner.components[FMComponentTypes.spatial];
 
     var width = 50, height = 50;
 
     //Text to be displayed
-    that.text = "";
+    that.text = pTextToDisplay;
 
     // Default parameters
     that.fillStyle = '#fff';
     that.font = '30px sans-serif';
     that.textBaseline = 'middle';
     that.scrolled = false;
+
+    /**
+     * Post initialization to ensure that all components are initialized
+     */
+    that.postInit = function () {
+        
+    };
 
     /**
     * Set the format of the text

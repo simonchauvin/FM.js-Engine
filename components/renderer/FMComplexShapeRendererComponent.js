@@ -2,10 +2,16 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function fmComplexShapeRendererComponent(owner) {
+function FMComplexShapeRendererComponent(pOwner) {
     "use strict";
-    var that = Object.create(fmComponent(fmComponentTypes.renderer, owner));
+    var that_ = FMComponent(FMComponentTypes.renderer, pOwner);
 
+    /**
+     * Post initialization to ensure that all components are initialized
+     */
+    that_.postInit = function () {
+        
+    }
 
-    return that;
+    return that_;
 }

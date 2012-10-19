@@ -7,7 +7,7 @@
  */
 function FMObbComponent(pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.physic, pOwner);
+    var that = FMComponent(FMComponentTypes.PHYSIC, pOwner);
     /**
      * 
      */
@@ -65,9 +65,9 @@ function FMObbComponent(pOwner) {
      */
     that.postInit = function () {
         //Retrieve the components
-        spatial = pOwner.components[FMComponentTypes.spatial];
-        renderer = pOwner.components[FMComponentTypes.renderer];
-        physic = pOwner.components[FMComponentTypes.physic];
+        spatial = pOwner.components[FMComponentTypes.SPATIAL];
+        renderer = pOwner.components[FMComponentTypes.RENDERER];
+        physic = pOwner.components[FMComponentTypes.PHYSIC];
     };
 
     /**

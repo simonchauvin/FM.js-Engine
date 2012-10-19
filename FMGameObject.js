@@ -19,6 +19,10 @@ function FMGameObject(pZIndex) {
      */
     name = "",
     /**
+     * Allows to specify different degrees of scrolling (useful for parallax).
+     */
+    scrollFactor = 0,
+    /**
      * 
      */
     allowCollisions = FMParameters.ANY;
@@ -31,15 +35,15 @@ function FMGameObject(pZIndex) {
      */
     that.components = {};
     /**
-     * 
+     * Specify the depth at which the game object is
      */
     that.zIndex = pZIndex;
     /**
-     * 
+     * Specify if the game object is alive
      */
     that.destroyed = false;
     /**
-     * 
+     * Specify if the game object is visible
      */
     that.visible = true;
 

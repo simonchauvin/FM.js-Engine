@@ -4,9 +4,9 @@
  * List of component types
  */
 var FMComponentTypes = {
-		spatial: "spatial",
-		renderer: "renderer",
-                physic: "physic",
-                sound: "sound",
-		controller: "controller"
+		SPATIAL: "spatial",
+		RENDERER: "renderer",
+                PHYSIC: "physic",
+                SOUND: "sound",
+		CONTROLLER: "controller"
 };

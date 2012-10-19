@@ -20,7 +20,7 @@ var FMParameters = {
     DYNAMIC: "dynamic",
 
     //Used for Box2D conversion
-    PIXELS_TO_METRE : 30,
+    PIXELS_TO_METERS : 30,
 
     //System constants
     IMAGE: "image",

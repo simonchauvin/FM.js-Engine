@@ -7,7 +7,7 @@
  */
 function FMCircleComponent(pRadius, pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.physic, pOwner),
+    var that = FMComponent(FMComponentTypes.PHYSIC, pOwner),
     /**
      *
      */
@@ -35,7 +35,7 @@ function FMCircleComponent(pRadius, pOwner) {
     /**
      * Spatial component
      */
-    that.spatial = owner.components[FMComponentTypes.spatial];
+    that.spatial = owner.components[FMComponentTypes.SPATIAL];
 
     /**
      * Post initialization
@@ -49,7 +49,7 @@ function FMCircleComponent(pRadius, pOwner) {
      */
     that.update = function (game) {
         //Retrieve components
-	that.spatial = owner.components[FMComponentTypes.spatial];
+	that.spatial = owner.components[FMComponentTypes.SPATIAL];
     };
 
     /**

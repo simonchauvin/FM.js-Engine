@@ -8,7 +8,7 @@
 function FMAabbComponent(pWidth, pHeight, pOwner) {
     "use strict";
     //TODO make it inherit from rectangle, useless to have components inherit fmcomponent ?????
-    var that = FMComponent(FMComponentTypes.physic, pOwner),
+    var that = FMComponent(FMComponentTypes.PHYSIC, pOwner),
     /**
      *
      */
@@ -45,7 +45,7 @@ function FMAabbComponent(pWidth, pHeight, pOwner) {
     /**
      * Spatial component
      */
-    that.spatial = owner.components[FMComponentTypes.spatial];
+    that.spatial = owner.components[FMComponentTypes.SPATIAL];
 
     /**
      * Post initialization
@@ -58,7 +58,7 @@ function FMAabbComponent(pWidth, pHeight, pOwner) {
      * Update the component
      */
     that.update = function (game) {
-        that.spatial = owner.components[FMComponentTypes.spatial];
+        that.spatial = owner.components[FMComponentTypes.SPATIAL];
     };
 
     /**

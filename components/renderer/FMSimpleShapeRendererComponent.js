@@ -6,9 +6,9 @@
  */
 function FMSimpleShapeRendererComponent(pOwner) {
     "use strict";
-    var that = FMComponent(fmComponentTypes.renderer, pOwner);
+    var that = FMComponent(fmComponentTypes.RENDERER, pOwner);
 
-    that.spatial = pOwner.components[FMComponentTypes.spatial];
+    that.spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
     var width = 50, height = 50, isCircle = false;
     that.scrolled = true;

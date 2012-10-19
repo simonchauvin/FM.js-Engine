@@ -4,7 +4,7 @@
  */
 function FMComplexShapeRendererComponent(pOwner) {
     "use strict";
-    var that_ = FMComponent(FMComponentTypes.renderer, pOwner);
+    var that_ = FMComponent(FMComponentTypes.RENDERER, pOwner);
 
     /**
      * Post initialization to ensure that all components are initialized

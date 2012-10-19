@@ -7,52 +7,23 @@
  */
 function FMRectangle(pX, pY, pWidth, pHeight) {
     "use strict";
-    var that_ = {},
-        /**
-         * Width
-         */
-        width = pWidth,
-        /**
-         * Height
-         */
-        height = pHeight;
-
+    var that = {};
     /**
      * x position
      */
-    that_.x = pX;
+    that.x = pX;
     /**
      * y position
      */
-    that_.y = pY;
-
+    that.y = pY;
     /**
-     * Get the width
+     * Width of the rectangle.
      */
-    that_.getWidth = function () {
-        return width;
-    }
-
+    that.width = pWidth,
     /**
-     * Get the height
+     * Height of the rectangle.
      */
-    that_.getHeight = function () {
-        return height;
-    }
+    that.height = pHeight;
 
-    /**
-     * Set the width
-     */
-    that_.setWidth = function (pWidth) {
-        width = pWidth;
-    }
-
-    /**
-     * Set the height
-     */
-    that_.setHeight = function (pHeight) {
-        height = pHeight;
-    }
-
-    return that_;
+    return that;
 }

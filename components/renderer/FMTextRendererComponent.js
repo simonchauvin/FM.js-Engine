@@ -4,10 +4,10 @@
  */
 function FMTextRendererComponent(pTextToDisplay, pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.renderer, pOwner);
+    var that = FMComponent(FMComponentTypes.RENDERER, pOwner);
 
     //Retrieve the spatial component
-    that.spatial = pOwner.components[FMComponentTypes.spatial];
+    that.spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
     var width = 50, height = 50;
 

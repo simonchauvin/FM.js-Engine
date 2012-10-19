@@ -94,7 +94,7 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
         //Reset the screen
         context.clearRect(0, 0, screenWidth, screenHeight);
         context.fillStyle = FMParameters.backgroundColor;
-        context.fillRect(0, 0, currentState.world.getWidth(), currentState.world.getHeight());
+        context.fillRect(0, 0, screenWidth, screenHeight);
 
         //Retrieve the current time
         var newTime = (new Date()).getTime() / 1000,
@@ -360,7 +360,7 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     * @returns {Number}
     */
     that.getMouseWorldX = function () {
-        return mouseX + currentState.world.xOffset;
+        return mouseX + currentState.camera.x;
     };
 
     /**
@@ -368,7 +368,7 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     * @returns {Number}
     */
     that.getMouseWorldY = function () {
-        return mouseY + currentState.world.yOffset;
+        return mouseY + currentState.camera.y;
     };
 
     /**

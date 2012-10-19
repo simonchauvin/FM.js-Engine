@@ -8,36 +8,34 @@
 function FMState() {
     "use strict";
     var that = {},
-
-    /**
-     * Used to know when to pause the game.
-     */
-    pause = false,
-    /**
-     * 
-     */
-    screenWidth = 0,
-    /**
-     * 
-     */
-    screenHeight = 0,
-    /**
-    * The game object that makes the screen scrolls
-    */
-    scroller = null,
-    /**
-     * Frame of the camera (used in case of scrolling)
-     */
-    followFrame = null;
-
+        /**
+         * 
+         */
+        screenWidth = 0,
+        /**
+         * 
+         */
+        screenHeight = 0,
+        /**
+         * Used to know when to pause the game.
+         */
+        pause = false,
+        /**
+        * The game object that makes the screen scrolls
+        */
+        scroller = null,
+        /**
+         * Frame of the camera (used in case of scrolling)
+         */
+        followFrame = null;
     /**
      * Object representing the world topology (bounds, tiles, collisions, objects)
      */
     that.world = null;
     /**
-    * Bounds of the view (limited by the screen resolution of the game)
+    * Camera (limited by the screen resolution of the game)
     */
-    that.viewport = FMRectangle(0, 0, 0, 0);
+    that.camera = FMRectangle(0, 0, 0, 0);
     /**
     * Array containing every game objects of the state
     */
@@ -54,11 +52,11 @@ function FMState() {
         screenWidth = game.getScreenWidth();
         screenHeight = game.getScreenHeight();
         //By default init the world to the size of the screen with all borders solid
-        that.world = FMWorld(that, [0, screenWidth, 0, screenHeight]);
+        that.world = FMWorld(that, screenWidth, screenHeight);
 
-        //Set the viewport size by the chosen screen size
-        that.viewport.setWidth(game.getScreenWidth());
-        that.viewport.setHeight(game.getScreenHeight());
+        //Set the camera size by the chosen screen size
+        that.camera.width = screenWidth;
+        that.camera.height = screenHeight;
 
         //TODO quadtree for colliders (ease up collision detection)
         /*var i;
@@ -76,6 +74,7 @@ function FMState() {
 
     /**
      * Initialize the game objects of the state
+     * //TODO useless
      */
     that.postInit = function () {
         var i;
@@ -166,10 +165,8 @@ function FMState() {
             gameObject = that.gameObjects[i];
             if (!gameObject.destroyed) {
                 components = gameObject.components;
-                spatial = components[FMComponentTypes.spatial];
-                physic = components[FMComponentTypes.physic];
-                controller = components[FMComponentTypes.controller];
-                script = components[FMComponentTypes.script];
+                spatial = components[FMComponentTypes.SPATIAL];
+                physic = components[FMComponentTypes.PHYSIC];
                 //Update the game object
                 gameObject.update(game, dt);
                 //Update the physic component
@@ -179,39 +176,39 @@ function FMState() {
                     //Update scrolling
                     if (scroller === gameObject) {
                         var newOffset, velocity = physic.getLinearVelocity(),
-                            frameWidth = followFrame.getWidth(), frameHeight = followFrame.getHeight(),
+                            frameWidth = followFrame.width, frameHeight = followFrame.height,
                             xPosition = spatial.x, yPosition = spatial.y,
                             farthestXPosition = xPosition + physic.getWidth(), farthestYPosition = yPosition + physic.getHeight();
-    
+
                         // Going left
                         if (velocity.x < 0 && xPosition <= followFrame.x) {
-                            newOffset = that.world.xOffset + velocity.x * dt;
+                            newOffset = that.camera.x + velocity.x * dt;
                             if (newOffset >= 0) {
-                                that.world.xOffset = newOffset;
+                                that.camera.x = newOffset;
                                 followFrame.x += velocity.x * dt;
                             }
                         }
                         // Going up
                         if (velocity.y < 0 && yPosition <= followFrame.y) {
-                            newOffset = that.world.yOffset + velocity.y * dt;
+                            newOffset = that.camera.y + velocity.y * dt;
                             if (newOffset >= 0) {
-                                that.world.yOffset = newOffset;
+                                that.camera.y = newOffset;
                                 followFrame.y += velocity.y * dt;
                             }
                         }
                         // Going right
                         if (velocity.x > 0 && farthestXPosition >= followFrame.x + frameWidth) {
-                            newOffset = that.world.xOffset + velocity.x * dt;
-                            if (newOffset + that.viewport.getWidth() <= that.world.getWidth()) {
-                                that.world.xOffset = newOffset;
+                            newOffset = that.camera.x + velocity.x * dt;
+                            if (newOffset + that.camera.width <= that.world.width) {
+                                that.camera.x = newOffset;
                                 followFrame.x += velocity.x * dt;
                             }
                         }
                         // Going down
                         if (velocity.y > 0 && farthestYPosition >= followFrame.y + frameHeight) {
-                            newOffset = that.world.yOffset + velocity.y * dt;
-                            if (newOffset + that.viewport.getHeight() <= that.world.getHeight()) {
-                                that.world.yOffset = newOffset;
+                            newOffset = that.camera.y + velocity.y * dt;
+                            if (newOffset + that.camera.height <= that.world.height) {
+                                that.camera.y = newOffset;
                                 followFrame.y += velocity.y * dt;
                             }
                         }
@@ -240,31 +237,31 @@ function FMState() {
         bufferContext.clearRect(0, 0, screenWidth, screenHeight);
 
         //Update offsets
-        bufferContext.xOffset = that.world.xOffset;
-        bufferContext.yOffset = that.world.yOffset;
+        bufferContext.xOffset = that.camera.x;
+        bufferContext.yOffset = that.camera.y;
 
-        //Display every game objects
-        var i, gameObject, renderer, physic, components;
+        //Search for renderer in the game object list
+        var i, gameObject, renderer, physic;
         for (i = 0; i < that.gameObjects.length; i = i + 1) {
             gameObject = that.gameObjects[i];
-            renderer = gameObject.components[FMComponentTypes.renderer];
-            physic = gameObject.components[FMComponentTypes.physic];
+            renderer = gameObject.components[FMComponentTypes.RENDERER];
+            physic = gameObject.components[FMComponentTypes.PHYSIC];
 
             //If the game object has a renderer
             if (renderer) {
-                components = gameObject.components;
-                var spatial = components[FMComponentTypes.spatial];
-                var xPosition = spatial.x, yPosition = spatial.y;
-                var farthestXPosition = xPosition + renderer.getWidth(), farthestYPosition = yPosition + renderer.getHeight();
+                var spatial = gameObject.components[FMComponentTypes.SPATIAL],
+                xPosition = spatial.x, yPosition = spatial.y,
+                farthestXPosition = xPosition + renderer.getWidth(), farthestYPosition = yPosition + renderer.getHeight();
 
-                //Draw the object to render if it is on screen
-                var newViewX = that.viewport.x, newViewY = that.viewport.y;
+                //If the game object has a scrolling factor then apply it
+                var newViewX = 0, newViewY = 0;
                 if (renderer.scrolled) {
-                    newViewX = that.viewport.x + that.world.xOffset;
-                    newViewY = that.viewport.y + that.world.yOffset;
+                    newViewX = that.camera.x + (screenWidth - that.camera.width) / 2;
+                    newViewY = that.camera.y + (screenHeight - that.camera.height) / 2;
                 }
+                //Draw the game object if it is within the bounds of the screen
                 if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
-                    && xPosition <= newViewX + that.viewport.getWidth() && yPosition <= newViewY + that.viewport.getHeight()) {
+                    && xPosition <= newViewX + that.camera.width && yPosition <= newViewY + that.camera.height) {
                     if (!gameObject.destroyed && gameObject.visible) {
                         renderer.draw(bufferContext);
                     }
@@ -279,20 +276,18 @@ function FMState() {
         }
         // Debug
         if (FMParameters.debug) {
-            //Display the view bounds
-            bufferContext.strokeStyle = '#fff';
-            bufferContext.strokeRect(0, 0, that.viewport.getWidth(), that.viewport.getHeight());
-
             //Display the world bounds
-            bufferContext.strokeStyle = '#fff';
-            bufferContext.strokeRect(that.viewport.x - 0, 0 - that.viewport.y, that.world.getWidth(), that.world.getHeight());
+            bufferContext.strokeStyle = '#f0f';
+            bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, that.world.width, that.world.height);
 
-            // Debug display the camera bounds
-            if (scroller) {
-                var frameWidth = followFrame.getWidth(), frameHeight = followFrame.getHeight();
-                bufferContext.strokeStyle = '#fff';
-                bufferContext.strokeRect(followFrame.x - that.world.xOffset, followFrame.y - that.world.yOffset, frameWidth,
-                frameHeight);
+            //Display the camera bounds
+            bufferContext.strokeStyle = '#8fc';
+            bufferContext.strokeRect((screenWidth - that.camera.width) / 2, (screenHeight - that.camera.height) / 2, that.camera.width, that.camera.height);
+
+            //Display the scrolling bounds
+            if (followFrame) {
+                bufferContext.strokeStyle = '#f4f';
+                bufferContext.strokeRect(followFrame.x - that.camera.x, followFrame.y - that.camera.y, followFrame.width, followFrame.height);
             }
         }
         if (pause) {
@@ -316,20 +311,20 @@ function FMState() {
     };
 
     /**
-    * Center the viewport on a specific game object
+    * Center the camera on a specific game object
     */
-    that.centerViewportOn = function(gameObject) {
-        var spatial = gameObject.components[fmComponentTypes.spatial];
-        that.world.xOffset = spatial.x - screenWidth / 2;
-        that.world.yOffset = spatial.y - screenHeight / 2;
+    that.centerCameraOn = function(gameObject) {
+        var spatial = gameObject.components[fmComponentTypes.SPATIAL];
+        that.camera.x = spatial.x - that.camera.width / 2;
+        that.camera.y = spatial.y - that.camera.height / 2;
     };
 
     /**
-    * Center the viewport at a specific given position
+    * Center the camera at a specific given position
     */
-    that.centerViewportAt = function(xPosition, yPosition) {
-        that.world.xOffset = xPosition - screenWidth / 2;
-        that.world.yOffset = yPosition -screenHeight  / 2;
+    that.centerCameraAt = function(xPosition, yPosition) {
+        that.camera.x = xPosition - that.camera.width / 2;
+        that.camera.y = yPosition - that.camera.height / 2;
     };
 
     /**
@@ -337,7 +332,7 @@ function FMState() {
     */
     that.follow = function(gameObject, width, height) {
         scroller = gameObject;
-        followFrame = FMRectangle(screenWidth / 2 - width / 2 + that.world.xOffset, screenHeight / 2 - height / 2 + that.world.yOffset, width, height);
+        followFrame = FMRectangle((screenWidth - width) / 2 + that.camera.x, (screenHeight - height) / 2 + that.camera.y, width, height);
     }
 
     /**

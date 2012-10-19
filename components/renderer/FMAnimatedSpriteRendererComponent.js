@@ -6,8 +6,7 @@
  */
 function FMAnimatedSpriteRendererComponent(pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.renderer, pOwner),
-
+    var that = FMComponent(FMComponentTypes.RENDERER, pOwner),
         /**
          *
          */
@@ -35,11 +34,11 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
         /**
          *
          */
-        columnPosition = 0,
+        xOffset = 0,
         /**
          *
          */
-        linePosition = 0,
+        yOffset = 0,
         /**
          *
          */
@@ -59,12 +58,11 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
         /**
          *
          */
-        loop = [];
-
-    /**
-     * 
-     */
-    that.spatial = pOwner.components[FMComponentTypes.spatial];
+        loop = [],
+        /**
+         * 
+         */
+        spatial = pOwner.components[FMComponentTypes.SPATIAL];
     /**
      * 
      */
@@ -120,11 +118,11 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
         currentAnim = animName;
         that.finished = false;
         currentFrame = 0;
-        columnPosition = frames[currentAnim][currentFrame] * frameWidth;
-        linePosition = Math.floor(columnPosition / imageWidth) * frameHeight;
-        if (columnPosition >= imageWidth) {
-            linePosition = Math.floor(columnPosition / imageWidth) * frameHeight;
-            columnPosition = (columnPosition % imageWidth);
+        xOffset = frames[currentAnim][currentFrame] * frameWidth;
+        yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
+        if (xOffset >= imageWidth) {
+            yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
+            xOffset = (xOffset % imageWidth);
         }
     };
 
@@ -139,12 +137,21 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
     * Draw the sprite
     */
     that.draw = function (bufferContext) {
-        var xPosition = that.spatial.x, yPosition = that.spatial.y;
+        var xPosition = spatial.x, yPosition = spatial.y;
         if (that.scrolled) {
             xPosition -= bufferContext.xOffset;
             yPosition -= bufferContext.yOffset;
         }
-        bufferContext.drawImage(image, columnPosition, linePosition, frameWidth, frameHeight, xPosition, yPosition, frameWidth, frameHeight);
+        if (spatial.angle != 0) {
+            bufferContext.save();
+            bufferContext.translate(xPosition, yPosition);
+            bufferContext.translate(frameWidth / 2, frameHeight / 2);
+            bufferContext.rotate(spatial.angle);
+            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, -frameWidth / 2, -frameHeight / 2, frameWidth, frameHeight);
+            bufferContext.restore();
+        } else {
+            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, frameWidth, frameHeight);
+        }
 
         if (!that.finished) {
             if (currentDelay <= 0) {
@@ -157,11 +164,11 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
                         that.finished = true;
                     }
                 }
-                columnPosition = frames[currentAnim][currentFrame] * frameWidth;
-                linePosition = Math.floor(columnPosition / imageWidth) * frameHeight;
-                if (columnPosition >= imageWidth) {
-                    linePosition = Math.floor(columnPosition / imageWidth) * frameHeight;
-                    columnPosition = (columnPosition % imageWidth);
+                xOffset = frames[currentAnim][currentFrame] * frameWidth;
+                yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
+                if (xOffset >= imageWidth) {
+                    yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
+                    xOffset = (xOffset % imageWidth);
                 }
             } else {
                 currentDelay -= elapsedTime();

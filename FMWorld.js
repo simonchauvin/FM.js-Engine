@@ -2,25 +2,13 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function FMWorld(pState, pBounds) {
+function FMWorld(pState, pWidth, pHeight) {
     "use strict";
-    var that = {},
+    var that = FMRectangle(0, 0, pWidth, pHeight),
         /**
          * State featuring this particular world
          */
-        state = pState,
-        /**
-         * Array specifying if the world has solid borders or not
-         */
-        bounds = pBounds,
-        /**
-         * Width of the world
-         */
-        width = bounds[1],
-        /**
-         * Height of the world
-         */
-        height = bounds[3];
+        state = pState;
     /**
      * Box2D world
      */
@@ -28,11 +16,11 @@ function FMWorld(pState, pBounds) {
     /**
      * Horizontal offset of the world (used in case of scrolling)
      */
-    that.xOffset = 0;
+    //that.xOffset = 0;
     /**
      * Vertical offset of the world (used in case of scrolling)
      */
-    that.yOffset = 0;
+    //that.yOffset = 0;
 
     /**
      * Init the Box2D world.
@@ -40,32 +28,74 @@ function FMWorld(pState, pBounds) {
     that.initBox2DWorld = function (gravity, sleep) {
         var b2World = Box2D.Dynamics.b2World,
         b2Vec2 = Box2D.Common.Math.b2Vec2;
-        that.box2DWorld = new b2World(new b2Vec2(gravity.x / FMParameters.PIXELS_TO_METRE, gravity.y / FMParameters.PIXELS_TO_METRE), sleep);
+        that.box2DWorld = new b2World(new b2Vec2(gravity.x / FMParameters.PIXELS_TO_METERS, gravity.y / FMParameters.PIXELS_TO_METERS), sleep);
     };
 
     /**
      * Add a tile map to the world.
      */
-    that.addTileMap = function (tileMap) {
+    that.createTiles = function (tileMap) {
         var i, j, k, lines = tileMap.length, col, tileSet = tileMap.getTileSet(), tileWidth = tileMap.getTileWidth(), tileHeight = tileMap.getTileHeight();
         for (i = 0; i < lines; i = i + 1) {
             col = tileMap[i].length;
             for (j = 0; j < col; j = j + 1) {
-                var tileSetWidth = tileSet.width;
-                var tileSetHeight = tileSet.height;
+                var tile = tileMap[i][j], tileSetWidth = tileSet.width, tileSetHeight = tileSet.height, xOffset, yOffset;
                 //TODO select the tile in the tileset
                 //for (k = 0; k < size; k = k + 1) {
-                    if (tileMap[i][j] == 1) {
+                    if (tile > 0) {
                         tileMap[i][j] = FMGameObject(tileMap.getZIndex());
                         FMSpatialComponent(j * tileWidth, i * tileHeight, tileMap[i][j]);
-                        FMSpriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
-                        var physicComponent = FMB2BoxComponent(tileWidth, tileHeight, that, tileMap[i][j]);
+                        var renderer = FMSpriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
+                        //Select the right tile in the tile set
+                        xOffset = (tile - 1) * tileWidth;
+                        yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
+                        if (xOffset >= tileSetWidth) {
+                            yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
+                            xOffset = (xOffset % tileSetWidth);
+                        }
+                        renderer.setXOffset(xOffset);
+                        renderer.setYOffset(yOffset);
+                        var physicComponent = FMAabbComponent(tileWidth, tileHeight, that, tileMap[i][j]);
                         physicComponent.init(FMParameters.STATIC, 1, 1, 1);
                         //TODO Remove tiles from the game objects list
                         //It shoult have its own list
                         state.add(tileMap[i][j]);
                     }
                 //}
+            }
+        }
+    };
+
+    /**
+     * Add a tile map to the Box2D world.
+     */
+    that.createBox2DTiles = function (tileMap) {
+        var i, j, k, lines = tileMap.length, col, tileSet = tileMap.getTileSet(), tileWidth = tileMap.getTileWidth(), tileHeight = tileMap.getTileHeight();
+        for (i = 0; i < lines; i = i + 1) {
+            col = tileMap[i].length;
+            for (j = 0; j < col; j = j + 1) {
+                var tile = tileMap[i][j], tileSetWidth = tileSet.width, tileSetHeight = tileSet.height, xOffset, yOffset;
+                if (tile > 0) {
+                    //Create Box2D tile
+                    tileMap[i][j] = FMGameObject(tileMap.getZIndex());
+                    FMSpatialComponent(j * tileWidth, i * tileHeight, tileMap[i][j]);
+                    var renderer = FMSpriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
+                    //Select the right tile in the tile set
+                    xOffset = (tile - 1) * tileWidth;
+                    yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
+                    if (xOffset >= tileSetWidth) {
+                        yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
+                        xOffset = (xOffset % tileSetWidth);
+                    }
+                    renderer.setXOffset(xOffset);
+                    renderer.setYOffset(yOffset);
+
+                    var physicComponent = FMB2BoxComponent(tileWidth, tileHeight, that, tileMap[i][j]);
+                    physicComponent.init(FMParameters.STATIC, 1, 0, 0);
+                    //TODO Remove tiles from the game objects list
+                    //It shoult have its own list
+                    state.add(tileMap[i][j]);
+                }
             }
         }
     };
@@ -139,34 +169,6 @@ function FMWorld(pState, pBounds) {
      */
     that.setBounds = function (pBounds) {
         bounds = pBounds;
-    };
-
-    /**
-     * Get the width
-     */
-    that.getWidth = function () {
-        return width;
-    };
-
-    /**
-     * Get the height
-     */
-    that.getHeight = function () {
-        return height;
-    };
-
-    /**
-     * Set the width
-     */
-    that.setWidth = function (pWidth) {
-        width = pWidth;
-    };
-
-    /**
-     * Set the height
-     */
-    that.setHeight = function (pHeight) {
-        height = pHeight;
     };
 
     return that;

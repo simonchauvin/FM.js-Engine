@@ -1,26 +1,15 @@
 /**
  * Under Creative Commons Licence
+ * Make sure pTileWidth and pTileHeight are int or float
  * @author Simon Chauvin
  */
-function FMTileMap(pData, pTileSet, pTileWidth, pTileHeight, pZIndex) {
+function FMTileMap(pTileSet, pTileWidth, pTileHeight, pZIndex) {
     "use strict";
     var that = [],
         /**
-         * Comma and line return sparated string of numbers representing the position and type of tiles.
-         */
-        data = pData,
-        /**
-         * Image representing all tiles by order of the numbers used in data.
+         * Image of the tile set.
          */
         tileSet = pTileSet,
-        /**
-         * Width of a tile.
-         */
-        tileWidth = pTileWidth,
-        /**
-         * Height of a tile.
-         */
-        tileHeight = pTileHeight,
         /**
          * Width of the map, in pixels.
          */
@@ -29,6 +18,14 @@ function FMTileMap(pData, pTileSet, pTileWidth, pTileHeight, pZIndex) {
          * Height of the map, in pixels.
          */
         height = 0,
+        /**
+         * Width of a tile.
+         */
+        tileWidth = pTileWidth,
+        /**
+         * Height of a tile.
+         */
+        tileHeight = pTileHeight,
         /**
          * Number of the lines of tiles of the map.
          */
@@ -44,8 +41,10 @@ function FMTileMap(pData, pTileSet, pTileWidth, pTileHeight, pZIndex) {
 
     /**
      * Load the map of tiles.
+     * @param {Array} data  Comma and line return sparated string of numbers representing the position and type of tiles.
+     * @param {FMImageAsset} tileSet  Image of the tile set in the order of the data given
      */
-    that.load = function () {
+    that.load = function (data) {
         var i, idxI = 0, idxJ = 0;
         for (i = 0; i < data.length; i = i + 1) {
             if (data[i] != "\n") {
@@ -64,17 +63,17 @@ function FMTileMap(pData, pTileSet, pTileWidth, pTileHeight, pZIndex) {
     };
 
     /**
+     * Retrive the tile set.
+     */
+    that.getTileSet = function () {
+        return tileSet;
+    };
+
+    /**
      * Retrieve the tile associated to the specified position
      */
     that.getTile = function (x, y) {
         return that[Math.floor(y / tileheight)][Math.floor(x / tilewidth)];
-    };
-
-    /**
-     * Retrieve the tile set.
-     */
-    that.getTileSet = function () {
-        return tileSet;
     };
 
     /**

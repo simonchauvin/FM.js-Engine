@@ -6,7 +6,7 @@
  */
 function FMSpatialComponent(pX, pY, pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.spatial, pOwner);
+    var that = FMComponent(FMComponentTypes.SPATIAL, pOwner);
     /**
      * x position.
      */
@@ -15,6 +15,10 @@ function FMSpatialComponent(pX, pY, pOwner) {
      * y position.
      */
     that.y = pY;
+    /**
+     * Angle of the object defined in radians.
+     */
+    that.angle = 0;
 
     /**
      * Post initialization to ensure that all components are initialized

@@ -10,7 +10,7 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
     /**
      * FmCircleComponent is based on FmComponent.
      */
-    var that = FMComponent(FMComponentTypes.physic, pOwner),
+    var that = FMComponent(FMComponentTypes.PHYSIC, pOwner),
 	/**
 	 * Box2D imports.
 	 */
@@ -30,12 +30,11 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
 	/**
 	 * Radius of the circle body.
 	 */
-	radius = pRadius;
-
-    /**
-     * Spatial component reference.
-     */
-    that.spatial = pOwner.components[FMComponentTypes.spatial];
+	radius = pRadius,
+        /**
+         * Spatial component reference.
+         */
+        spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
     /**
      * Initialization of the Box2D circle body.
@@ -43,9 +42,10 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
     that.init = function (pType, pDensity, pFriction, pRestitution) {
 	//Definition of the shape and its position
 	var fixDef = new b2FixtureDef, bodyDef = new b2BodyDef;
-	fixDef.shape = new b2CircleShape(radius / FMParameters.PIXELS_TO_METRE);
-	bodyDef.position.x = that.spatial.x / FMParameters.PIXELS_TO_METRE;
-	bodyDef.position.y = that.spatial.y / FMParameters.PIXELS_TO_METRE;
+	fixDef.shape = new b2CircleShape(radius / FMParameters.PIXELS_TO_METERS);
+	bodyDef.position.x = spatial.x / FMParameters.PIXELS_TO_METERS;
+	bodyDef.position.y = spatial.y / FMParameters.PIXELS_TO_METERS;
+	bodyDef.angle = spatial.angle;
 	//Type of body
 	switch (pType) {
 	    case FMParameters.STATIC:
@@ -81,11 +81,12 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
      */
     that.update = function (game) {
         //Retrieve components
-        that.spatial = pOwner.components[FMComponentTypes.spatial];
+        spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
-	//Update spatial component based on the body's position
-	that.spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METRE - radius;
-	that.spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METRE - radius;
+	//Update spatial component based on the body's position and angle
+	spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METERS - radius;
+	spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METERS - radius;
+        spatial.angle = body.GetAngle();
     };
 
     /**
@@ -94,7 +95,7 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
     that.drawDebug = function (bufferContext) {
         bufferContext.beginPath();
         bufferContext.strokeStyle = "#f4f";
-        bufferContext.arc((that.spatial.x + radius) - bufferContext.xOffset, (that.spatial.y + radius) - bufferContext.yOffset, radius, 0, 2 * Math.PI, false);
+        bufferContext.arc((spatial.x + radius) - bufferContext.xOffset, (spatial.y + radius) - bufferContext.yOffset, radius, 0, 2 * Math.PI, false);
         bufferContext.stroke();
     };
 
@@ -102,14 +103,14 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
      * Apply a certain force to a point.
      */
     that.applyForce = function (pForce, pPoint) {
-	body.ApplyForce(new b2Vec2(pForce.x, pForce.y), new b2Vec2(pPoint.x, pPoint.y));
+	body.ApplyForce(new b2Vec2(pForce.x / FMParameters.PIXELS_TO_METERS, pForce.y / FMParameters.PIXELS_TO_METERS), new b2Vec2(pPoint.x / FMParameters.PIXELS_TO_METERS, pPoint.y / FMParameters.PIXELS_TO_METERS));
     };
 
     /**
      * Apply a certain impulse to a point.
      */
     that.applyImpulse = function (pImpulse, pPoint) {
-	body.ApplyImpulse(new b2Vec2(pImpulse.x, pImpulse.y), new b2Vec2(pPoint.x, pPoint.y));
+	body.ApplyImpulse(new b2Vec2(pImpulse.x / FMParameters.PIXELS_TO_METERS, pImpulse.y / FMParameters.PIXELS_TO_METERS), new b2Vec2(pPoint.x / FMParameters.PIXELS_TO_METERS, pPoint.y / FMParameters.PIXELS_TO_METERS));
     };
 
     /**
@@ -117,7 +118,7 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
      */
     that.getLinearVelocity = function () {
         var linearVelocity = body.GetLinearVelocity();
-        return FMVector(linearVelocity.x * FMParameters.PIXELS_TO_METRE, linearVelocity.y * FMParameters.PIXELS_TO_METRE);
+        return FMVector(linearVelocity.x * FMParameters.PIXELS_TO_METERS, linearVelocity.y * FMParameters.PIXELS_TO_METERS);
     };
 
     /**
@@ -125,7 +126,7 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
      */
     that.setLinearVelocity = function (pLinearVelocity) {
 	body.SetAwake(true);
-        body.SetLinearVelocity(new b2Vec2(pLinearVelocity.x / FMParameters.PIXELS_TO_METRE, pLinearVelocity.y / FMParameters.PIXELS_TO_METRE));
+        body.SetLinearVelocity(new b2Vec2(pLinearVelocity.x / FMParameters.PIXELS_TO_METERS, pLinearVelocity.y / FMParameters.PIXELS_TO_METERS));
     };
 
     /**
@@ -141,6 +142,21 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
     that.setAngularVelocity = function (pAngularVelocity) {
 	body.SetAwake(true);
         body.SetAngularVelocity(pAngularVelocity);
+    };
+
+    /**
+     * Get the angular damping of the Box2D circle body.
+     */
+    that.getAngularDamping = function () {
+        return body.GetAngularDamping();
+    };
+
+    /**
+     * Set the angular damping of the Box2D circle body.
+     */
+    that.setAngularDamping = function (pAngularDamping) {
+	body.SetAwake(true);
+        body.SetAngularDamping(pAngularDamping);
     };
 
     /**

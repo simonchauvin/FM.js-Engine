@@ -10,7 +10,7 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
     /**
      * FmAabbComponent is based on FmComponent.
      */
-    var that = FMComponent(FMComponentTypes.physic, pOwner),
+    var that = FMComponent(FMComponentTypes.PHYSIC, pOwner),
 	/**
 	 * Box2D imports.
 	 */
@@ -34,12 +34,11 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
 	/**
 	 * Height of the box body.
 	 */
-	height = pHeight;
-
-    /**
-     * Spatial component reference.
-     */
-    that.spatial = pOwner.components[FMComponentTypes.spatial];
+	height = pHeight,
+        /**
+         * Spatial component reference.
+         */
+        spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
     /**
      * Initialization of the Box2D box body.
@@ -48,9 +47,10 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
 	//Definition of the shape and its position
 	var fixDef = new b2FixtureDef, bodyDef = new b2BodyDef;
 	fixDef.shape = new b2PolygonShape;
-        fixDef.shape.SetAsBox((width / 2) / FMParameters.PIXELS_TO_METRE, (height / 2) / FMParameters.PIXELS_TO_METRE);
-	bodyDef.position.x = that.spatial.x / FMParameters.PIXELS_TO_METRE +(width / 2) / FMParameters.PIXELS_TO_METRE;
-	bodyDef.position.y = that.spatial.y / FMParameters.PIXELS_TO_METRE + (height / 2) / FMParameters.PIXELS_TO_METRE;
+        fixDef.shape.SetAsBox((width / 2) / FMParameters.PIXELS_TO_METERS, (height / 2) / FMParameters.PIXELS_TO_METERS);
+	bodyDef.position.x = spatial.x / FMParameters.PIXELS_TO_METERS +(width / 2) / FMParameters.PIXELS_TO_METERS;
+	bodyDef.position.y = spatial.y / FMParameters.PIXELS_TO_METERS + (height / 2) / FMParameters.PIXELS_TO_METERS;
+	bodyDef.angle = spatial.angle;
 	//Type of body
 	switch (pType) {
 	    case FMParameters.STATIC:
@@ -93,11 +93,12 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
      */
     that.update = function (game) {
         //Retrieve components
-	that.spatial = pOwner.components[FMComponentTypes.spatial];
+	spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
 	//Update spatial component based on the body's position
-	that.spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METRE - width / 2;
-	that.spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METRE - height / 2;
+	spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METERS - width / 2;
+	spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METERS - height / 2;
+        spatial.angle = body.GetAngle();
     };
 
     /**
@@ -112,21 +113,21 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
      */
     that.drawDebug = function (bufferContext) {
         bufferContext.strokeStyle = '#f4f';
-        bufferContext.strokeRect(that.spatial.x - bufferContext.xOffset, that.spatial.y - bufferContext.yOffset, width, height);
+        bufferContext.strokeRect(spatial.x - bufferContext.xOffset, spatial.y - bufferContext.yOffset, width, height);
     };
 
     /**
      * Apply a certain force to a point.
      */
     that.applyForce = function (pForce, pPoint) {
-	body.ApplyForce(new b2Vec2(pForce.x, pForce.y), new b2Vec2(pPoint.x, pPoint.y));
+	body.ApplyForce(new b2Vec2(pForce.x / FMParameters.PIXELS_TO_METERS, pForce.y / FMParameters.PIXELS_TO_METERS), new b2Vec2(pPoint.x / FMParameters.PIXELS_TO_METERS, pPoint.y / FMParameters.PIXELS_TO_METERS));
     };
 
     /**
      * Apply a certain impulse to a point.
      */
     that.applyImpulse = function (pImpulse, pPoint) {
-	body.ApplyImpulse(new b2Vec2(pImpulse.x, pImpulse.y), new b2Vec2(pPoint.x, pPoint.y));
+	body.ApplyImpulse(new b2Vec2(pImpulse.x / FMParameters.PIXELS_TO_METERS, pImpulse.y / FMParameters.PIXELS_TO_METERS), new b2Vec2(pPoint.x / FMParameters.PIXELS_TO_METERS, pPoint.y / FMParameters.PIXELS_TO_METERS));
     };
 
     /**
@@ -134,7 +135,7 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
      */
     that.getLinearVelocity = function () {
         var linearVelocity = body.GetLinearVelocity();
-	return FMVector(linearVelocity.x * FMParameters.PIXELS_TO_METRE, linearVelocity.y * FMParameters.PIXELS_TO_METRE);
+	return FMVector(linearVelocity.x * FMParameters.PIXELS_TO_METERS, linearVelocity.y * FMParameters.PIXELS_TO_METERS);
     };
 
     /**
@@ -142,7 +143,7 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
      */
     that.setLinearVelocity = function (pLinearVelocity) {
 	body.SetAwake(true);
-        body.SetLinearVelocity(new b2Vec2(pLinearVelocity.x / FMParameters.PIXELS_TO_METRE, pLinearVelocity.y / FMParameters.PIXELS_TO_METRE));
+        body.SetLinearVelocity(new b2Vec2(pLinearVelocity.x / FMParameters.PIXELS_TO_METERS, pLinearVelocity.y / FMParameters.PIXELS_TO_METERS));
     };
 
     /**
@@ -158,6 +159,21 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
     that.setAngularVelocity = function (pAngularVelocity) {
 	body.SetAwake(true);
         body.SetAngularVelocity(pAngularVelocity);
+    };
+
+    /**
+     * Get the angular damping of the Box2D box body.
+     */
+    that.getAngularDamping = function () {
+        return body.GetAngularDamping();
+    };
+
+    /**
+     * Set the angular damping of the Box2D box body.
+     */
+    that.setAngularDamping = function (pAngularDamping) {
+	body.SetAwake(true);
+        body.SetAngularDamping(pAngularDamping);
     };
 
     /**

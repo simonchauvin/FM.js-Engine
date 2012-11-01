@@ -33,28 +33,12 @@ function FMSpriteRendererComponent(pImage, pWidth, pHeight, pOwner) {
         spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
     /**
-     * Specify if the image is scrolling or not.
-     * //TODO should  be in the game object
-     */
-    that.scrolled = true;
-
-    /**
-     * Post initialization to ensure that all components are initialized
-     */
-    that.postInit = function () {
-        //TODO remove all postinit, have become useless
-        spatial = pOwner.components[FMComponentTypes.SPATIAL];
-    };
-
-    /**
     * Draw the sprite
     */
     that.draw = function (bufferContext) {
         var xPosition = spatial.x, yPosition = spatial.y;
-        if (that.scrolled) {
-            xPosition -= bufferContext.xOffset;
-            yPosition -= bufferContext.yOffset;
-        }
+        xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
+        yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
         if (spatial.angle != 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
@@ -65,6 +49,17 @@ function FMSpriteRendererComponent(pImage, pWidth, pHeight, pOwner) {
         } else {
             bufferContext.drawImage(image, xOffset, yOffset, width, height, xPosition, yPosition, width, height);
         }
+    };
+
+    /**
+    * Destroy the component and its objects
+    */
+    that.destroy = function() {
+        image.destroy();
+        image = null;
+        spatial = null;
+        that.destroy();
+        that = null;
     };
 
     /**

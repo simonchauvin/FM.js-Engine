@@ -4,33 +4,18 @@
  * @param owner
  * @returns {___that1}
  */
-function FMSoundComponent(pOwner) {
+function FMSoundComponent(pSound, pOwner) {
     "use strict";
-    var that_ = fmComponent(fmComponentTypes.sound, pOwner),
-
+    var that = FMComponent(FMComponentTypes.SOUND, pOwner),
         /**
-         *
+         * The actual sound object.
          */
-        sound = new Audio();
+        sound = pSound;
 
     /**
-     *
+     * Play the sound with a given volume and starting time.
      */
-    that_.init = function (snd) {
-        sound = snd;
-    };
-
-    /**
-     * Post initialization to ensure that all components are initialized
-     */
-    that_.postInit = function () {
-        
-    }
-
-    /**
-     *
-     */
-    that_.play = function (volume, startingTime) {
+    that.play = function (volume, startingTime) {
         sound.volume = volume;
         //FIXME give current time
         //sound.currentTime = startingTime;
@@ -38,18 +23,28 @@ function FMSoundComponent(pOwner) {
     };
 
     /**
-     *
+     * Pause the sound.
      */
-    that_.pause = function () {
+    that.pause = function () {
         sound.pause();
     };
 
     /**
-     *
+    * Destroy the component and its objects
+    */
+    that.destroy = function() {
+        sound.destroy();
+        sound = null;
+        that.destroy();
+        that = null;
+    };
+
+    /**
+     * Retrieve the audio object.
      */
-    that_.getSound = function () {
+    that.getSound = function () {
         return sound;
     };
 
-    return that_;
+    return that;
 }

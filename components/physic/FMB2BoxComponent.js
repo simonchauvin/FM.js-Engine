@@ -75,13 +75,6 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
     };
 
     /**
-     * Post initialization.
-     */
-    that.postInit = function () {
-	
-    };
-
-    /**
      * Pre update taking place before the main update.
      */
     that.preUpdate = function () {
@@ -95,10 +88,17 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
         //Retrieve components
 	spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
-	//Update spatial component based on the body's position
-	spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METERS - width / 2;
-	spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METERS - height / 2;
-        spatial.angle = body.GetAngle();
+	//If the body is not static
+	if (body.m_type != b2Body.b2_staticBody) {
+	    //Update spatial component based on the body's position
+	    spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METERS - width / 2;
+	    spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METERS - height / 2;
+	    spatial.angle = body.GetAngle();
+	} else {
+	    //Otherwise the body's position based on the spatial component
+	    body.SetPosition(new b2Vec2((spatial.x + width / 2) / FMParameters.PIXELS_TO_METERS, (spatial.y + height / 2) / FMParameters.PIXELS_TO_METERS));
+	    body.SetAngle(spatial.angle);
+	}
     };
 
     /**
@@ -114,6 +114,22 @@ function FMB2BoxComponent(pWidth, pHeight, pWorld, pOwner) {
     that.drawDebug = function (bufferContext) {
         bufferContext.strokeStyle = '#f4f';
         bufferContext.strokeRect(spatial.x - bufferContext.xOffset, spatial.y - bufferContext.yOffset, width, height);
+    };
+
+    /**
+    * Destroy the component and its objects
+    */
+    that.destroy = function() {
+        b2Vec2 = null;
+	b2FixtureDef = null;
+	b2BodyDef = null;
+	b2Body = null;
+	b2PolygonShape = null;
+	world = null;
+	body = null;
+        spatial = null;
+        that.destroy();
+        that = null;
     };
 
     /**

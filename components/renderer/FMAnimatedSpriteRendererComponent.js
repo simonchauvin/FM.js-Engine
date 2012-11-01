@@ -66,10 +66,6 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
     /**
      * 
      */
-    that.scrolled = true;
-    /**
-     * 
-     */
     that.finished = false;
 
     /**
@@ -82,13 +78,6 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
         frameHeight = height;
         imageWidth = img.width;
         imageHeight = img.height;
-    };
-
-    /**
-     * Post initialization to ensure that all components are initialized
-     */
-    that.postInit = function () {
-        
     };
 
     /**
@@ -138,10 +127,8 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
     */
     that.draw = function (bufferContext) {
         var xPosition = spatial.x, yPosition = spatial.y;
-        if (that.scrolled) {
-            xPosition -= bufferContext.xOffset;
-            yPosition -= bufferContext.yOffset;
-        }
+        xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
+        yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
         if (spatial.angle != 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
@@ -174,6 +161,20 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
                 currentDelay -= elapsedTime();
             }
         }
+    };
+
+    /**
+    * Destroy the component and its objects
+    */
+    that.destroy = function() {
+        image.destroy();
+        image = null;
+        currentAnim = null;
+        frames = bull;
+        loop = null;
+        spatial = null;
+        that.destroy();
+        that = null;
     };
 
     that.getCurrentAnim = function () {

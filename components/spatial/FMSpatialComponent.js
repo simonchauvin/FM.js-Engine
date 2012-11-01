@@ -21,13 +21,6 @@ function FMSpatialComponent(pX, pY, pOwner) {
     that.angle = 0;
 
     /**
-     * Post initialization to ensure that all components are initialized
-     */
-    that.postInit = function () {
-        
-    };
-
-    /**
      * Pre update taking place before the main update.
      */
     that.preUpdate = function () {
@@ -39,6 +32,14 @@ function FMSpatialComponent(pX, pY, pOwner) {
      */
     that.postUpdate = function (game, alpha) {
         
+    };
+
+    /**
+    * Destroy the component and its objects
+    */
+    that.destroy = function() {
+        that.destroy();
+        that = null;
     };
 
     return that;

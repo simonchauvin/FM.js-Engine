@@ -70,23 +70,23 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
     };
 
     /**
-     * Post initialization
-     */
-    that.postInit = function () {
-        
-    };
-
-    /**
      * Update the component
      */
-    that.update = function (game) {
+    that.update = function (dt) {
         //Retrieve components
         spatial = pOwner.components[FMComponentTypes.SPATIAL];
 
-	//Update spatial component based on the body's position and angle
-	spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METERS - radius;
-	spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METERS - radius;
-        spatial.angle = body.GetAngle();
+        //If the body is not static
+	if (body.m_type != b2Body.b2_staticBody) {
+	    //Update spatial component based on the body's position
+	    spatial.x = body.GetPosition().x * FMParameters.PIXELS_TO_METERS - radius;
+            spatial.y = body.GetPosition().y * FMParameters.PIXELS_TO_METERS - radius;
+            spatial.angle = body.GetAngle();
+	} else {
+	    //Otherwise the body's position based on the spatial component
+	    body.SetPosition(new b2Vec2((spatial.x + radius / 2) / FMParameters.PIXELS_TO_METERS, (spatial.y + radius / 2) / FMParameters.PIXELS_TO_METERS));
+	    body.SetAngle(spatial.angle);
+	}
     };
 
     /**
@@ -97,6 +97,22 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
         bufferContext.strokeStyle = "#f4f";
         bufferContext.arc((spatial.x + radius) - bufferContext.xOffset, (spatial.y + radius) - bufferContext.yOffset, radius, 0, 2 * Math.PI, false);
         bufferContext.stroke();
+    };
+
+    /**
+    * Destroy the component and its objects
+    */
+    that.destroy = function() {
+        b2Vec2 = null;
+	b2FixtureDef = null;
+	b2BodyDef = null;
+	b2Body = null;
+	b2CircleShape = null;
+        world = null;
+        body = null;
+        spatial = null;
+        that.destroy();
+        that = null;
     };
 
     /**

@@ -29,6 +29,10 @@ function FMState() {
          */
         followFrame = null;
     /**
+     * Static attributes used to store the last ID affected to a game object
+     */
+    FMState.lastId = 0;
+    /**
      * Object representing the world topology (bounds, tiles, collisions, objects)
      */
     that.world = null;
@@ -73,20 +77,6 @@ function FMState() {
     };
 
     /**
-     * Initialize the game objects of the state
-     * //TODO useless
-     */
-    that.postInit = function () {
-        var i;
-        for (i = 0; i < that.gameObjects.length; i++) {
-            that.gameObjects[i].postInit();
-        }
-        if (FMParameters.debug) {
-            console.log("INIT: The game objects have been initialized.");
-        }
-    }
-
-    /**
     * Private method that sort game objects according to their z index
     */
     var sortZIndex = function (a, b) {
@@ -99,6 +89,10 @@ function FMState() {
     that.add = function (gameObject) {
         that.gameObjects.push(gameObject);
         that.gameObjects.sort(sortZIndex);
+
+        //Affect an ID to the game object
+        FMState.lastId++;
+        gameObject.setId(FMState.lastId);
 
         if (FMParameters.debug) {
             console.log("INIT: " + gameObject + " has been added to the state.");
@@ -160,15 +154,16 @@ function FMState() {
             world.ClearForces();
         }
         //Update every game object present in the state
-        var i, gameObject, spatial, physic, controller, script, components;
+        var i, gameObject, spatial, physic, controller, components;
         for (i = 0; i < that.gameObjects.length; i = i + 1) {
             gameObject = that.gameObjects[i];
-            if (!gameObject.destroyed) {
+            if (gameObject.alive) {
                 components = gameObject.components;
                 spatial = components[FMComponentTypes.SPATIAL];
+                controller = components[FMComponentTypes.CONTROLLER];
                 physic = components[FMComponentTypes.PHYSIC];
                 //Update the game object
-                gameObject.update(game, dt);
+                gameObject.update(dt);
                 //Update the physic component
                 if (physic) {
                     physic.update(game, dt);
@@ -255,14 +250,12 @@ function FMState() {
 
                 //If the game object has a scrolling factor then apply it
                 var newViewX = 0, newViewY = 0;
-                if (renderer.scrolled) {
-                    newViewX = that.camera.x + (screenWidth - that.camera.width) / 2;
-                    newViewY = that.camera.y + (screenHeight - that.camera.height) / 2;
-                }
+                newViewX = (that.camera.x + (screenWidth - that.camera.width) / 2) * gameObject.scrollFactor.x;
+                newViewY = (that.camera.y + (screenHeight - that.camera.height) / 2) * gameObject.scrollFactor.y;
                 //Draw the game object if it is within the bounds of the screen
                 if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
                     && xPosition <= newViewX + that.camera.width && yPosition <= newViewY + that.camera.height) {
-                    if (!gameObject.destroyed && gameObject.visible) {
+                    if (gameObject.visible) {
                         renderer.draw(bufferContext);
                     }
                 }
@@ -314,17 +307,29 @@ function FMState() {
     * Center the camera on a specific game object
     */
     that.centerCameraOn = function(gameObject) {
-        var spatial = gameObject.components[fmComponentTypes.SPATIAL];
-        that.camera.x = spatial.x - that.camera.width / 2;
-        that.camera.y = spatial.y - that.camera.height / 2;
+        var spatial = gameObject.components[FMComponentTypes.SPATIAL],
+            newPosition = spatial.x - that.camera.width / 2;
+        if (newPosition > that.world.x && newPosition < that.world.width) {
+            that.camera.x = newPosition;
+        }
+        newPosition = spatial.y - that.camera.height / 2;
+        if (newPosition > that.world.y && newPosition < that.world.height) {
+            that.camera.y = newPosition;
+        }
     };
 
     /**
     * Center the camera at a specific given position
     */
     that.centerCameraAt = function(xPosition, yPosition) {
-        that.camera.x = xPosition - that.camera.width / 2;
-        that.camera.y = yPosition - that.camera.height / 2;
+        var newPosition = xPosition - that.camera.width / 2;
+        if (newPosition > that.world.x && newPosition < that.world.width) {
+            that.camera.x = newPosition;
+        }
+        newPosition = yPosition - that.camera.height / 2;
+        if (newPosition > that.world.y && newPosition < that.world.height) {
+            that.camera.y = newPosition;
+        }
     };
 
     /**
@@ -365,6 +370,16 @@ function FMState() {
                 that.gameObjects[i].destroy();
         }
         that.gameObjects = null;
+        scroller = null;
+        if (followFrame) {
+            followFrame.destroy();
+        }
+        followFrame = null;
+        that.camera.destroy();
+        that.camera = null;
+        that.world.destroy();
+        that.world = null;
+        that = null;
     }
     
     /**

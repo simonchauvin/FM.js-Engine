@@ -13,124 +13,124 @@
 function FMGame(pName, pWidth, pHeight, pFirstState) {
     "use strict";
     var that = {},
-    /**
-    * Name of the game
-    */
-    name = pName,
-    /**
-    * Specifications of the current game
-    */
-    screenWidth = pWidth,
-    screenHeight = pHeight,
-    /**
-    * State of the game
-    */
-    currentState = FMPreloader(pFirstState),
-    /**
-    * Canvas elements
-    */
-    canvas = document.getElementById("canvas"),
-    /**
-     * Context on which the game will be drawn
-     */
-    context = null,
-    /**
-     * Buffer used for double buffering
-     */
-    bufferCanvas = null,
-    /**
-     * Buffer context that will be drawn onto the displayed context
-     */
-    bufferContext = null,
-    /**
-     * Number of frames since the start of the game
-     */
-    totalFrames = 0,
-    /**
-     * Total time elapsed since the start of the game
-     */
-    totalTimeElapsed = 0,
-    /**
-     * Actual FPS at which the game is running
-     */
-    actualFps = 0,
-    /**
-     * Current time
-     */
-    currentTime = (new Date()).getTime() / 1000,
-    /**
-    * Currently pressed keys
-    */
-    currentPressedKeys = [],
-    /**
-    * Currently released keys
-    */
-    currentReleasedKeys = [],
-    /**
-    * Keeps tracks of the mouse click
-    */
-    mouseClicked = false,
-    /**
-    * Keeps tracks of whether the mouse is pressed or not
-    */
-    mousePressed = false,
-    /**
-    * Keeps tracks of whether the mouse is released or not
-    */
-    mouseReleased = false,
-    /**
-     * Mouse x position
-     */
-    mouseX = 0,
-    /**
-     * Mouse y position
-     */
-    mouseY = 0,
+        /**
+        * Name of the game
+        */
+        name = pName,
+        /**
+        * Specifications of the current game
+        */
+        screenWidth = pWidth,
+        screenHeight = pHeight,
+        /**
+        * State of the game
+        */
+        currentState = FMPreloader(pFirstState),
+        /**
+        * Canvas elements
+        */
+        canvas = document.getElementById("canvas"),
+        /**
+         * Context on which the game will be drawn
+         */
+        context = null,
+        /**
+         * Buffer used for double buffering
+         */
+        bufferCanvas = null,
+        /**
+         * Buffer context that will be drawn onto the displayed context
+         */
+        bufferContext = null,
+        /**
+         * Number of frames since the start of the game
+         */
+        totalFrames = 0,
+        /**
+         * Total time elapsed since the start of the game
+         */
+        totalTimeElapsed = 0,
+        /**
+         * Actual FPS at which the game is running
+         */
+        actualFps = 0,
+        /**
+         * Current time
+         */
+        currentTime = (new Date()).getTime() / 1000,
+        /**
+        * Currently pressed keys
+        */
+        currentPressedKeys = [],
+        /**
+        * Currently released keys
+        */
+        currentReleasedKeys = [],
+        /**
+        * Keeps tracks of the mouse click
+        */
+        mouseClicked = false,
+        /**
+        * Keeps tracks of whether the mouse is pressed or not
+        */
+        mousePressed = false,
+        /**
+        * Keeps tracks of whether the mouse is released or not
+        */
+        mouseReleased = false,
+        /**
+         * Mouse x position
+         */
+        mouseX = 0,
+        /**
+         * Mouse y position
+         */
+        mouseY = 0,
 
-    /**
-    * Main game loop Calling update and draw on game objects.
-    */
-    gameLoop = function () {
-        //Reset the screen
-        context.clearRect(0, 0, screenWidth, screenHeight);
-        context.fillStyle = FMParameters.backgroundColor;
-        context.fillRect(0, 0, screenWidth, screenHeight);
-
-        //Retrieve the current time
-        var newTime = (new Date()).getTime() / 1000,
-        //Compute the time since last frame
-        frameTime = newTime - currentTime;
-        currentTime = newTime;
-
-        //Calculate the actual FPS at which the game is running
-        totalFrames++;
-        totalTimeElapsed += frameTime;
-        actualFps = Math.round(totalFrames / totalTimeElapsed);
-
-        //Update the current state of the game
-        currentState.update(that, frameTime);
-        //Draw the current state of the game
-        currentState.draw(bufferContext);
-
-        // If debug mode if active
-        if (FMParameters.debug) {
-            //Draw the number of frames per seconds
-            bufferContext.fillStyle = '#fcd116';
-            bufferContext.font = '30px sans-serif';
-            bufferContext.textBaseline = 'middle';
-            bufferContext.fillText(actualFps, 10, 20);
-        }
-
-        //Draw the buffer onto the screen
-        context.drawImage(bufferCanvas, 0, 0);
-
-        //Reset keyboard and mouse inputs
-        mouseClicked = false;
-        currentReleasedKeys = [];
-
-        //Main loop call
-        requestAnimationFrame(gameLoop);
-    };
+        /**
+        * Main game loop Calling update and draw on game objects.
+        */
+        gameLoop = function () {
+            //Reset the screen
+            context.clearRect(0, 0, screenWidth, screenHeight);
+            context.fillStyle = FMParameters.backgroundColor;
+            context.fillRect(0, 0, screenWidth, screenHeight);
+    
+            //Retrieve the current time
+            var newTime = (new Date()).getTime() / 1000,
+            //Compute the time since last frame
+            frameTime = newTime - currentTime;
+            currentTime = newTime;
+    
+            //Calculate the actual FPS at which the game is running
+            totalFrames++;
+            totalTimeElapsed += frameTime;
+            actualFps = Math.round(totalFrames / totalTimeElapsed);
+    
+            //Update the current state of the game
+            currentState.update(that, frameTime);
+            //Draw the current state of the game
+            currentState.draw(bufferContext);
+    
+            // If debug mode if active
+            if (FMParameters.debug) {
+                //Draw the number of frames per seconds
+                bufferContext.fillStyle = '#fcd116';
+                bufferContext.font = '30px sans-serif';
+                bufferContext.textBaseline = 'middle';
+                bufferContext.fillText(actualFps, 10, 20);
+            }
+    
+            //Draw the buffer onto the screen
+            context.drawImage(bufferCanvas, 0, 0);
+    
+            //Reset keyboard and mouse inputs
+            mouseClicked = false;
+            currentReleasedKeys = [];
+    
+            //Main loop call
+            requestAnimationFrame(gameLoop);
+        };
 
     /**
     * Start running the game.
@@ -182,7 +182,6 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
 
             //Init the current state
             currentState.init(that);
-            currentState.postInit();
 
             //Start the main loop
             requestAnimationFrame(gameLoop);
@@ -190,7 +189,7 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     };
 
     /**
-     * Hack to get the requestAnimationFrame work on every browser
+     * Hack to get the requestAnimationFrame work on every browser.
      */
     (function() {
         var x, lastTime = 0, vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -220,7 +219,6 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     that.switchState = function (newState) {
         currentState.destroy();
         newState.init(that);
-        newState.postInit();
         currentState = newState;
     };
 
@@ -286,7 +284,7 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     };
 
     /**
-    * Check if a key is pressed
+    * Check if a key is pressed.
     * @param key
     * @returns {Boolean}
     */
@@ -299,7 +297,7 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
     };
 
     /**
-    * Check if a key has been released
+    * Check if a key has been released.
     * @param key
     * @returns {Boolean}
     */

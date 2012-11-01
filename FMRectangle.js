@@ -25,5 +25,12 @@ function FMRectangle(pX, pY, pWidth, pHeight) {
      */
     that.height = pHeight;
 
+    /**
+    * Destroy the rectangle and its objects
+    */
+    that.destroy = function() {
+        that = null;
+    };
+
     return that;
 }

@@ -19,17 +19,13 @@ function FMGameObject(pZIndex) {
      */
     name = "",
     /**
-     * Allows to specify different degrees of scrolling (useful for parallax).
-     */
-    scrollFactor = 0,
-    /**
      * 
      */
     allowCollisions = FMParameters.ANY;
     /**
-     * Static attributes used to store the last ID affected to a game object
+     * Allows to specify different degrees of scrolling (useful for parallax).
      */
-    FMGameObject.lastId = 0;
+    that.scrollFactor = FMVector(1, 1);
     /**
      * List of the components owned by the game object
      */
@@ -41,43 +37,16 @@ function FMGameObject(pZIndex) {
     /**
      * Specify if the game object is alive
      */
-    that.destroyed = false;
+    that.alive = true;
     /**
      * Specify if the game object is visible
      */
     that.visible = true;
 
     /**
-     * 
-     */
-    that.init = function () {
-        
-    };
-
-    /**
-     * 
-     */
-    that.postInit = function () {
-        //Init the components
-        for (var component in that.components) {
-            that.components[component].postInit();
-        }
-
-        //Affect an ID to the game object
-        //TODO post init is only launched at init of the state, not during gameplay
-        //So inc the lastId elsewhere
-        FMGameObject.lastId++;
-        id = FMGameObject.lastId;
-
-        if (FMParameters.debug) {
-            console.log("INIT: The components have been initialized.");
-        }
-    }
-
-    /**
     * Update the game object
     */
-    that.update = function (game) {
+    that.update = function (dt) {
 
     };
 
@@ -133,8 +102,14 @@ function FMGameObject(pZIndex) {
     *
     */
     that.destroy = function () {
-        that.destroyed = true;
-        //TODO nullify every variables
+        name = null;
+        allowCollisions = null;
+        that.scrollFactor = null;
+        for (var i = 0; i < that.components.length; i++) {
+                that.components[i].destroy();
+        }
+        that.components = null;
+        that = null;
     };
 
     /**
@@ -161,8 +136,8 @@ function FMGameObject(pZIndex) {
     /**
      *
      */
-    that.setId = function (i) {
-        id = i;
+    that.setId = function (pId) {
+        id = pId;
     }
 
     return that;

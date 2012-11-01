@@ -44,6 +44,15 @@ function FMAudioAsset(pName, pPath) {
     };
 
     /**
+    * Destroy the asset and its objects
+    */
+    that.destroy = function() {
+        name = null;
+        path = null;
+        that = null;
+    };
+
+    /**
      * Get the name of the asset.
      */
     that.getName = function () {

@@ -13,14 +13,6 @@ function FMWorld(pState, pWidth, pHeight) {
      * Box2D world
      */
     that.box2DWorld = null;
-    /**
-     * Horizontal offset of the world (used in case of scrolling)
-     */
-    //that.xOffset = 0;
-    /**
-     * Vertical offset of the world (used in case of scrolling)
-     */
-    //that.yOffset = 0;
 
     /**
      * Init the Box2D world.
@@ -140,6 +132,15 @@ function FMWorld(pState, pWidth, pHeight) {
             }
         }
         return null;
+    };
+
+    /**
+    * Destroy the world and its objects
+    */
+    that.destroy = function() {
+        state = null;
+        that.box2DWorld = null;
+        that = null;
     };
 
     /**

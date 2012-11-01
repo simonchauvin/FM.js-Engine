@@ -63,6 +63,14 @@ function FMTileMap(pTileSet, pTileWidth, pTileHeight, pZIndex) {
     };
 
     /**
+    * Destroy the tile map and its objects
+    */
+    that.destroy = function() {
+        tileSet = null;
+        that = null;
+    };
+
+    /**
      * Retrive the tile set.
      */
     that.getTileSet = function () {

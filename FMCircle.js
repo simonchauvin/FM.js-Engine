@@ -22,5 +22,12 @@ function FMCircle(pX, pY, pRadius) {
      */
     that.radius = pRadius;
 
+    /**
+    * Destroy the circle and its objects
+    */
+    that.destroy = function() {
+        that = null;
+    };
+
     return that;
 }

@@ -48,6 +48,16 @@ function FMFileAsset(pName, pPath) {
     };
 
     /**
+    * Destroy the asset and its objects
+    */
+    that.destroy = function() {
+        name = null;
+        path = null;
+        content = null;
+        that = null;
+    };
+
+    /**
      * Get the name of the file.
      */
     that.getName = function () {

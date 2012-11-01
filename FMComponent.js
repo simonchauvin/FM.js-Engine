@@ -22,5 +22,14 @@ function FMComponent(pComponentName, pComponentOwner) {
      */
     that.owner.addComponent(that);
 
+    /**
+    * Destroy the component and its objects
+    */
+    that.destroy = function() {
+        that.name = null;
+        that.owner = null;
+        that = null;
+    };
+
     return that;
 };

@@ -7,6 +7,5 @@ var FMComponentTypes = {
 		SPATIAL: "spatial",
 		RENDERER: "renderer",
                 PHYSIC: "physic",
-                SOUND: "sound",
-		CONTROLLER: "controller"
+                SOUND: "sound"
 };

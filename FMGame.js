@@ -10,7 +10,7 @@
  * @param firstState
  * @returns {FMGame}
  */
-function FMGame(pName, pWidth, pHeight, pFirstState) {
+function FMGame(pCanvasId, pName, pWidth, pHeight, pFirstState) {
     "use strict";
     var that = {},
         /**
@@ -29,7 +29,7 @@ function FMGame(pName, pWidth, pHeight, pFirstState) {
         /**
         * Canvas elements
         */
-        canvas = document.getElementById("canvas"),
+        canvas = document.getElementById(pCanvasId),
         /**
          * Context on which the game will be drawn
          */

@@ -25,7 +25,7 @@ function FMGameObject(pZIndex) {
     /**
      * Allows to specify different degrees of scrolling (useful for parallax).
      */
-    that.scrollFactor = FMVector(1, 1);
+    that.scrollFactor = FMPoint(1, 1);
     /**
      * List of the components owned by the game object
      */

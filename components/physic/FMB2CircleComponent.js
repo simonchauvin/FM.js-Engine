@@ -93,10 +93,25 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
      * Draw debug information
      */
     that.drawDebug = function (bufferContext) {
+        //Draw the circle
         bufferContext.beginPath();
         bufferContext.strokeStyle = "#f4f";
         bufferContext.arc((spatial.x + radius) - bufferContext.xOffset, (spatial.y + radius) - bufferContext.yOffset, radius, 0, 2 * Math.PI, false);
         bufferContext.stroke();
+
+        //Rotate the line
+        bufferContext.save();
+        bufferContext.translate(spatial.x + radius - bufferContext.xOffset, spatial.y + radius - bufferContext.yOffset);
+        bufferContext.rotate(spatial.angle);
+        bufferContext.translate(-(spatial.x + radius - bufferContext.xOffset), -(spatial.y + radius - bufferContext.yOffset));
+
+        //Draw the line
+        bufferContext.beginPath();
+        bufferContext.strokeStyle = "#f4f";
+        bufferContext.moveTo(spatial.x + radius - bufferContext.xOffset, spatial.y + radius - bufferContext.yOffset);
+        bufferContext.lineTo(spatial.x - bufferContext.xOffset, spatial.y - bufferContext.yOffset);
+        bufferContext.stroke();
+        bufferContext.restore();
     };
 
     /**
@@ -134,7 +149,7 @@ function FMB2CircleComponent(pRadius, pWorld, pOwner) {
      */
     that.getLinearVelocity = function () {
         var linearVelocity = body.GetLinearVelocity();
-        return FMVector(linearVelocity.x * FMParameters.PIXELS_TO_METERS, linearVelocity.y * FMParameters.PIXELS_TO_METERS);
+        return FMPoint(linearVelocity.x * FMParameters.PIXELS_TO_METERS, linearVelocity.y * FMParameters.PIXELS_TO_METERS);
     };
 
     /**

@@ -7,9 +7,10 @@ It runs on every modern browser and does not rely on any external libraries such
 
 How to:
 
-- Just modify the "ExampleProject" files and start your game. The "index.html" file features the name of your game as 
-well as the JS files that must be included. And the "ExampleProject.js" file is the starting point of your game, just 
-modify the name of the file and there you can add assets and choose the screen resolution.
+- Just modify the "FMHelloWorld" project that you can find in my repositories here on GitHub and start your game. 
+- The "index.html" file features the name of your game as well as the JS files that must be included. 
+- The "ExampleProject.js" file is the starting point of your game, just modify the name of the file and there 
+you can add assets and choose the screen resolution.
 - Documentation will be available soon.
 
 Features:

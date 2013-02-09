@@ -15,10 +15,6 @@ FMENGINE.fmState = function () {
          */
         screenHeight = 0,
         /**
-         * Used to know when to pause the game.
-         */
-        pause = false,
-        /**
         * The game object that makes the screen scrolls.
         */
         scroller = null,
@@ -219,9 +215,7 @@ FMENGINE.fmState = function () {
     * @param {float} dt time in seconds since the last frame.
     */
     that.update = function (dt) {
-        if (!pause) {
-            mainUpdate(dt);
-        }
+        mainUpdate(dt);
     };
 
     /**
@@ -234,9 +228,11 @@ FMENGINE.fmState = function () {
 
     /**
     * Draw the game objects of the state.
-    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich drawing is done.
+    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
+    * drawing is done.
+    * @param {float} dt time in seconds since the last frame.
     */
-    that.draw = function (bufferContext) {
+    that.draw = function (bufferContext, dt) {
         //Clear the screen
         bufferContext.clearRect(0, 0, screenWidth, screenHeight);
 
@@ -266,7 +262,7 @@ FMENGINE.fmState = function () {
                     //Draw the game object if it is within the bounds of the screen
                     if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
                             && xPosition <= newViewX + that.camera.width && yPosition <= newViewY + that.camera.height) {
-                        renderer.draw(bufferContext);
+                        renderer.draw(bufferContext, dt);
                     }
                 }
             }
@@ -295,24 +291,6 @@ FMENGINE.fmState = function () {
                 bufferContext.strokeStyle = '#f4f';
                 bufferContext.strokeRect(followFrame.x - that.camera.x, followFrame.y - that.camera.y, followFrame.width, followFrame.height);
             }
-        }
-        if (pause) {
-            //TODO le petit bonhomme (son animation se reset sur 0 je pense) disparait quand on met pause
-            //Fade screen
-            bufferContext.fillStyle = "rgba(99,99,99,0.5)";
-            bufferContext.fillRect(0, 0, screenWidth, screenHeight);
-
-            //Show pause icon
-            bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmPauseIcon"), screenWidth / 2 - 50, screenHeight / 2 - 100);
-            bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmMuteIcon"), screenWidth / 2 - 25, screenHeight - 160);
-
-            //Show pause texts
-            bufferContext.fillStyle = '#fff';
-            bufferContext.font = '50px bold sans-serif';
-            bufferContext.textBaseline = 'middle';
-            bufferContext.fillText("PAUSE", screenWidth / 2 - 70, screenHeight / 2 - 200);
-            bufferContext.font = '15px sans-serif';
-            bufferContext.fillText("Powered by {FM.js(engine);}", screenWidth / 2 - 65, screenHeight - 15);
         }
     };
 
@@ -365,22 +343,6 @@ FMENGINE.fmState = function () {
     that.unFollow = function () {
         followFrame = null;
         scroller = null;
-    };
-
-    /**
-     * Triggered when the canvas elements loses focus, show pause screen and pause the game.
-     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich drawing is done.
-     */
-    that.pause = function (bufferContext) {
-        pause = true;
-    };
-
-    /**
-     * Triggered when the canvas elements retrieves focus, restart the game.
-     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich drawing is done.
-     */
-    that.restart = function (bufferContext) {
-        pause = false;
     };
 
     /**

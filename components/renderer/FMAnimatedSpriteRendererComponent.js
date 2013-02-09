@@ -1,66 +1,68 @@
 /**
  *
  * @author Simon Chauvin
- * @param owner
- * @returns 
+ * @param {fmImageAsset} pImage image of the sprite sheet.
+ * @param {int} pWidth width of a frame of the spritesheet.
+ * @param {int} pHeight height of a frame of the spritesheet.
+ * @param {fmGameObject} pOwner game object owner of the component.
  */
-FMENGINE.fmAnimatedSpriteRendererComponent = function (pOwner) {
+FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     "use strict";
     var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
         /**
-         *
+         * Image of the sprite.
          */
-        image = new Image(),
+        image = pImage,
         /**
-         *
+         * Width of the spritesheet.
          */
-        imageWidth = 50,
+        imageWidth = image.width,
         /**
-         *
+         * Height of the spritesheet.
          */
-        imageHeight = 50,
+        imageHeight = image.height,
         /**
-         *
+         * Width of a frame the spritesheet.
+         */
+        frameWidth = pWidth,
+        /**
+         * height of a frame the spritesheet.
+         */
+        frameHeight = pHeight,
+        /**
+         * Current animation being played.
          */
         currentAnim = "",
         /**
-         *
-         */
-        frameWidth = 50,
-        /**
-         *
-         */
-        frameHeight = 50,
-        /**
-         *
+         * Current horizontal offset of position on the spritesheet.
          */
         xOffset = 0,
         /**
-         *
+         * Current vertical offset of position on the spritesheet.
          */
         yOffset = 0,
         /**
-         *
+         * Frames constituing the animation.
          */
         frames = [],
         /**
-         *
+         * Current frame being displayed.
          */
         currentFrame = 0,
         /**
-         *
+         * Maximum delay between each frames.
          */
         delay = 0.1,
         /**
-         *
+         * Current delay between frames.
          */
         currentDelay = 0.1,
         /**
-         *
+         * Whether a specific animation should loop or not.
          */
         loop = [],
         /**
-         * 
+         * Spatial component.
          */
         spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
     /**
@@ -69,36 +71,24 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pOwner) {
     that.finished = false;
 
     /**
-    * Initialize the sprite
-    * @param img
+    * Add an animation.
+    * @param {String} name name of the animation.
+    * @param {Array} pFrames frames of the animation.
+    * @param {int} frameRate speed of the animation.
+    * @param {boolean} isLooped whether the animation should loop or not.
     */
-    that.init = function (img, width, height) {
-        image = img;
-        frameWidth = width;
-        frameHeight = height;
-        imageWidth = img.width;
-        imageHeight = img.height;
-    };
-
-    /**
-    * Set the animation
-    * @param width
-    * @param height
-    * @param framesTab
-    * @param frameRate
-    * @param isLooped
-    */
-    that.setAnimation = function (name, framesTab, frameRate, isLooped) {
+    that.addAnimation = function (name, pFrames, frameRate, isLooped) {
         currentFrame = 0;
         currentAnim = name;
-        frames[name] = framesTab;
+        frames[name] = pFrames;
         delay = 1 / frameRate;
         currentDelay = delay;
         loop[name] = isLooped;
     };
 
     /**
-     *
+     * Play the given animation.
+     * @param {String} animName name of the animation to be played.
      */
     that.play = function (animName) {
         //In case the width of the sprite have been modified
@@ -123,9 +113,12 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pOwner) {
     };
 
     /**
-    * Draw the sprite
+    * Draw the sprite.
+    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
+    * drawing is done.
+    * @param {float} dt time in seconds since the last frame.
     */
-    that.draw = function (bufferContext) {
+    that.draw = function (bufferContext, dt) {
         var xPosition = spatial.x, yPosition = spatial.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
@@ -158,13 +151,13 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pOwner) {
                     xOffset = (xOffset % imageWidth);
                 }
             } else {
-                currentDelay -= elapsedTime();
+                currentDelay -= dt;
             }
         }
     };
 
     /**
-    * Destroy the component and its objects
+    * Destroy the component and its objects.
     */
     that.destroy = function () {
         image.destroy();
@@ -178,39 +171,41 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pOwner) {
     };
 
     /**
-     *
+     * Get the current animation being played.
      */
     that.getCurrentAnim = function () {
         return currentAnim;
     };
 
     /**
-     *
+     * Set the width of a frame of the spritesheet.
+     * @param {int} newWidth new width desired.
      */
     that.setWidth = function (newWidth) {
         frameWidth = newWidth;
     };
 
     /**
-     *
+     * Set the height of a frame of the spritesheet.
+     * @param {int} newHeight new height desired.
      */
     that.setHeight = function (newHeight) {
         frameHeight = newHeight;
     };
 
     /**
-     *
+     * Retrieve the height of a frame of the spritesheet.
      */
     that.getWidth = function () {
         return frameWidth;
     };
 
     /**
-     *
+     * Retrieve the height of a frame of the spritesheet.
      */
     that.getHeight = function () {
         return frameHeight;
     };
 
     return that;
-}
+};

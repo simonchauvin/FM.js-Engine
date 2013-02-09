@@ -1,41 +1,42 @@
 /**
  * 
  * @author Simon Chauvin
- * @param owner
- * @returns
  */
 FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     "use strict";
     var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
         /**
-         * Image of the sprite
+         * Image of the sprite.
          */
         image = pImage,
         /**
-         * Width of the sprite
+         * Width of the sprite.
          */
         width = pWidth,
         /**
-         * Height of the sprite
+         * Height of the sprite.
          */
         height = pHeight,
         /**
-         * Offset on the x axis in case the image width is greater than the sprite width
+         * Offset on the x axis in case the image width is greater than the sprite width.
          */
         xOffset = 0,
         /**
-         * Offset on the y axis in case the image height is greater than the sprite height
+         * Offset on the y axis in case the image height is greater than the sprite height.
          */
         yOffset = 0,
         /**
-         * Spatial component
+         * Spatial component.
          */
         spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
 
     /**
     * Draw the sprite.
+    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
+    * drawing is done.
+    * @param {float} dt time in seconds since the last frame.
     */
-    that.draw = function (bufferContext) {
+    that.draw = function (bufferContext, dt) {
         var xPosition = spatial.x, yPosition = spatial.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
@@ -52,9 +53,9 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     /**
-    * Destroy the component and its objects
+    * Destroy the component and its objects.
     */
-    that.destroy = function() {
+    that.destroy = function () {
         image.destroy();
         image = null;
         spatial = null;
@@ -63,14 +64,18 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     /**
-     * Allow to specify a position in the image to display if the image is larger than the sprite.
+     * Allow to specify a position in the image to display if the image is 
+     * larger than the sprite.
+     * @param {int} pXOffset horizontal offset desired.
      */
     that.setXOffset = function (pXOffset) {
         xOffset = pXOffset;
     };
 
     /**
-     * Allow to specify a position in the image to display if the image is higher than the sprite.
+     * Allow to specify a position in the image to display if the image is 
+     * higher than the sprite.
+     * @param {int} pYOffset vertical offset desired.
      */
     that.setYOffset = function (pYOffset) {
         yOffset = pYOffset;
@@ -78,6 +83,7 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
 
     /**
      * Set the width of the  sprite.
+     * @param {int} newWidth new width desired.
      */
     that.setWidth = function (newWidth) {
         width = newWidth;
@@ -85,6 +91,7 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
 
     /**
      * Set the height of the sprite.
+     * @param {int} newHeight new height desired.
      */
     that.setHeight = function (newHeight) {
         height = newHeight;
@@ -105,4 +112,4 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     return that;
-}
+};

@@ -87,6 +87,10 @@ FMENGINE.fmGame = (function () {
          * Mouse y position.
          */
         mouseY = 0,
+        /**
+         * Whether the game has been paused or not.
+         */
+        pause = false,
 
         /**
         * Main game loop Calling update and draw on game objects.
@@ -107,11 +111,29 @@ FMENGINE.fmGame = (function () {
             totalFrames = totalFrames + 1;
             totalTimeElapsed += frameTime;
             actualFps = Math.round(totalFrames / totalTimeElapsed);
-    
-            //Update the current state of the game
-            currentState.update(frameTime);
+
+            if (!pause) {
+                //Update the current state of the game
+                currentState.update(frameTime);
+            }
             //Draw the current state of the game
-            currentState.draw(bufferContext);
+            currentState.draw(bufferContext, frameTime);
+
+            if (pause) {
+                //Fade screen
+                bufferContext.fillStyle = "rgba(99,99,99,0.5)";
+                bufferContext.fillRect(0, 0, screenWidth, screenHeight);
+                //Show pause icon
+                bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmPauseIcon"), screenWidth / 2 - 50, screenHeight / 2 - 100);
+                bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmMuteIcon"), screenWidth / 2 - 25, screenHeight - 160);
+                //Show pause texts
+                bufferContext.fillStyle = '#fff';
+                bufferContext.font = '50px bold sans-serif';
+                bufferContext.textBaseline = 'middle';
+                bufferContext.fillText("PAUSE", screenWidth / 2 - 70, screenHeight / 2 - 200);
+                bufferContext.font = '15px sans-serif';
+                bufferContext.fillText("Powered by {FM.js(engine);}", screenWidth / 2 - 65, screenHeight - 15);
+            }
 
             // If debug mode if active
             if (FMENGINE.fmParameters.debug) {
@@ -124,7 +146,7 @@ FMENGINE.fmGame = (function () {
 
             //Draw the buffer onto the screen
             context.drawImage(bufferCanvas, 0, 0);
-    
+
             //Reset keyboard and mouse inputs
             mouseClicked = false;
             currentReleasedKeys = [];
@@ -177,13 +199,13 @@ FMENGINE.fmGame = (function () {
         * Handle canvas's retrieve of focus.
         */
         onFocus = function (event) {
-            currentState.restart(bufferContext);
+            pause = false;
         },
         /**
         * Handle canvas's lost of focus.
         */
         onOutOfFocus = function (event) {
-            currentState.pause(bufferContext);
+            pause = true;
         };
 
     /**

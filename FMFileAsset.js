@@ -2,7 +2,7 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function FMFileAsset(pName, pPath) {
+FMENGINE.fmFileAsset = function (pName, pPath) {
     "use strict";
     var that = new XMLHttpRequest(),
         /**
@@ -20,7 +20,15 @@ function FMFileAsset(pName, pPath) {
         /**
          * Specify the loading state of the file.
          */
-        loaded = false;
+        loaded = false,
+        /**
+         * Fired when the loading is complete.
+         */
+        loadComplete = function () {
+            loaded = true;
+            content = that.responseText;
+            FMENGINE.fmAssetManager.assetLoaded();
+        };
 
     /**
      * Load the file.
@@ -29,15 +37,6 @@ function FMFileAsset(pName, pPath) {
         that.addEventListener("load", loadComplete, false);
         that.open("GET", path, false);
         that.send();
-    };
-
-    /**
-     * Fired when the loading is complete.
-     */
-    var loadComplete = function () {
-        loaded = true;
-        content = that.responseText;
-        FMAssetManager.assetLoaded();
     };
 
     /**
@@ -50,7 +49,7 @@ function FMFileAsset(pName, pPath) {
     /**
     * Destroy the asset and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         name = null;
         path = null;
         content = null;

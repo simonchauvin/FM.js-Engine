@@ -2,7 +2,7 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function FMImageAsset(pName, pPath) {
+FMENGINE.fmImageAsset = function (pName, pPath) {
     "use strict";
     var that = new Image(),
 
@@ -17,7 +17,14 @@ function FMImageAsset(pName, pPath) {
         /**
          * Specify the loading state of the image.
          */
-        loaded = false;
+        loaded = false,
+        /**
+         * Fired when the image has finished loading.
+         */
+        loadComplete = function () {
+            loaded = true;
+            FMENGINE.fmAssetManager.assetLoaded();
+        };
 
     /**
      * Load the image.
@@ -26,14 +33,6 @@ function FMImageAsset(pName, pPath) {
         that.src = path;
 
         that.addEventListener("load", loadComplete, false);
-    };
-
-    /**
-     * Fired when the image has finished loading.
-     */
-    var loadComplete = function () {
-        loaded = true;
-        FMAssetManager.assetLoaded();
     };
 
     /**
@@ -46,7 +45,7 @@ function FMImageAsset(pName, pPath) {
     /**
     * Destroy the asset and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         name = null;
         path = null;
         that = null;

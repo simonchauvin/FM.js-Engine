@@ -1,8 +1,9 @@
+var FMENGINE = FMENGINE || {};
 /**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-var FMAssetManager = {
+FMENGINE.fmAssetManager = {
     //List of assets
     assets: [],
 
@@ -16,17 +17,19 @@ var FMAssetManager = {
      */
     addAsset: function (name, type, path) {
         "use strict";
-        if (type === FMParameters.IMAGE) {
-            if (!FMAssetManager.getAssetByName(name)) {
-                FMAssetManager.assets.push(FMImageAsset(name, path));
+        var assetManager = FMENGINE.fmAssetManager,
+            param = FMENGINE.fmParameters;
+        if (type === param.IMAGE) {
+            if (!assetManager.getAssetByName(name)) {
+                assetManager.assets.push(FMENGINE.fmImageAsset(name, path));
             }
-        } else if (type === FMParameters.AUDIO) {
-            if (!FMAssetManager.getAssetByName(name)) {
-                FMAssetManager.assets.push(FMAudioAsset(name, path));
+        } else if (type === param.AUDIO) {
+            if (!assetManager.getAssetByName(name)) {
+                assetManager.assets.push(FMENGINE.fmAudioAsset(name, path));
             }
-        } else if (type === FMParameters.FILE) {
-            if (!FMAssetManager.getAssetByName(name)) {
-                FMAssetManager.assets.push(FMFileAsset(name, path));
+        } else if (type === param.FILE) {
+            if (!assetManager.getAssetByName(name)) {
+                assetManager.assets.push(FMENGINE.fmFileAsset(name, path));
             }
         }
     },
@@ -36,9 +39,9 @@ var FMAssetManager = {
      */
     loadAssets: function () {
         "use strict";
-        var i;
-        for (i = 0; i < FMAssetManager.assets.length; i = i + 1) {
-            FMAssetManager.assets[i].load();
+        var i, assetManager = FMENGINE.fmAssetManager;
+        for (i = 0; i < assetManager.assets.length; i = i + 1) {
+            assetManager.assets[i].load();
         }
     },
 
@@ -47,7 +50,8 @@ var FMAssetManager = {
      */
     assetLoaded: function () {
         "use strict";
-        FMAssetManager.loadingProgress += 100 / FMAssetManager.assets.length;
+        var assetManager = FMENGINE.fmAssetManager;
+        assetManager.loadingProgress += 100 / assetManager.assets.length;
     },
 
     /**
@@ -55,7 +59,7 @@ var FMAssetManager = {
      */
     areAllAssetsLoaded: function () {
         "use strict";
-        return Math.round(FMAssetManager.loadingProgress) >= 100;
+        return Math.round(FMENGINE.fmAssetManager.loadingProgress) >= 100;
     },
 
     /**
@@ -63,10 +67,10 @@ var FMAssetManager = {
      */
     getAssetByName: function (name) {
         "use strict";
-        var asset = null, i = 0;
-        for (i = 0; i < FMAssetManager.assets.length; i = i + 1) {
-            if (FMAssetManager.assets[i].getName() === name) {
-                asset = FMAssetManager.assets[i];
+        var asset = null, i = 0, assetManager = FMENGINE.fmAssetManager;
+        for (i = 0; i < assetManager.assets.length; i = i + 1) {
+            if (assetManager.assets[i].getName() === name) {
+                asset = assetManager.assets[i];
             }
         }
         return asset;

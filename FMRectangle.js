@@ -5,7 +5,7 @@
  * @param height
  * @returns {___that0}
  */
-function FMRectangle(pX, pY, pWidth, pHeight) {
+FMENGINE.fmRectangle = function (pX, pY, pWidth, pHeight) {
     "use strict";
     var that = {};
     /**
@@ -19,7 +19,7 @@ function FMRectangle(pX, pY, pWidth, pHeight) {
     /**
      * Width of the rectangle.
      */
-    that.width = pWidth,
+    that.width = pWidth;
     /**
      * Height of the rectangle.
      */
@@ -28,7 +28,7 @@ function FMRectangle(pX, pY, pWidth, pHeight) {
     /**
     * Destroy the rectangle and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         that = null;
     };
 

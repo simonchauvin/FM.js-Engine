@@ -3,9 +3,9 @@
  * @author Simon Chauvin
  * List of component types
  */
-var FMComponentTypes = {
-		SPATIAL: "spatial",
-		RENDERER: "renderer",
-                PHYSIC: "physic",
-                SOUND: "sound"
+FMENGINE.fmComponentTypes = {
+    SPATIAL: "spatial",
+    RENDERER: "renderer",
+    PHYSIC: "physic",
+    SOUND: "sound"
 };

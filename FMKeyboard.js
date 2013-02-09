@@ -2,7 +2,7 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-var FMKeyboard = {
+FMENGINE.fmKeyboard = {
 	BACKSPACE : 8,
 	TAB : 9,
 	ENTER : 13,

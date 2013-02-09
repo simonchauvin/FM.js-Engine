@@ -4,9 +4,9 @@
  * @param owner
  * @returns 
  */
-function FMAnimatedSpriteRendererComponent(pOwner) {
+FMENGINE.fmAnimatedSpriteRendererComponent = function (pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.RENDERER, pOwner),
+    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
         /**
          *
          */
@@ -62,7 +62,7 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
         /**
          * 
          */
-        spatial = pOwner.components[FMComponentTypes.SPATIAL];
+        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
     /**
      * 
      */
@@ -129,7 +129,7 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
         var xPosition = spatial.x, yPosition = spatial.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
-        if (spatial.angle != 0) {
+        if (spatial.angle !== 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(frameWidth / 2, frameHeight / 2);
@@ -143,8 +143,8 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
         if (!that.finished) {
             if (currentDelay <= 0) {
                 currentDelay = delay;
-                currentFrame++;
-                if (frames[currentAnim] && currentFrame == frames[currentAnim].length - 1) {
+                currentFrame = currentFrame + 1;
+                if (frames[currentAnim] && currentFrame === frames[currentAnim].length - 1) {
                     if (loop[currentAnim]) {
                         currentFrame = 0;
                     } else {
@@ -166,33 +166,48 @@ function FMAnimatedSpriteRendererComponent(pOwner) {
     /**
     * Destroy the component and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         image.destroy();
         image = null;
         currentAnim = null;
-        frames = bull;
+        frames = null;
         loop = null;
         spatial = null;
         that.destroy();
         that = null;
     };
 
+    /**
+     *
+     */
     that.getCurrentAnim = function () {
         return currentAnim;
     };
 
+    /**
+     *
+     */
     that.setWidth = function (newWidth) {
         frameWidth = newWidth;
     };
 
+    /**
+     *
+     */
     that.setHeight = function (newHeight) {
         frameHeight = newHeight;
     };
 
+    /**
+     *
+     */
     that.getWidth = function () {
         return frameWidth;
     };
 
+    /**
+     *
+     */
     that.getHeight = function () {
         return frameHeight;
     };

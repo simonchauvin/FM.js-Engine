@@ -2,9 +2,9 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  * @param radius
- * @returns {___that0}
+ * @returns {fmCircle}
  */
-function FMCircle(pX, pY, pRadius) {
+FMENGINE.fmCircle = function (pX, pY, pRadius) {
     "use strict";
     var that = {};
 
@@ -25,7 +25,7 @@ function FMCircle(pX, pY, pRadius) {
     /**
     * Destroy the circle and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         that = null;
     };
 

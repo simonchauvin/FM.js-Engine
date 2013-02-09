@@ -4,9 +4,9 @@
  * @param owner
  * @returns
  */
-function FMSpriteRendererComponent(pImage, pWidth, pHeight, pOwner) {
+FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.RENDERER, pOwner),
+    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
         /**
          * Image of the sprite
          */
@@ -30,16 +30,16 @@ function FMSpriteRendererComponent(pImage, pWidth, pHeight, pOwner) {
         /**
          * Spatial component
          */
-        spatial = pOwner.components[FMComponentTypes.SPATIAL];
+        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
 
     /**
-    * Draw the sprite
+    * Draw the sprite.
     */
     that.draw = function (bufferContext) {
         var xPosition = spatial.x, yPosition = spatial.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
-        if (spatial.angle != 0) {
+        if (spatial.angle !== 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(width / 2, height / 2);

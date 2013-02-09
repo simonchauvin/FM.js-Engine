@@ -2,7 +2,7 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function FMAudioAsset(pName, pPath) {
+FMENGINE.fmAudioAsset = function (pName, pPath) {
     "use strict";
     var that = new Audio(),
 
@@ -17,7 +17,14 @@ function FMAudioAsset(pName, pPath) {
         /**
          * Specify the loading state of the audio file.
          */
-        loaded = false;
+        loaded = false,
+        /**
+         * Fired when the audio file has finished loading.
+         */
+        loadComplete = function () {
+            loaded = true;
+            FMENGINE.fmAssetManager.assetLoaded();
+        };
 
     /**
      * Load the audio file.
@@ -26,14 +33,6 @@ function FMAudioAsset(pName, pPath) {
         that.src = path;
 
         that.addEventListener("loadeddata", loadComplete, false);
-    };
-
-    /**
-     * Fired when the audio file has finished loading.
-     */
-    var loadComplete = function () {
-        loaded = true;
-        FMAssetManager.assetLoaded();
     };
 
     /**
@@ -46,7 +45,7 @@ function FMAudioAsset(pName, pPath) {
     /**
     * Destroy the asset and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         name = null;
         path = null;
         that = null;

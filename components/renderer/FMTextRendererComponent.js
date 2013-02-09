@@ -2,13 +2,13 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-function FMTextRendererComponent(pTextToDisplay, pOwner) {
+FMENGINE.fmTextRendererComponent = function (pTextToDisplay, pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.RENDERER, pOwner),
+    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
         /**
          * The spatial component.
          */
-        spatial = pOwner.components[FMComponentTypes.SPATIAL],
+        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL],
         /**
          * With of the text container.
          */

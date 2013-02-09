@@ -1,66 +1,83 @@
 /**
- * Under Creative Commons Licence
+ * Object representing a game object.
  * @author Simon Chauvin
- * @param x
- * @param y
- * @param zIndex
- * @returns {FMGameObject}
+ * @param {int} pZIndex specifies the z position of the game object.
  */
-function FMGameObject(pZIndex) {
+FMENGINE.fmGameObject = function (pZIndex) {
     "use strict";
     var that = {},
-
-    /**
-     * ID allows to uniquely identify game objects
-     */
-    id = 0,
-    /**
-     * 
-     */
-    name = "",
-    /**
-     * 
-     */
-    allowCollisions = FMParameters.ANY;
+        /**
+         * ID allows to uniquely identify game objects.
+         */
+        id = 0,
+        /**
+         * A name for a game object sounds useful ?
+         */
+        name = "",
+        /**
+         * Specify if the game object is alive.
+         */
+        alive = true,
+        /**
+         * Specify if the game object is visible.
+         */
+        visible = true,
+        /**
+         * Types the game object is associated to.
+         */
+        types = [];
     /**
      * Allows to specify different degrees of scrolling (useful for parallax).
      */
-    that.scrollFactor = FMPoint(1, 1);
+    that.scrollFactor = FMENGINE.fmPoint(1, 1);
     /**
-     * List of the components owned by the game object
+     * List of the components owned by the game object.
      */
     that.components = {};
     /**
-     * Specify the depth at which the game object is
+     * Specify the depth at which the game object is.
      */
     that.zIndex = pZIndex;
-    /**
-     * Specify if the game object is alive
-     */
-    that.alive = true;
-    /**
-     * Specify if the game object is visible
-     */
-    that.visible = true;
 
     /**
-    * Update the game object
-    */
+     * Update the game object.
+     * @param {float} dt time in seconds since the last frame.
+     */
     that.update = function (dt) {
-
+        //TODO update a script component not the game object directly
     };
 
     /**
-    * Draw the game object
-    */
-    that.draw = function (bufferContext) {
-
-    };
-
-    /**
-     *
+     * Specify a type associated to this game object.
+     * @param {String} name the name of the type.
      */
-    that.addComponent = function(component) {
+    that.addType = function (name) {
+        types.push(name);
+    };
+
+    /**
+     * Remove a type associated to this game object.
+     * @param {String} name the name of the type.
+     */
+    that.removeType = function (name) {
+        types.splice(types.indexOf(name), 1);
+    };
+
+    /**
+     * Check if this game object is associated to a given type.
+     * @param {String} name the name of the type to look for.
+     * @return {bool} whether the type specified is associated to this game
+     * object or not.
+     */
+    that.hasType = function (name) {
+        return types.indexOf(name) !== -1;
+    };
+
+    /**
+     * Add a component to the game object.
+     * @param {fmComponent} component the component to be added.
+     */
+    that.addComponent = function (component) {
         var name = component.name;
         if (!that.components[name]) {
             that.components[name] = component;
@@ -68,77 +85,98 @@ function FMGameObject(pZIndex) {
     };
 
     /**
-     *
+     * Retrive a particular component.
+     * @param {fmComponentTypes} type the component's type to be retrieved.
+     * @return {fmComponent} the component retrieved.
      */
     that.getComponent = function (type) {
-        return components[type];
+        return that.components[type];
     };
 
     /**
-    * Check if two game objects collide
-    * To use in case the game objects are very likely to collide
-    *
-    * @param otherGameObject
-    */
-    that.collide = function (otherGameObject) {
-        var spatial1 = that.components[fmComponentTypes.spatial];
-        var spatial2 = otherGameObject.components[fmComponentTypes.spatial];
-        var physic1 = that.components[fmComponentTypes.physic];
-        var physic2 = otherGameObject.components[fmComponentTypes.physic];
-        var renderer1 = that.components[fmComponentTypes.renderer];
-        var renderer2 = otherGameObject.components[fmComponentTypes.renderer];
-        if (physic1 && physic2) {
-            return (spatial2.x + physic2.boundingBox.width > spatial1.x) && (spatial2.x < spatial1.x + physic1.boundingBox.width)
-            && (spatial2.y + physic2.boundingBox.height > spatial1.y) && (spatial2.y < spatial1.y + physic1.boundingBox.height);
-        } else if (renderer1 || renderer2) {
-            return (spatial2.x + renderer2.getWidth() > spatial1.x) && (spatial2.x < spatial1.x + renderer1.getWidth())
-            && (spatial2.y + renderer2.getHeight() > spatial1.y) && (spatial2.y < spatial1.y + renderer1.getHeight());
-        } else {
-            return false;
-        }
-    };
-
-    /**
-    *
+    * Destroy the game object.
+    * Don't forget to remove it from the state too.
+    * Better use the remove method from fmState.
     */
     that.destroy = function () {
         name = null;
-        allowCollisions = null;
         that.scrollFactor = null;
-        for (var i = 0; i < that.components.length; i++) {
-                that.components[i].destroy();
+        var i;
+        for (i = 0; i < that.components.length; i = i + 1) {
+            that.components[i].destroy();
         }
         that.components = null;
         that = null;
     };
 
     /**
-     *
+     * Kill the game object.
+     */
+    that.kill = function () {
+        alive = false;
+    };
+
+    /**
+     * Hide the game object.
+     */
+    that.hide = function () {
+        visible = false;
+    };
+
+    /**
+     * Revive the game object.
+     */
+    that.revive = function () {
+        alive = true;
+    };
+
+    /**
+     * Retrieve the name of the game object.
+     * @return {string} name of the game object.
      */
     that.getName = function () {
         return name;
-    }
+    };
 
     /**
-     *
+     * Set the name of the game object.
+     * @param {string} pName name to give to the game object.
      */
-    that.setName = function (n) {
-        name = n;
-    }
+    that.setName = function (pName) {
+        name = pName;
+    };
 
     /**
-     *
+     * Retrieve the id of the game object.
+     * @return {int} id of the game object.
      */
     that.getId = function () {
         return id;
-    }
+    };
 
     /**
-     *
+     * Set the id of the game object.
+     * @param {int} pId id to give to the game object.
      */
     that.setId = function (pId) {
         id = pId;
-    }
+    };
+
+    /**
+     * Check if the game object is alive.
+     * @return {boolean} true if the game object is alive, false otherwise.
+     */
+    that.isAlive = function () {
+        return alive;
+    };
+
+    /**
+     * Check if the game object is visible.
+     * @return {boolean} true if the game object is visible, false otherwise.
+     */
+    that.isVisible = function () {
+        return visible;
+    };
 
     return that;
-}
+};

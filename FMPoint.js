@@ -1,22 +1,21 @@
 /**
- * Under Creative Commons Licence
+ * Object representing a point.
  * @author Simon Chauvin
- * @param x
- * @param y
- * @returns {___that0}
+ * @param {int} pX x position.
+ * @param {int} pY y position.
  */
-function FMPoint(pX, pY) {
+FMENGINE.fmPoint = function (pX, pY) {
     "use strict";
     var that = {};
 
     /**
-     * x position
+     * x position.
      */
     that.x = pX;
     /**
-     * y position
+     * y position.
      */
     that.y = pY;
 
     return that;
-}
+};

@@ -3,7 +3,7 @@
  * Make sure pTileWidth and pTileHeight are int or float
  * @author Simon Chauvin
  */
-function FMTileMap(pTileSet, pTileWidth, pTileHeight, pZIndex) {
+FMENGINE.fmTilemap = function (pTileSet, pTileWidth, pTileHeight, pZIndex) {
     "use strict";
     var that = [],
         /**
@@ -42,7 +42,7 @@ function FMTileMap(pTileSet, pTileWidth, pTileHeight, pZIndex) {
     /**
      * Load the map of tiles.
      * @param {Array} data  Comma and line return sparated string of numbers representing the position and type of tiles.
-     * @param {FMImageAsset} tileSet  Image of the tile set in the order of the data given
+     * @param {fmImageAsset} tileSet  Image of the tile set in the order of the data given
      */
     that.load = function (data) {
         var i, idxI = 0, idxJ = 0;
@@ -63,9 +63,9 @@ function FMTileMap(pTileSet, pTileWidth, pTileHeight, pZIndex) {
     };
 
     /**
-    * Destroy the tile map and its objects
+    * Destroy the tile map and its objects.
     */
-    that.destroy = function() {
+    that.destroy = function () {
         tileSet = null;
         that = null;
     };
@@ -81,7 +81,7 @@ function FMTileMap(pTileSet, pTileWidth, pTileHeight, pZIndex) {
      * Retrieve the tile associated to the specified position
      */
     that.getTile = function (x, y) {
-        return that[Math.floor(y / tileheight)][Math.floor(x / tilewidth)];
+        return that[Math.floor(y / tileHeight)][Math.floor(x / tileWidth)];
     };
 
     /**

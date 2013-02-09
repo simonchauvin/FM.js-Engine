@@ -2,11 +2,11 @@
  * Under Creative Commons Licence
  * @author Simon Chauvin
  * @param owner
- * @returns {___that1}
+ * @returns {fmSoundComponent}
  */
-function FMSoundComponent(pSound, pOwner) {
+FMENGINE.fmSoundComponent = function (pSound, pOwner) {
     "use strict";
-    var that = FMComponent(FMComponentTypes.SOUND, pOwner),
+    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.SOUND, pOwner),
         /**
          * The actual sound object.
          */
@@ -17,7 +17,7 @@ function FMSoundComponent(pSound, pOwner) {
      */
     that.play = function (volume, startingTime) {
         sound.volume = volume;
-        //FIXME give current time
+        //TODO give current time
         //sound.currentTime = startingTime;
         sound.play();
     };
@@ -32,7 +32,7 @@ function FMSoundComponent(pSound, pOwner) {
     /**
     * Destroy the component and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         sound.destroy();
         sound = null;
         that.destroy();

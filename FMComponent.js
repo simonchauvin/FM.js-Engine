@@ -3,9 +3,9 @@
  * @author Simon Chauvin
  * @param componentName
  * @param componentOwner
- * @returns {___that0}
+ * @returns {fmComponent}
  */
-function FMComponent(pComponentName, pComponentOwner) {
+FMENGINE.fmComponent = function (pComponentName, pComponentOwner) {
     "use strict";
     var that = {};
     /**
@@ -25,7 +25,7 @@ function FMComponent(pComponentName, pComponentOwner) {
     /**
     * Destroy the component and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         that.name = null;
         that.owner = null;
         that = null;

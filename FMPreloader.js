@@ -4,9 +4,9 @@
  * FMPreloader is used to set the preload page
  * 
  */
-function FMPreloader(pFirstState) {
+FMENGINE.fmPreloader = function (pFirstState) {
     "use strict";
-    var that = Object.create(FMState()),
+    var that = Object.create(FMENGINE.fmState()),
     /**
      * Screen width
      */
@@ -19,31 +19,34 @@ function FMPreloader(pFirstState) {
     /**
      * Init the preloader.
      */
-    that.init = function (game) {
-        Object.getPrototypeOf(that).init(game);
+    that.init = function () {
+        Object.getPrototypeOf(that).init();
 
         //Add the assets from the engine and load them all
-        FMAssetManager.addAsset("fmPauseIcon", FMParameters.IMAGE, FMParameters.libFolder + "/fm/assets/gfx/fm_pause.png");
-        FMAssetManager.addAsset("fmMuteIcon", FMParameters.IMAGE, FMParameters.libFolder + "/fm/assets/gfx/fm_mute.png");
-        FMAssetManager.addAsset("fmSoundOnIcon", FMParameters.IMAGE, FMParameters.libFolder + "/fm/assets/gfx/fm_sound_on.png");
-        FMAssetManager.addAsset("fmBackground", FMParameters.IMAGE, FMParameters.libFolder + "/fm/assets/gfx/fm_background.png");
-        FMAssetManager.addAsset("fmLogo", FMParameters.IMAGE, FMParameters.libFolder + "/fm/assets/gfx/fm_logo.png");
-        FMAssetManager.loadAssets();
+        var assetManager = FMENGINE.fmAssetManager;
+        var param = FMENGINE.fmParameters;
+        assetManager.addAsset("fmPauseIcon", param.IMAGE, param.libFolder + "/fm/assets/gfx/fm_pause.png");
+        assetManager.addAsset("fmMuteIcon", param.IMAGE, param.libFolder + "/fm/assets/gfx/fm_mute.png");
+        assetManager.addAsset("fmSoundOnIcon", param.IMAGE, param.libFolder + "/fm/assets/gfx/fm_sound_on.png");
+        assetManager.addAsset("fmBackground", param.IMAGE, param.libFolder + "/fm/assets/gfx/fm_background.png");
+        assetManager.addAsset("fmLogo", param.IMAGE, param.libFolder + "/fm/assets/gfx/fm_logo.png");
+        assetManager.loadAssets();
 
         //Retrieve the screen width and height
-        screenWidth = game.getScreenWidth();
-        screenHeight = game.getScreenHeight();
+        screenWidth = FMENGINE.fmGame.getScreenWidth();
+        screenHeight = FMENGINE.fmGame.getScreenHeight();
     };
 
     /**
      * Update the preloader.
      */
-    that.update = function (game, dt) {
-        Object.getPrototypeOf(that).update(game, dt);
+    that.update = function (dt) {
+        Object.getPrototypeOf(that).update(dt);
 
         //If all the assets are loaded then start the first state
-        if (FMAssetManager.assets.length == 0 || FMAssetManager.areAllAssetsLoaded()) {
-            game.switchState(pFirstState());
+        var assetManager = FMENGINE.fmAssetManager;
+        if (assetManager.assets.length == 0 || assetManager.areAllAssetsLoaded()) {
+            FMENGINE.fmGame.switchState(pFirstState());
         }
     };
 
@@ -54,7 +57,8 @@ function FMPreloader(pFirstState) {
         Object.getPrototypeOf(that).draw(bufferContext);
 
         //Background
-        var bg = FMAssetManager.getAssetByName("fmBackground");
+        var assetManager = FMENGINE.fmAssetManager;
+        var bg = assetManager.getAssetByName("fmBackground");
         if (bg.isLoaded()) {
             var maxHor = screenWidth / bg.width;
             var maxVer = screenHeight / bg.height;
@@ -69,10 +73,10 @@ function FMPreloader(pFirstState) {
         bufferContext.fillStyle = '#fff';
         bufferContext.font = '30px sans-serif';
         bufferContext.textBaseline = 'middle';
-        bufferContext.fillText(Math.ceil(FMAssetManager.loadingProgress), screenWidth / 2, screenHeight / 2);
+        bufferContext.fillText(Math.ceil(assetManager.loadingProgress), screenWidth / 2, screenHeight / 2);
 
         //Loading screen
-        var logo = FMAssetManager.getAssetByName("fmLogo");
+        var logo = assetManager.getAssetByName("fmLogo");
         if (logo.isLoaded())
             bufferContext.drawImage(logo, screenWidth / 2 - 250, screenHeight / 2 - 200);
     };

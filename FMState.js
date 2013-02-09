@@ -1,19 +1,17 @@
 /**
- * Under Creative Commons Licence
+ * Object acting as a container of game objects. It helps structure the game in 
+ * states.
  * @author Simon Chauvin
- * FMState is a simple container of game objects and helps structure the game
- *
- * @returns {FMState}
  */
-function FMState() {
+FMENGINE.fmState = function () {
     "use strict";
     var that = {},
         /**
-         * 
+         * Width of the screen.
          */
         screenWidth = 0,
         /**
-         * 
+         * Height of the screen.
          */
         screenHeight = 0,
         /**
@@ -21,42 +19,54 @@ function FMState() {
          */
         pause = false,
         /**
-        * The game object that makes the screen scrolls
+        * The game object that makes the screen scrolls.
         */
         scroller = null,
         /**
-         * Frame of the camera (used in case of scrolling)
+         * Frame of the camera (used in case of scrolling).
          */
-        followFrame = null;
+        followFrame = null,
+        /**
+         * Private method that sort game objects according to their z index.
+         * @param {int} gameObjectA first game object to be sorted.
+         * @param {int} gameObjectB second game object to be sorted.
+         * @return {int} a negative value means that gameObjectA has a lower z index 
+         * whereas a positive value means that it has a bigger z index. 0 means that
+         * both have the same z index.
+         */
+        sortZIndex = function (gameObjectA, gameObjectB) {
+            return (gameObjectA.zIndex - gameObjectB.zIndex);
+        };
     /**
-     * Static attributes used to store the last ID affected to a game object
+     * Array containing every game objects of the state.
      */
-    FMState.lastId = 0;
+    that.members = [];
     /**
-     * Object representing the world topology (bounds, tiles, collisions, objects)
+     * Static attributes used to store the last ID affected to a game object.
+     */
+    FMENGINE.fmState.lastId = 0;
+    /**
+     * Object representing the world topology (bounds, tiles, collisions, objects).
      */
     that.world = null;
     /**
-    * Camera (limited by the screen resolution of the game)
+    * Camera (limited by the screen resolution of the game).
     */
-    that.camera = FMRectangle(0, 0, 0, 0);
+    that.camera = FMENGINE.fmRectangle(0, 0, 0, 0);
     /**
-    * Array containing every game objects of the state
-    */
-    that.gameObjects = [];
-    /**
-    * Array of arrays that stores colliders
+    * Array of arrays that stores colliders.
     */
     //var colliders = [];
 
     /**
-    * Create the state
+    * Initialize the state the state. Can be redefined in sub classes for 
+    * specialization.
     */
-    that.init = function (game) {
-        screenWidth = game.getScreenWidth();
-        screenHeight = game.getScreenHeight();
+    that.init = function () {
+        screenWidth = FMENGINE.fmGame.getScreenWidth();
+        screenHeight = FMENGINE.fmGame.getScreenHeight();
         //By default init the world to the size of the screen with all borders solid
-        that.world = FMWorld(that, screenWidth, screenHeight);
+        that.world = FMENGINE.fmWorld(that, screenWidth, screenHeight);
 
         //Set the camera size by the chosen screen size
         that.camera.width = screenWidth;
@@ -71,30 +81,24 @@ function FMState() {
                 colliders[i].push([]);
             }
         }*/
-        if (FMParameters.debug) {
+        if (FMENGINE.fmParameters.debug) {
             console.log("INIT: The state has been created.");
         }
     };
 
     /**
-    * Private method that sort game objects according to their z index
-    */
-    var sortZIndex = function (a, b) {
-            return (a.zIndex - b.zIndex);
-    };
-
-    /**
-    * Add a game object to the state and sort it
+    * Add a game object to the state.
+    * @param {fmGameObject} gameObject the game object to add to the state.
     */
     that.add = function (gameObject) {
-        that.gameObjects.push(gameObject);
-        that.gameObjects.sort(sortZIndex);
+        //Add the game object to the state
+        that.members.push(gameObject);
 
         //Affect an ID to the game object
-        FMState.lastId++;
-        gameObject.setId(FMState.lastId);
+        FMENGINE.fmState.lastId += 1;
+        gameObject.setId(FMENGINE.fmState.lastId);
 
-        if (FMParameters.debug) {
+        if (FMENGINE.fmParameters.debug) {
             console.log("INIT: " + gameObject + " has been added to the state.");
         }
 
@@ -109,64 +113,50 @@ function FMState() {
     };
 
     /**
-    * Remove an object from the state
+    * Remove an object from the state and destroy it.
+    * @param {fmGameObject} gameObject the game object to remove and destroy.
     */
     that.remove = function (gameObject) {
-        var tmpGameObject, i = 0;
-        while (i < that.gameObjects.length) {
-            tmpGameObject = that.gameObjects.shift();
-            if (tmpGameObject !== gameObject) {
-                that.gameObjects.push(tmpGameObject);
-            } else {
-                gameObject.destroy();
-                return;
-            }
-            i = i + 1;
-        }
+        //Remove the game object from the state
+        that.members.splice(that.members.indexOf(gameObject), 1);
+        //Destroy the game object
+        gameObject.destroy();
     };
 
     /**
-    * Call all the updates
-    */
-    that.update = function (game, dt) {
-        if (!pause) {
-            mainUpdate(game, dt);
-        }
-    };
-
-    /**
-    * Pre update taking place before the main update.
-    */
-    that.preUpdate = function () {
-        
+     * Sort the members of the state by their z-index.
+     */
+    that.sortByZIndex = function () {
+        that.members.sort(sortZIndex);
     };
 
     /**
     * Update the game objects of the state.
+    * @param {float} dt time in seconds since the last frame.
     */
-    var mainUpdate = function (game, dt) {
+    var mainUpdate = function (dt) {
         //Update the Box2D world if it is present
         //TODO fix the physics timestep !
         //TODO regular simple physics should update here too
         var world = that.world.box2DWorld;
         if (world) {
-            world.Step(1 / FMParameters.FPS, 10, 10);
+            world.Step(1 / FMENGINE.fmParameters.FPS, 10, 10);
             world.ClearForces();
         }
         //Update every game object present in the state
         var i, gameObject, spatial, physic, controller, components;
-        for (i = 0; i < that.gameObjects.length; i = i + 1) {
-            gameObject = that.gameObjects[i];
-            if (gameObject.alive) {
+        for (i = 0; i < that.members.length; i = i + 1) {
+            gameObject = that.members[i];
+            if (gameObject.isAlive()) {
                 components = gameObject.components;
-                spatial = components[FMComponentTypes.SPATIAL];
-                controller = components[FMComponentTypes.CONTROLLER];
-                physic = components[FMComponentTypes.PHYSIC];
+                spatial = components[FMENGINE.fmComponentTypes.SPATIAL];
+                controller = components[FMENGINE.fmComponentTypes.CONTROLLER];
+                physic = components[FMENGINE.fmComponentTypes.PHYSIC];
                 //Update the game object
                 gameObject.update(dt);
                 //Update the physic component
                 if (physic) {
-                    physic.update(game, dt);
+                    physic.update(dt);
 
                     //Update scrolling
                     if (scroller === gameObject) {
@@ -209,7 +199,7 @@ function FMState() {
                         }
                     }
                 } else {
-                    if (FMParameters.debug && scroller == gameObject) {
+                    if (FMENGINE.fmParameters.debug && scroller === gameObject) {
                         console.log("ERROR: The scrolling object must have a physic component.");
                     }
                 }
@@ -218,14 +208,33 @@ function FMState() {
     };
 
     /**
-    * Post update taking place after the main update.
+    * Pre update taking place before the main update.
     */
-    that.postUpdate = function (game, alpha) {
-        
+    that.preUpdate = function () {
+        //TODO
+    };
+
+    /**
+    * Update the state.
+    * @param {float} dt time in seconds since the last frame.
+    */
+    that.update = function (dt) {
+        if (!pause) {
+            mainUpdate(dt);
+        }
+    };
+
+    /**
+    * Post update taking place after the main update.
+    * @param {float} alpha
+    */
+    that.postUpdate = function (alpha) {
+        //TODO
     };
 
     /**
     * Draw the game objects of the state.
+    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich drawing is done.
     */
     that.draw = function (bufferContext) {
         //Clear the screen
@@ -236,39 +245,43 @@ function FMState() {
         bufferContext.yOffset = that.camera.y;
 
         //Search for renderer in the game object list
-        var i, gameObject, renderer, physic;
-        for (i = 0; i < that.gameObjects.length; i = i + 1) {
-            gameObject = that.gameObjects[i];
-            renderer = gameObject.components[FMComponentTypes.RENDERER];
-            physic = gameObject.components[FMComponentTypes.PHYSIC];
+        var i, gameObject, spatial, renderer;
+        for (i = 0; i < that.members.length; i = i + 1) {
+            gameObject = that.members[i];
 
-            //If the game object has a renderer
-            if (renderer) {
-                var spatial = gameObject.components[FMComponentTypes.SPATIAL],
-                xPosition = spatial.x, yPosition = spatial.y,
-                farthestXPosition = xPosition + renderer.getWidth(), farthestYPosition = yPosition + renderer.getHeight();
+            //If the game object is visible
+            if (gameObject.isVisible()) {
+                spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL];
+                renderer = gameObject.components[FMENGINE.fmComponentTypes.RENDERER];
+                //If there is a spatial component then test if the game object is on the screen
+                if (spatial && renderer) {
+                    var xPosition = spatial.x, yPosition = spatial.y,
+                        farthestXPosition = xPosition + renderer.getWidth(),
+                        farthestYPosition = yPosition + renderer.getHeight(),
+                        newViewX = 0, newViewY = 0;
+                    //If the game object has a scrolling factor then apply it
+                    newViewX = (that.camera.x + (screenWidth - that.camera.width) / 2) * gameObject.scrollFactor.x;
+                    newViewY = (that.camera.y + (screenHeight - that.camera.height) / 2) * gameObject.scrollFactor.y;
 
-                //If the game object has a scrolling factor then apply it
-                var newViewX = 0, newViewY = 0;
-                newViewX = (that.camera.x + (screenWidth - that.camera.width) / 2) * gameObject.scrollFactor.x;
-                newViewY = (that.camera.y + (screenHeight - that.camera.height) / 2) * gameObject.scrollFactor.y;
-                //Draw the game object if it is within the bounds of the screen
-                if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
-                    && xPosition <= newViewX + that.camera.width && yPosition <= newViewY + that.camera.height) {
-                    if (gameObject.visible) {
+                    //Draw the game object if it is within the bounds of the screen
+                    if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
+                            && xPosition <= newViewX + that.camera.width && yPosition <= newViewY + that.camera.height) {
                         renderer.draw(bufferContext);
                     }
                 }
             }
+
             //Draw the physics debug information
-            if (FMParameters.debug) {
+            //TODO draw the debug from box2d
+            if (FMENGINE.fmParameters.debug) {
+                var physic = gameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
                 if (physic) {
                     physic.drawDebug(bufferContext);
                 }
             }
         }
         // Debug
-        if (FMParameters.debug) {
+        if (FMENGINE.fmParameters.debug) {
             //Display the world bounds
             bufferContext.strokeStyle = '#f0f';
             bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, that.world.width, that.world.height);
@@ -290,8 +303,8 @@ function FMState() {
             bufferContext.fillRect(0, 0, screenWidth, screenHeight);
 
             //Show pause icon
-            bufferContext.drawImage(FMAssetManager.getAssetByName("fmPauseIcon"), screenWidth / 2 - 50, screenHeight / 2 - 100);
-            bufferContext.drawImage(FMAssetManager.getAssetByName("fmMuteIcon"), screenWidth / 2 - 25, screenHeight - 160);
+            bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmPauseIcon"), screenWidth / 2 - 50, screenHeight / 2 - 100);
+            bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmMuteIcon"), screenWidth / 2 - 25, screenHeight - 160);
 
             //Show pause texts
             bufferContext.fillStyle = '#fff';
@@ -304,10 +317,11 @@ function FMState() {
     };
 
     /**
-    * Center the camera on a specific game object
+    * Center the camera on a specific game object.
+    * @param {fmGameObject} gameObject the game object to center the camera on.
     */
-    that.centerCameraOn = function(gameObject) {
-        var spatial = gameObject.components[FMComponentTypes.SPATIAL],
+    that.centerCameraOn = function (gameObject) {
+        var spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL],
             newPosition = spatial.x - that.camera.width / 2;
         if (newPosition > that.world.x && newPosition < that.world.width) {
             that.camera.x = newPosition;
@@ -319,9 +333,11 @@ function FMState() {
     };
 
     /**
-    * Center the camera at a specific given position
+    * Center the camera at a specific given position.
+    * @param {int} xPosition the x position.
+    * @param {int} yPosition the y position.
     */
-    that.centerCameraAt = function(xPosition, yPosition) {
+    that.centerCameraAt = function (xPosition, yPosition) {
         var newPosition = xPosition - that.camera.width / 2;
         if (newPosition > that.world.x && newPosition < that.world.width) {
             that.camera.x = newPosition;
@@ -333,43 +349,49 @@ function FMState() {
     };
 
     /**
-    * Make an object as the scroller
+    * Make an object as the scroller.
+    * @param {fmGameObject} gameObject the game object to follow.
+    * @param {int} width the width of the camera.
+    * @param {int} height the height of the camera.
     */
-    that.follow = function(gameObject, width, height) {
+    that.follow = function (gameObject, width, height) {
         scroller = gameObject;
-        followFrame = FMRectangle((screenWidth - width) / 2 + that.camera.x, (screenHeight - height) / 2 + that.camera.y, width, height);
-    }
+        followFrame = FMENGINE.fmRectangle((screenWidth - width) / 2 + that.camera.x, (screenHeight - height) / 2 + that.camera.y, width, height);
+    };
 
     /**
-    * Delete the scroller
+    * Delete the scroller.
     */
-    that.unFollow = function() {
+    that.unFollow = function () {
         followFrame = null;
         scroller = null;
-    }
+    };
 
     /**
      * Triggered when the canvas elements loses focus, show pause screen and pause the game.
+     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich drawing is done.
      */
     that.pause = function (bufferContext) {
         pause = true;
-    }
+    };
 
     /**
      * Triggered when the canvas elements retrieves focus, restart the game.
+     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich drawing is done.
      */
     that.restart = function (bufferContext) {
         pause = false;
-    }
+    };
 
     /**
-    * Destroy the state and its objects
+    * Destroy the state and its objects.
     */
-    that.destroy = function() {
-        for ( var i = 0; i < that.gameObjects.length; i++) {
-                that.gameObjects[i].destroy();
+    that.destroy = function () {
+        var i;
+        for (i = 0; i < that.members.length; i = i + 1) {
+            that.members[i].destroy();
         }
-        that.gameObjects = null;
+        that.members = null;
         scroller = null;
         if (followFrame) {
             followFrame.destroy();
@@ -380,15 +402,15 @@ function FMState() {
         that.world.destroy();
         that.world = null;
         that = null;
-    }
-    
+    };
+
     /**
-     * Get the object that scrolls the screen
-     * @returns {FMGameObject} The game object that scrolls the screen.
+     * Get the object that scrolls the screen.
+     * @return {fmGameObject} the game object that scrolls the screen.
      */
     that.getScroller = function () {
         return scroller;
-    }
+    };
 
     return that;
-}
+};

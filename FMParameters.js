@@ -3,7 +3,7 @@
  * 
  * @author Simon Chauvin
  */
-var FMParameters = {
+FMENGINE.fmParameters = {
 
     //The name of the library directory
     libFolder: "lib",

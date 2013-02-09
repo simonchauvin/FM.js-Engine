@@ -1,89 +1,90 @@
 /**
- * Under Creative Commons Licence
- * @author Simon Chauvin
- * FMGame represents the game application and contains all the necessary
- * information to handle its execution
  * 
- * @param name
- * @param width
- * @param height
- * @param firstState
- * @returns {FMGame}
+ * @namespace Top level namespace of the {FM.js(engine);}
  */
-function FMGame(pCanvasId, pName, pWidth, pHeight, pFirstState) {
+var FMENGINE = FMENGINE || {};
+/**
+ * fmGame is a singleton that represents the game application and
+ * contains all the necessary information and methods to handle its execution.
+ * @author Simon Chauvin
+ */
+FMENGINE.fmGame = (function () {
     "use strict";
     var that = {},
         /**
-        * Name of the game
+        * Name of the game.
         */
-        name = pName,
+        name = "",
         /**
-        * Specifications of the current game
+         * Width of the screen.
+         */
+        screenWidth = 0,
+        /**
+         * Height of the screen.
+         */
+        screenHeight = 0,
+        /**
+        * Current state of the game.
         */
-        screenWidth = pWidth,
-        screenHeight = pHeight,
+        currentState = null,
         /**
-        * State of the game
+        * Canvas elements.
         */
-        currentState = FMPreloader(pFirstState),
+        canvas = "",
         /**
-        * Canvas elements
-        */
-        canvas = document.getElementById(pCanvasId),
-        /**
-         * Context on which the game will be drawn
+         * Context on which the game will be drawn.
          */
         context = null,
         /**
-         * Buffer used for double buffering
+         * Buffer used for double buffering.
          */
         bufferCanvas = null,
         /**
-         * Buffer context that will be drawn onto the displayed context
+         * Buffer context that will be drawn onto the displayed context.
          */
         bufferContext = null,
         /**
-         * Number of frames since the start of the game
+         * Number of frames since the start of the game.
          */
         totalFrames = 0,
         /**
-         * Total time elapsed since the start of the game
+         * Total time elapsed since the start of the game.
          */
         totalTimeElapsed = 0,
         /**
-         * Actual FPS at which the game is running
+         * Actual FPS at which the game is running.
          */
         actualFps = 0,
         /**
-         * Current time
+         * Current time.
          */
         currentTime = (new Date()).getTime() / 1000,
         /**
-        * Currently pressed keys
+        * Currently pressed keys.
         */
         currentPressedKeys = [],
         /**
-        * Currently released keys
+        * Currently released keys.
         */
         currentReleasedKeys = [],
         /**
-        * Keeps tracks of the mouse click
+        * Keeps tracks of the mouse click.
         */
         mouseClicked = false,
         /**
-        * Keeps tracks of whether the mouse is pressed or not
+        * Keeps tracks of whether the mouse is pressed or not.
         */
         mousePressed = false,
         /**
-        * Keeps tracks of whether the mouse is released or not
+        * Keeps tracks of whether the mouse is released or not.
         */
         mouseReleased = false,
         /**
-         * Mouse x position
+         * Mouse x position.
          */
         mouseX = 0,
         /**
-         * Mouse y position
+         * Mouse y position.
          */
         mouseY = 0,
 
@@ -93,44 +94,108 @@ function FMGame(pCanvasId, pName, pWidth, pHeight, pFirstState) {
         gameLoop = function () {
             //Reset the screen
             context.clearRect(0, 0, screenWidth, screenHeight);
-            context.fillStyle = FMParameters.backgroundColor;
+            context.fillStyle = FMENGINE.fmParameters.backgroundColor;
             context.fillRect(0, 0, screenWidth, screenHeight);
-    
+
             //Retrieve the current time
             var newTime = (new Date()).getTime() / 1000,
-            //Compute the time since last frame
-            frameTime = newTime - currentTime;
+                //Compute the time since last frame
+                frameTime = newTime - currentTime;
             currentTime = newTime;
-    
+
             //Calculate the actual FPS at which the game is running
-            totalFrames++;
+            totalFrames = totalFrames + 1;
             totalTimeElapsed += frameTime;
             actualFps = Math.round(totalFrames / totalTimeElapsed);
     
             //Update the current state of the game
-            currentState.update(that, frameTime);
+            currentState.update(frameTime);
             //Draw the current state of the game
             currentState.draw(bufferContext);
-    
+
             // If debug mode if active
-            if (FMParameters.debug) {
+            if (FMENGINE.fmParameters.debug) {
                 //Draw the number of frames per seconds
                 bufferContext.fillStyle = '#fcd116';
                 bufferContext.font = '30px sans-serif';
                 bufferContext.textBaseline = 'middle';
                 bufferContext.fillText(actualFps, 10, 20);
             }
-    
+
             //Draw the buffer onto the screen
             context.drawImage(bufferCanvas, 0, 0);
     
             //Reset keyboard and mouse inputs
             mouseClicked = false;
             currentReleasedKeys = [];
-    
+
             //Main loop call
             requestAnimationFrame(gameLoop);
+        },
+        /**
+        * Handle keys pressed.
+        */
+        onKeyPressed = function (event) {
+            currentPressedKeys[event.keyCode] = 1;
+        },
+        /**
+        * Handle keys released.
+        */
+        onKeyReleased = function (event) {
+            var key = event.keyCode;
+            currentReleasedKeys[key] = 1;
+            delete currentPressedKeys[key];
+        },
+        /**
+        * Handle mouse moves.
+        */
+        onMouseMove = function (event) {
+            mouseX = event.clientX - event.target.offsetLeft;
+            mouseY = event.clientY - event.target.offsetTop;
+        },
+        /**
+        * Handle mouse click.
+        */
+        onClick = function (event) {
+            mouseClicked = true;
+        },
+        /**
+        * Handle mouse pressed.
+        */
+        onMousePressed = function (event) {
+            mousePressed = true;
+            mouseReleased = false;
+        },
+        /**
+        * Handle mouse pressed.
+        */
+        onMouseReleased = function (event) {
+            mouseReleased = true;
+            mousePressed = false;
+        },
+        /**
+        * Handle canvas's retrieve of focus.
+        */
+        onFocus = function (event) {
+            currentState.restart(bufferContext);
+        },
+        /**
+        * Handle canvas's lost of focus.
+        */
+        onOutOfFocus = function (event) {
+            currentState.pause(bufferContext);
         };
+
+    /**
+     * Init the game.
+     */
+    that.init = function (pCanvasId, pName, pWidth, pHeight, pFirstState) {
+        name = pName;
+        screenWidth = pWidth;
+        screenHeight = pHeight;
+        currentState = FMENGINE.fmPreloader(pFirstState);
+        canvas = document.getElementById(pCanvasId);
+    };
 
     /**
     * Start running the game.
@@ -191,96 +256,35 @@ function FMGame(pCanvasId, pName, pWidth, pHeight, pFirstState) {
     /**
      * Hack to get the requestAnimationFrame work on every browser.
      */
-    (function() {
+    (function () {
         var x, lastTime = 0, vendors = ['ms', 'moz', 'webkit', 'o'];
-        for(x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        for (x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
             window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
             window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
         }
         if (!window.requestAnimationFrame) {
             window.requestAnimationFrame = function(callback, element) {
-                var currTime = new Date().getTime();
-                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-                var id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
+                var currTime = new Date().getTime(),
+                timeToCall = Math.max(0, 16 - (currTime - lastTime)),
+                id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
                 lastTime = currTime + timeToCall;
                 return id;
             };
         }
         if (!window.cancelAnimationFrame) {
-            window.cancelAnimationFrame = function(id) {
+            window.cancelAnimationFrame = function (id) {
                 clearTimeout(id);
             };
         }
     }());
 
     /**
-    * Switch between two states
+    * Switch between two states.
     */
     that.switchState = function (newState) {
         currentState.destroy();
         newState.init(that);
         currentState = newState;
-    };
-
-    /**
-    * Handle keys pressed
-    */
-    var onKeyPressed = function (event) {
-        currentPressedKeys[event.keyCode] = 1;
-    };
-
-    /**
-    * Handle keys released
-    */
-    var onKeyReleased = function (event) {
-        var key = event.keyCode;
-        currentReleasedKeys[key] = 1;
-        delete currentPressedKeys[key];
-    };
-
-    /**
-    * Handle mouse moves
-    */
-    var onMouseMove = function (event) {
-        mouseX = event.clientX - event.target.offsetLeft;
-        mouseY = event.clientY - event.target.offsetTop;
-    };
-
-    /**
-    * Handle mouse click
-    */
-    var onClick = function (event) {
-        mouseClicked = true;
-    };
-
-    /**
-    * Handle mouse pressed
-    */
-    var onMousePressed = function (event) {
-        mousePressed = true;
-        mouseReleased = false;
-    };
-
-    /**
-    * Handle mouse pressed
-    */
-    var onMouseReleased = function (event) {
-        mouseReleased = true;
-        mousePressed = false;
-    };
-
-    /**
-    * Handle canvas's retrieve of focus
-    */
-    var onFocus = function (event) {
-        currentState.restart(bufferContext);
-    };
-
-    /**
-    * Handle canvas's lost of focus
-    */
-    var onOutOfFocus = function (event) {
-        currentState.pause(bufferContext);
     };
 
     /**
@@ -338,35 +342,35 @@ function FMGame(pCanvasId, pName, pWidth, pHeight, pFirstState) {
     };
 
     /**
-    * Retrieve the mouse x position
+    * Retrieve the mouse x position.
     * @returns {Number}
     */
     that.getMouseX = function () {
-        return mouseX;
-    };
-
-    /**
-    * Retrieve the mouse y position
-    * @returns {Number}
-    */
-    that.getMouseY = function () {
-        return mouseY;
-    };
-
-    /**
-    * Retrieve the mouse x position
-    * @returns {Number}
-    */
-    that.getMouseWorldX = function () {
         return mouseX + currentState.camera.x;
     };
 
     /**
-    * Retrieve the mouse y position
+    * Retrieve the mouse y position.
     * @returns {Number}
     */
-    that.getMouseWorldY = function () {
+    that.getMouseY = function () {
         return mouseY + currentState.camera.y;
+    };
+
+    /**
+    * Retrieve the mouse x position on the screen.
+    * @returns {Number}
+    */
+    that.getMouseScreenX = function () {
+        return mouseX;
+    };
+
+    /**
+    * Retrieve the mouse y position on the screen.
+    * @returns {Number}
+    */
+    that.getMouseScreenY = function () {
+        return mouseY;
     };
 
     /**
@@ -394,4 +398,4 @@ function FMGame(pCanvasId, pName, pWidth, pHeight, pFirstState) {
     };
 
     return that;
-}
+}());

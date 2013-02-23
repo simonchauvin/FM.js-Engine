@@ -1,27 +1,14 @@
 /**
- * Under Creative Commons Licence
+ * World represent the concrete space of the game.
  * @author Simon Chauvin
  */
 FMENGINE.fmWorld = function (pState, pWidth, pHeight) {
     "use strict";
     var that = FMENGINE.fmRectangle(0, 0, pWidth, pHeight),
         /**
-         * State featuring this particular world
+         * State featuring this particular world.
          */
         state = pState;
-    /**
-     * Box2D world
-     */
-    that.box2DWorld = null;
-
-    /**
-     * Init the Box2D world.
-     */
-    that.initBox2DWorld = function (gravity, sleep) {
-        var b2World = Box2D.Dynamics.b2World,
-        b2Vec2 = Box2D.Common.Math.b2Vec2;
-        that.box2DWorld = new b2World(new b2Vec2(gravity.x / FMENGINE.fmParameters.PIXELS_TO_METERS, gravity.y / FMENGINE.fmParameters.PIXELS_TO_METERS), sleep);
-    };
 
     /**
      * Add a tile map to the world.
@@ -54,40 +41,6 @@ FMENGINE.fmWorld = function (pState, pWidth, pHeight) {
                         state.add(tileMap[i][j]);
                     }
                 //}
-            }
-        }
-    };
-
-    /**
-     * Add a tile map to the Box2D world.
-     */
-    that.createBox2DTiles = function (tileMap) {
-        var i, j, k, lines = tileMap.length, col, tileSet = tileMap.getTileSet(), tileWidth = tileMap.getTileWidth(), tileHeight = tileMap.getTileHeight();
-        for (i = 0; i < lines; i = i + 1) {
-            col = tileMap[i].length;
-            for (j = 0; j < col; j = j + 1) {
-                var tile = tileMap[i][j], tileSetWidth = tileSet.width, tileSetHeight = tileSet.height, xOffset, yOffset;
-                if (tile > 0) {
-                    //Create Box2D tile
-                    tileMap[i][j] = FMENGINE.fmGameObject(tileMap.getZIndex());
-                    FMENGINE.fmSpatialComponent(j * tileWidth, i * tileHeight, tileMap[i][j]);
-                    var renderer = FMENGINE.fmSpriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
-                    //Select the right tile in the tile set
-                    xOffset = (tile - 1) * tileWidth;
-                    yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
-                    if (xOffset >= tileSetWidth) {
-                        yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
-                        xOffset = (xOffset % tileSetWidth);
-                    }
-                    renderer.setXOffset(xOffset);
-                    renderer.setYOffset(yOffset);
-
-                    var physicComponent = FMENGINE.fmB2BoxComponent(tileWidth, tileHeight, that, tileMap[i][j]);
-                    physicComponent.init(FMParameters.STATIC, 1, 0, 0);
-                    //TODO Remove tiles from the game objects list
-                    //It shoult have its own list
-                    state.add(tileMap[i][j]);
-                }
             }
         }
     };
@@ -137,40 +90,10 @@ FMENGINE.fmWorld = function (pState, pWidth, pHeight) {
     /**
     * Destroy the world and its objects
     */
-    that.destroy = function() {
+    that.destroy = function () {
         state = null;
-        that.box2DWorld = null;
         that = null;
     };
 
-    /**
-     * Get the collisions array.
-     * @returns {Array} Tiles of collisions.
-     */
-    that.getCollisions = function () {
-        return collisions;
-    };
-
-    /**
-     * @returns {boolean} True if the world has collisions, false otherwise.
-     */
-    that.hasCollisions = function () {
-        return collisions.length > 0;
-    };
-
-    /**
-     * @returns {Array} The array specifying the solidity of the world bounds
-     */
-    that.getBounds = function () {
-        return bounds;
-    };
-
-    /**
-     * Set the borders
-     */
-    that.setBounds = function (pBounds) {
-        bounds = pBounds;
-    };
-
     return that;
-}
+};

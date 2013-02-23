@@ -9,11 +9,11 @@ FMENGINE.fmRectangle = function (pX, pY, pWidth, pHeight) {
     "use strict";
     var that = {};
     /**
-     * x position
+     * x position.
      */
     that.x = pX;
     /**
-     * y position
+     * y position.
      */
     that.y = pY;
     /**
@@ -26,11 +26,11 @@ FMENGINE.fmRectangle = function (pX, pY, pWidth, pHeight) {
     that.height = pHeight;
 
     /**
-    * Destroy the rectangle and its objects
+    * Destroy the rectangle and its objects.
     */
     that.destroy = function () {
         that = null;
     };
 
     return that;
-}
+};

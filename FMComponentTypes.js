@@ -1,11 +1,12 @@
 /**
- * Under Creative Commons Licence
+ * List of possible component.
  * @author Simon Chauvin
- * List of component types
  */
 FMENGINE.fmComponentTypes = {
     SPATIAL: "spatial",
+    PATHFINDING: "pathfinding",
     RENDERER: "renderer",
     PHYSIC: "physic",
-    SOUND: "sound"
+    SOUND: "sound",
+    FX: "fx"
 };

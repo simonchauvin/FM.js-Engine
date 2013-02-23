@@ -1,29 +1,27 @@
 /**
- * Under Creative Commons Licence
+ * Top level object shared by every components.
  * @author Simon Chauvin
- * @param componentName
- * @param componentOwner
- * @returns {fmComponent}
+ * @param {String} pComponentType type of the component to add.
+ * @param {fmGameObject} pComponentOwner game object that owns the component.
  */
-FMENGINE.fmComponent = function (pComponentName, pComponentOwner) {
+FMENGINE.fmComponent = function (pComponentType, pComponentOwner) {
     "use strict";
     var that = {};
     /**
      * Component's name.
      */
-    that.name = pComponentName;
+    that.name = pComponentType;
     /**
-     * Component's owner (a FmGameObject).
+     * Component's owner.
      */
     that.owner = pComponentOwner;
-
     /**
      * Add the component to the owner.
      */
     that.owner.addComponent(that);
 
     /**
-    * Destroy the component and its objects
+    * Destroy the component and its objects.
     */
     that.destroy = function () {
         that.name = null;

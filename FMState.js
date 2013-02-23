@@ -94,10 +94,6 @@ FMENGINE.fmState = function () {
         FMENGINE.fmState.lastId += 1;
         gameObject.setId(FMENGINE.fmState.lastId);
 
-        if (FMENGINE.fmParameters.debug) {
-            console.log("INIT: " + gameObject + " has been added to the state.");
-        }
-
 //        if (gameObject && gameObject.components[fmComponentTypes.renderer]) {
 //                var spatial = gameObject.components[fmComponentTypes.spatial];
 //                if (gameObject.components[fmComponentTypes.collider]) {
@@ -140,16 +136,22 @@ FMENGINE.fmState = function () {
             world.ClearForces();
         }
         //Update every game object present in the state
-        var i, gameObject, spatial, physic, controller, components;
+        var i, gameObject, spatial, pathfinding, physic, controller, components;
         for (i = 0; i < that.members.length; i = i + 1) {
             gameObject = that.members[i];
             if (gameObject.isAlive()) {
                 components = gameObject.components;
                 spatial = components[FMENGINE.fmComponentTypes.SPATIAL];
+                pathfinding = components[FMENGINE.fmComponentTypes.PATHFINDING];
                 controller = components[FMENGINE.fmComponentTypes.CONTROLLER];
                 physic = components[FMENGINE.fmComponentTypes.PHYSIC];
                 //Update the game object
-                gameObject.update(dt);
+                if (gameObject.update) {
+                    gameObject.update(dt);
+                }
+                if (pathfinding) {
+                    pathfinding.update(dt);
+                }
                 //Update the physic component
                 if (physic) {
                     physic.update(dt);

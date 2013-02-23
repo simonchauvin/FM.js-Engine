@@ -1,8 +1,6 @@
 /**
- * Under Creative Commons Licence
+ * The spatial component allows positionning of the game object in the 2d space.
  * @author Simon Chauvin
- * @param owner
- * @returns {fmSpatialComponent}
  */
 FMENGINE.fmSpatialComponent = function (pX, pY, pOwner) {
     "use strict";

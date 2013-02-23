@@ -45,16 +45,19 @@ FMENGINE.fmPreloader = function (pFirstState) {
 
         //If all the assets are loaded then start the first state
         var assetManager = FMENGINE.fmAssetManager;
-        if (assetManager.assets.length == 0 || assetManager.areAllAssetsLoaded()) {
+        if (assetManager.assets.length === 0 || assetManager.areAllAssetsLoaded()) {
             FMENGINE.fmGame.switchState(pFirstState());
         }
     };
 
     /**
      * Draw on the preloader state.
+     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
+     * drawing is done.
+     * @param {float} dt time in seconds since the last frame.
      */
-    that.draw = function (bufferContext) {
-        Object.getPrototypeOf(that).draw(bufferContext);
+    that.draw = function (bufferContext, dt) {
+        Object.getPrototypeOf(that).draw(bufferContext, dt);
 
         //Background
         var assetManager = FMENGINE.fmAssetManager;

@@ -40,14 +40,6 @@ FMENGINE.fmGameObject = function (pZIndex) {
     that.zIndex = pZIndex;
 
     /**
-     * Update the game object.
-     * @param {float} dt time in seconds since the last frame.
-     */
-    that.update = function (dt) {
-        //TODO update a script component not the game object directly
-    };
-
-    /**
      * Specify a type associated to this game object.
      * @param {String} name the name of the type.
      */

@@ -9,25 +9,25 @@ FMENGINE.fmCircle = function (pX, pY, pRadius) {
     var that = {};
 
     /**
-     * x position
+     * x position.
      */
     that.x = pX;
     /**
-     * y position
+     * y position.
      */
     that.y = pY;
 
     /**
-     * Radius
+     * Radius.
      */
     that.radius = pRadius;
 
     /**
-    * Destroy the circle and its objects
+    * Destroy the circle and its objects.
     */
     that.destroy = function () {
         that = null;
     };
 
     return that;
-}
+};

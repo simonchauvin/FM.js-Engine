@@ -133,8 +133,8 @@ FMENGINE.fmPhysicComponent = function (pWorld, pOwner) {
      *
      */
     that.preUpdate = function () {
-	that.previousXVelocity = that.xVelocity;
-	that.previousYVelocity = that.yVelocity;
+        that.previousXVelocity = that.xVelocity;
+        that.previousYVelocity = that.yVelocity;
     };
 
     /**

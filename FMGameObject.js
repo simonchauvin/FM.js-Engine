@@ -123,6 +123,13 @@ FMENGINE.fmGameObject = function (pZIndex) {
     };
 
     /**
+     * Show the game object.
+     */
+    that.show = function () {
+        visible = true;
+    };
+
+    /**
      * Retrieve the name of the game object.
      * @return {string} name of the game object.
      */

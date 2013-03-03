@@ -305,8 +305,8 @@ FMENGINE.fmGame = (function () {
     */
     that.switchState = function (newState) {
         currentState.destroy();
-        newState.init(that);
         currentState = newState;
+        currentState.init(that);
     };
 
     /**

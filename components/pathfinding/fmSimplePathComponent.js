@@ -57,6 +57,9 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
             yReached = false;
         } else if (FMENGINE.fmParameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
+            if (!physic) {
+                console.log("WARNING: path added to a game object with no physic component.");
+            }
         }
     };
 
@@ -69,6 +72,9 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
             active = true;
         } else if (FMENGINE.fmParameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
+            if (!physic) {
+                console.log("WARNING: path added to a game object with no physic component.");
+            }
         }
     };
 
@@ -85,85 +91,47 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
      */
     that.update = function (dt) {
         //Update the motion if the path is active
-        if (active) {
-            var xPos, yPos;
+        if (active && physic) {
             //Update motion whether a physic component is present or not
-            if (physic) {
-                xPos =  spatial.x + physic.getWidth() / 2;
-                yPos =  spatial.y + physic.getHeight() / 2;
-                //Update x position
-                if (xPos < waypoints[currentIndex].x) {
-                    if (waypoints[currentIndex].x - xPos < speed * dt) {
-                        physic.xVelocity = waypoints[currentIndex].x - xPos;
-                        xReached = true;
-                    } else {
-                        physic.xVelocity = speed;
-                    }
-                } else if (xPos > waypoints[currentIndex].x) {
-                    if (xPos - waypoints[currentIndex].x < speed * dt) {
-                        physic.xVelocity = xPos - waypoints[currentIndex].x;
-                        xReached = true;
-                    } else {
-                        physic.xVelocity = -speed;
-                    }
-                } else {
+            var xPos =  spatial.x + physic.offset.x + physic.width / 2,
+                yPos =  spatial.y + physic.offset.y + physic.height / 2;
+            //Update x position
+            if (xPos < waypoints[currentIndex].x) {
+                if (waypoints[currentIndex].x - xPos < speed * dt) {
+                    physic.xVelocity = waypoints[currentIndex].x - xPos;
                     xReached = true;
-                    physic.xVelocity = 0;
-                }
-                //Update y position
-                if (yPos < waypoints[currentIndex].y) {
-                    if (waypoints[currentIndex].y - yPos < speed * dt) {
-                        physic.yVelocity = waypoints[currentIndex].y - yPos;
-                        yReached = true;
-                    } else {
-                        physic.yVelocity = speed;
-                    }
-                } else if (yPos > waypoints[currentIndex].y) {
-                    if (yPos - waypoints[currentIndex].y < speed * dt) {
-                        physic.yVelocity = yPos - waypoints[currentIndex].y;
-                        yReached = true;
-                    } else {
-                        physic.yVelocity = -speed;
-                    }
                 } else {
-                    yReached = true;
-                    physic.yVelocity = 0;
+                    physic.xVelocity = speed;
+                }
+            } else if (xPos > waypoints[currentIndex].x) {
+                if (xPos - waypoints[currentIndex].x < speed * dt) {
+                    physic.xVelocity = xPos - waypoints[currentIndex].x;
+                    xReached = true;
+                } else {
+                    physic.xVelocity = -speed;
                 }
             } else {
-                xPos =  spatial.x + renderer.getWidth() / 2;
-                yPos =  spatial.y + renderer.getHeight() / 2;
-                //Update x position
-                if (xPos < waypoints[currentIndex].x) {
-                    spatial.x += speed * dt;
-                    if (spatial.x + renderer.getWidth() / 2 > waypoints[currentIndex].x) {
-                        spatial.x = waypoints[currentIndex].x - renderer.getWidth() / 2;
-                        xReached = true;
-                    }
-                } else if (xPos > waypoints[currentIndex].x) {
-                    spatial.x -= speed * dt;
-                    if (spatial.x + renderer.getWidth() / 2 < waypoints[currentIndex].x) {
-                        spatial.x = waypoints[currentIndex].x - renderer.getWidth() / 2;
-                        xReached = true;
-                    }
-                } else {
-                    xReached = true;
-                }
-                //Update y position
-                if (yPos < waypoints[currentIndex].y) {
-                    spatial.y += speed * dt;
-                    if (spatial.y + renderer.getHeight() / 2 > waypoints[currentIndex].y) {
-                        spatial.y = waypoints[currentIndex].y - renderer.getHeight() / 2;
-                        yReached = true;
-                    }
-                } else if (yPos > waypoints[currentIndex].y) {
-                    spatial.y -= speed * dt;
-                    if (spatial.y + renderer.getHeight() / 2 < waypoints[currentIndex].y) {
-                        spatial.y = waypoints[currentIndex].y - renderer.getHeight() / 2;
-                        yReached = true;
-                    }
-                } else {
+                xReached = true;
+                physic.xVelocity = 0;
+            }
+            //Update y position
+            if (yPos < waypoints[currentIndex].y) {
+                if (waypoints[currentIndex].y - yPos < speed * dt) {
+                    physic.yVelocity = waypoints[currentIndex].y - yPos;
                     yReached = true;
+                } else {
+                    physic.yVelocity = speed;
                 }
+            } else if (yPos > waypoints[currentIndex].y) {
+                if (yPos - waypoints[currentIndex].y < speed * dt) {
+                    physic.yVelocity = yPos - waypoints[currentIndex].y;
+                    yReached = true;
+                } else {
+                    physic.yVelocity = -speed;
+                }
+            } else {
+                yReached = true;
+                physic.yVelocity = 0;
             }
             //Select the next waypoint if the current has been reached
             if (xReached && yReached) {

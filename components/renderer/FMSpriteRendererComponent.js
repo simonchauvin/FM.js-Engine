@@ -18,6 +18,10 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
          */
         height = pHeight,
         /**
+         * Transparency of the sprite.
+         */
+        alpha = 1,
+        /**
          * Offset on the x axis in case the image width is greater than the sprite width.
          */
         xOffset = 0,
@@ -40,6 +44,7 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
         var xPosition = spatial.x, yPosition = spatial.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
+        bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
@@ -50,6 +55,7 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
         } else {
             bufferContext.drawImage(image, xOffset, yOffset, width, height, xPosition, yPosition, width, height);
         }
+        bufferContext.globalAlpha = 1;
     };
 
     /**
@@ -98,6 +104,14 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     /**
+     * Set the transparency of the sprite.
+     * @param {float} newAlpha new transparency value desired.
+     */
+    that.setAlpha = function (newAlpha) {
+        alpha = newAlpha;
+    };
+
+    /**
      * Retrieve the width of the sprite.
      */
     that.getWidth = function () {
@@ -109,6 +123,14 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      */
     that.getHeight = function () {
         return height;
+    };
+
+    /**
+     * Retrieve the transparency value of the sprite.
+     * @return {float} current transparency value.
+     */
+    that.getAlpha = function () {
+        return alpha;
     };
 
     return that;

@@ -30,6 +30,10 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
          */
         frameHeight = pHeight,
         /**
+         * Transparency of the sprite.
+         */
+        alpha = 1,
+        /**
          * Current animation being played.
          */
         currentAnim = "",
@@ -122,6 +126,7 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
         var xPosition = spatial.x, yPosition = spatial.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
+        bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
@@ -132,6 +137,7 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
         } else {
             bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, frameWidth, frameHeight);
         }
+        bufferContext.globalAlpha = 1;
 
         if (!that.finished) {
             if (currentDelay <= 0) {
@@ -194,6 +200,14 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
     };
 
     /**
+     * Set the transparency of the sprite.
+     * @param {float} newAlpha new transparency value desired.
+     */
+    that.setAlpha = function (newAlpha) {
+        alpha = newAlpha;
+    };
+
+    /**
      * Retrieve the height of a frame of the spritesheet.
      */
     that.getWidth = function () {
@@ -205,6 +219,14 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
      */
     that.getHeight = function () {
         return frameHeight;
+    };
+
+    /**
+     * Retrieve the transparency value of the sprite.
+     * @return {float} current transparency value.
+     */
+    that.getAlpha = function () {
+        return alpha;
     };
 
     return that;

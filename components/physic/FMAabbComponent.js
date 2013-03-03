@@ -2,23 +2,17 @@
  * Under Creative Commons Licence.
  *
  * @author Simon Chauvin.
+ * @param {int} pWidth width of the aabb.
+ * @param {int} pHeight height of the aabb.
  * @param {fmGameObject} The game object to which the component belongs.
  * @returns {fmAabbComponent} The axis aligned bounding box component itself.
  */
-FMENGINE.fmAabbComponent = function (pWidth, pHeight, pWorld, pOwner) {
+FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
     "use strict";
     /**
      * fmAabbComponent is based on fmPhysicComponent.
      */
-    var that = FMENGINE.fmPhysicComponent(pWorld, pOwner),
-        /**
-         * Width of the aabb
-         */
-        width = pWidth,
-        /**
-         * Height of the aabb
-         */
-        height = pHeight,
+    var that = FMENGINE.fmPhysicComponent(pWidth, pHeight, pOwner),
         /**
          * Spatial component reference.
          */
@@ -28,22 +22,34 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pWorld, pOwner) {
      * Check collisions with the world bounds and tiles.
      */
     that.checkWorldCollisions = function (collisions, worldBounds) {
+        var xPos = spatial.x + that.offset.x,
+            yPos = spatial.y + that.offset.y,
+            tileWidth,
+            tileHeight,
+            i1,
+            j1,
+            i2,
+            j2,
+            i,
+            j;
         //If the world has solid bounds
         if (worldBounds.length > 0) {
             //If the game object is colliding with one of those bounds
-            if ((worldBounds.length > 0 && spatial.x <= worldBounds[0])
-                    || (worldBounds.length > 1 && spatial.x + width >= worldBounds[1])
-                    || (worldBounds.length > 2 && spatial.y <= worldBounds[2])
-                    || (worldBounds.length > 3 && spatial.y + height >= worldBounds[3])) {
+            if ((worldBounds.length > 0 && xPos <= worldBounds[0])
+                    || (worldBounds.length > 1 && xPos + that.width >= worldBounds[1])
+                    || (worldBounds.length > 2 && yPos <= worldBounds[2])
+                    || (worldBounds.length > 3 && yPos + that.height >= worldBounds[3])) {
                 return true;
             }
         }
         //If there are collisions with tiles
         if (collisions.length > 0) {
-            var tileWidth = collisions.getTileWidth(), tileHeight = collisions.getTileHeight(),
-                i1 = Math.floor(spatial.y / tileHeight), j1 = Math.floor(spatial.x / tileWidth),
-                i2 = Math.floor((spatial.y + height) / tileHeight), j2 = Math.floor((spatial.x + width) / tileWidth),
-                i, j;
+            tileWidth = collisions.getTileWidth();
+            tileHeight = collisions.getTileHeight();
+            i1 = Math.floor(yPos / tileHeight);
+            j1 = Math.floor(xPos / tileWidth);
+            i2 = Math.floor((yPos + that.height) / tileHeight);
+            j2 = Math.floor((xPos + that.width) / tileWidth);
             for (i = i1; i <= i2; i = i + 1) {
                 for (j = j1; j <= j2; j = j + 1) {
                     if (collisions[i] && collisions[i][j] === 1) {
@@ -71,21 +77,19 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pWorld, pOwner) {
      * Check if the current aabb component is colliding with another aabb collider
      */
     that.isCollidingWithAabb = function (aabb) {
-        if ((spatial.x >= aabb.spatial.x + aabb.getWidth())
-                || (spatial.x + width <= aabb.spatial.x)
-                || (spatial.y >= aabb.spatial.y + aabb.getHeight())
-                || (spatial.y + height <= aabb.spatial.y)) {
+        var otherSpatial = aabb.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
+            xPos = spatial.x + that.offset.x,
+            yPos = spatial.y + that.offset.y,
+            otherXPos = otherSpatial.x + aabb.offset.x,
+            otherYPos = otherSpatial.y + aabb.offset.y;
+        if ((xPos >= otherXPos + aabb.width)
+                || (xPos + that.width <= otherXPos)
+                || (yPos >= otherYPos + aabb.height)
+                || (yPos + that.height <= otherYPos)) {
             return false;
         } else {
             return true;
         }
-    };
-
-    /**
-     * Check if the current aabb component is colliding with a obb collider
-     */
-    that.isCollidingWithObb = function (obb) {
-        //TODO aabb vs obb
     };
 
     /**
@@ -94,12 +98,12 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pWorld, pOwner) {
     that.isCollidingWithCircle = function (circle) {
         var spatialCircle = circle.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
             cornerDist = 0,
-            minX = spatial.x,
-            maxX = spatial.x + width,
-            minY = spatial.y,
-            maxY = spatial.y + height,
-            circleCenterX = spatialCircle.x + circle.getRadius(),
-            circleCenterY = spatialCircle.y + circle.getRadius();
+            minX = spatial.x + that.offset.x,
+            maxX = minX + that.width,
+            minY = spatial.y + that.offset.y,
+            maxY = minY + that.height,
+            circleCenterX = spatialCircle.x + circle.offset.x + circle.radius,
+            circleCenterY = spatialCircle.y + circle.offset.y + circle.radius;
 
         if (circleCenterX < minX) {
             cornerDist += (minX - circleCenterX) * (minX - circleCenterX);
@@ -114,7 +118,7 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pWorld, pOwner) {
         }
 
         //Return true if the dist to the corner is less than the radius of the circle collider
-        return (cornerDist <= (circle.getRadius() * circle.getRadius()));
+        return (cornerDist <= (circle.radius * circle.radius));
     };
 
     /**
@@ -122,8 +126,8 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pWorld, pOwner) {
      */
     that.drawDebug = function (bufferContext) {
         bufferContext.strokeStyle = '#f4f';
-        bufferContext.strokeRect(spatial.x - bufferContext.xOffset, spatial.y - bufferContext.yOffset, width,
-                                height);
+        bufferContext.strokeRect(spatial.x + that.offset.x - bufferContext.xOffset, spatial.y + that.offset.y - bufferContext.yOffset, that.width,
+                                that.height);
     };
 
     /**
@@ -134,34 +138,6 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pWorld, pOwner) {
         //TODO destroy parent attributes and objects
         allowCollisions = null;
         that = null;
-    };
-
-    /**
-     * Get the width of the bounding box.
-     */
-    that.getWidth = function () {
-        return width;
-    };
-
-    /**
-     * Get the height of the bounding box.
-     */
-    that.getHeight = function () {
-        return height;
-    };
-
-    /**
-     * Get the width of the bounding box.
-     */
-    that.setWidth = function (pWidth) {
-        width = pWidth;
-    };
-
-    /**
-     * Get the height of the bounding box.
-     */
-    that.setHeight = function (pHeight) {
-        height = pHeight;
     };
 
     return that;

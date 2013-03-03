@@ -90,6 +90,10 @@ FMENGINE.fmState = function () {
         //Add the game object to the state
         that.members.push(gameObject);
 
+        if (FMENGINE.fmParameters.debug) {
+            //TODO test if it is not a gameobject log a warning
+        }
+
         //Affect an ID to the game object
         FMENGINE.fmState.lastId += 1;
         gameObject.setId(FMENGINE.fmState.lastId);
@@ -136,21 +140,18 @@ FMENGINE.fmState = function () {
             world.ClearForces();
         }
         //Update every game object present in the state
-        var i, gameObject, spatial, pathfinding, physic, controller, components;
+        var i, gameObject, components, spatial, physic, pathfinding, emitter;
         for (i = 0; i < that.members.length; i = i + 1) {
             gameObject = that.members[i];
             if (gameObject.isAlive()) {
                 components = gameObject.components;
                 spatial = components[FMENGINE.fmComponentTypes.SPATIAL];
-                pathfinding = components[FMENGINE.fmComponentTypes.PATHFINDING];
-                controller = components[FMENGINE.fmComponentTypes.CONTROLLER];
                 physic = components[FMENGINE.fmComponentTypes.PHYSIC];
+                pathfinding = components[FMENGINE.fmComponentTypes.PATHFINDING];
+                emitter = components[FMENGINE.fmComponentTypes.FX];
                 //Update the game object
                 if (gameObject.update) {
                     gameObject.update(dt);
-                }
-                if (pathfinding) {
-                    pathfinding.update(dt);
                 }
                 //Update the physic component
                 if (physic) {
@@ -160,8 +161,8 @@ FMENGINE.fmState = function () {
                     if (scroller === gameObject) {
                         var newOffset, velocity = physic.getLinearVelocity(),
                             frameWidth = followFrame.width, frameHeight = followFrame.height,
-                            xPosition = spatial.x, yPosition = spatial.y,
-                            farthestXPosition = xPosition + physic.getWidth(), farthestYPosition = yPosition + physic.getHeight();
+                            xPosition = spatial.x + physic.offset.x, yPosition = spatial.y + physic.offset.y,
+                            farthestXPosition = xPosition + physic.width, farthestYPosition = yPosition + physic.height;
 
                         // Going left
                         if (velocity.x < 0 && xPosition <= followFrame.x) {
@@ -200,6 +201,14 @@ FMENGINE.fmState = function () {
                     if (FMENGINE.fmParameters.debug && scroller === gameObject) {
                         console.log("ERROR: The scrolling object must have a physic component.");
                     }
+                }
+                //Update the path
+                if (pathfinding) {
+                    pathfinding.update(dt);
+                }
+                //Update the emitter
+                if (emitter) {
+                    emitter.update(dt);
                 }
             }
         }
@@ -271,7 +280,7 @@ FMENGINE.fmState = function () {
 
             //Draw the physics debug information
             //TODO draw the debug from box2d
-            if (FMENGINE.fmParameters.debug) {
+            if (FMENGINE.fmParameters.debug && gameObject.isAlive()) {
                 var physic = gameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
                 if (physic) {
                     physic.drawDebug(bufferContext);

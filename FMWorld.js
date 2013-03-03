@@ -34,7 +34,7 @@ FMENGINE.fmWorld = function (pState, pWidth, pHeight) {
                         }
                         renderer.setXOffset(xOffset);
                         renderer.setYOffset(yOffset);
-                        var physicComponent = FMENGINE.fmAabbComponent(tileWidth, tileHeight, that, tileMap[i][j]);
+                        var physicComponent = FMENGINE.fmAabbComponent(tileWidth, tileHeight, tileMap[i][j]);
                         physicComponent.init(FMENGINE.fmParameters.STATIC, 1, 1, 1);
                         //TODO Remove tiles from the game objects list
                         //It shoult have its own list

@@ -2,6 +2,7 @@
  * Under Creative Commons Licence.
  *
  * @author Simon Chauvin.
+ * @param {int} pRadius radius of the circle.
  * @param {fmGameObject} The game object to which the component belongs.
  * @returns {fmCircleComponent} The circle component itself.
  */

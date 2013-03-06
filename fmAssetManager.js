@@ -14,21 +14,33 @@ FMENGINE.fmAssetManager = {
 
     /**
      * Add an asset to the list.
+     * As for sound the first to be found supported by the browser will be
+     * the only one added. You have to provide at least one supported format
+     * if you want the game to run.
      */
     addAsset: function (name, type, path) {
         "use strict";
         var assetManager = FMENGINE.fmAssetManager,
-            param = FMENGINE.fmParameters;
+            param = FMENGINE.fmParameters,
+            asset = assetManager.getAssetByName(name);
         if (type === param.IMAGE) {
-            if (!assetManager.getAssetByName(name)) {
+            if (!asset) {
                 assetManager.assets.push(FMENGINE.fmImageAsset(name, path));
             }
         } else if (type === param.AUDIO) {
-            if (!assetManager.getAssetByName(name)) {
-                assetManager.assets.push(FMENGINE.fmAudioAsset(name, path));
+            if (!asset) {
+                var sound = FMENGINE.fmAudioAsset(name, path);
+                //Add the asset only if it is supported by the browser
+                if (sound.isSupported()) {
+                    assetManager.assets.push(sound);
+                } else if (FMENGINE.fmParameters.debug) {
+                    console.log("WARNING: The " + 
+                            path.substring(path.lastIndexOf('.') + 1) + 
+                            " audio format is not supported by this browser.");
+                }
             }
         } else if (type === param.FILE) {
-            if (!assetManager.getAssetByName(name)) {
+            if (!asset) {
                 assetManager.assets.push(FMENGINE.fmFileAsset(name, path));
             }
         }

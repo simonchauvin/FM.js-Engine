@@ -15,6 +15,10 @@ FMENGINE.fmAudioAsset = function (pName, pPath) {
          */
         path = pPath,
         /**
+         * Extension of the audio file.
+         */
+        extension = path.substring(path.lastIndexOf('.') + 1),
+        /**
          * Specify the loading state of the audio file.
          */
         loaded = false,
@@ -63,6 +67,23 @@ FMENGINE.fmAudioAsset = function (pName, pPath) {
      */
     that.getPath = function () {
         return path;
+    };
+
+    /**
+     * Check if the audio format is supported by the browser.
+     */
+    that.isSupported = function () {
+        var canPlayThisType = false;
+        if (extension === "wav") {
+            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/wav; codecs="1"') !== "";
+        } else if (extension === "ogg") {
+            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/ogg; codecs="vorbis"') !== "";
+        } else if (extension === "mp3") {
+            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/mpeg;') !== "";
+        } else if (extension === "aac") {
+            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/mp4; codecs="mp4a.40.2"') !== "";
+        }
+        return canPlayThisType;
     };
 
     return that;

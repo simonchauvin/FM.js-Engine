@@ -17,6 +17,7 @@ Features:
 - Keyboard and mouse input management
 - Game states management
 - Camera management (viewport, scrolling, culling)
+- Groups game objects together
 - Simple physics with AABB and circles
 - Orthogonal tiles management
 - Texts, sprites and animated sprites management

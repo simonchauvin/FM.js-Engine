@@ -123,16 +123,16 @@ FMENGINE.fmGame = (function () {
                 //Fade screen
                 bufferContext.fillStyle = "rgba(99,99,99,0.5)";
                 bufferContext.fillRect(0, 0, screenWidth, screenHeight);
-                //Show pause icon
-                bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmPauseIcon"), screenWidth / 2 - 50, screenHeight / 2 - 100);
-                bufferContext.drawImage(FMENGINE.fmAssetManager.getAssetByName("fmMuteIcon"), screenWidth / 2 - 25, screenHeight - 160);
-                //Show pause texts
-                bufferContext.fillStyle = '#fff';
-                bufferContext.font = '50px bold sans-serif';
-                bufferContext.textBaseline = 'middle';
-                bufferContext.fillText("PAUSE", screenWidth / 2 - 70, screenHeight / 2 - 200);
-                bufferContext.font = '15px sans-serif';
-                bufferContext.fillText("Powered by {FM.js(engine);}", screenWidth / 2 - 65, screenHeight - 15);
+
+                //Draw pause icon
+                bufferContext.fillStyle   = 'rgba(255,255,255,1)';
+                bufferContext.beginPath();
+                bufferContext.moveTo(screenWidth / 2 + 60, screenHeight / 2);
+                bufferContext.lineTo(screenWidth / 2 - 60, screenHeight / 2 - 60);
+                bufferContext.lineTo(screenWidth / 2 - 60, screenHeight / 2 + 60);
+                bufferContext.lineTo(screenWidth / 2 + 60, screenHeight / 2);
+                bufferContext.fill();
+                bufferContext.closePath();
             }
 
             // If debug mode if active
@@ -209,24 +209,29 @@ FMENGINE.fmGame = (function () {
         };
 
     /**
-     * Init the game.
+     * Start running the game.
+     * @param {type} pCanvasId description.
+     * @param {string} pName description.
+     * @param {int} pWidth description.
+     * @param {int} pHeight description.
+     * @param {fmState} pFirstState description.
+     * @param {fmPreloader} pCustomPreloader preloader to be used.
+     * 
      */
-    that.init = function (pCanvasId, pName, pWidth, pHeight, pFirstState) {
+    that.run = function (pCanvasId, pName, pWidth, pHeight, pFirstState, pCustomPreloader) {
         name = pName;
         screenWidth = pWidth;
         screenHeight = pHeight;
-        currentState = FMENGINE.fmPreloader(pFirstState);
         canvas = document.getElementById(pCanvasId);
-    };
-
-    /**
-    * Start running the game.
-    */
-    that.run = function () {
+        if (pCustomPreloader) {
+            currentState = pCustomPreloader(pFirstState);
+        } else {
+            currentState = FMENGINE.fmPreloader(pFirstState);
+        }
         //Create canvas context if it exists and use double buffering
         if (canvas && canvas.getContext) {
             context = canvas.getContext("2d");
-    
+
             if (context) {
                 canvas.width = screenWidth;
                 canvas.height = screenHeight;

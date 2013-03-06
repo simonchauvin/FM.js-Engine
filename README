@@ -2,7 +2,6 @@
 
 {FM.js(engine);} is a free and open source 2D game engine for HTML5 developers.
 Entirely built with JavaScript it allows you to build your games and prototypes quickly.
-Based on components {FM.js(engine);} can easily be extended through new custom components.
 It runs on every modern browser and does not rely on any external libraries such as jQuery or Prototype.
 
 How to:
@@ -18,25 +17,16 @@ Features:
 - Keyboard and mouse input management
 - Game states management
 - Camera management (viewport, scrolling, culling)
-- Optional physics width Box2D (box, circle, gravity, etc.) through the use of components
-- Simple collision detection without Box2D through AABB and circle components
+- Simple physics with AABB and circles
 - Orthogonal tiles management
-- Preloader
-- Text, sprites and animated sprites rendering
+- Texts, sprites and animated sprites management
+- Particles!
+- Simple pathfinding system
+- Assets preloading
 - Debug information
 
-Current components:
+Future work:
 
-- Box2D box and circle physic component
-- AABB and circle components for collision detection without Box2D
-- Text renderer
-- Sprite renderer
-- Animated sprite renderer with multi-rows spritesheet
-
-Future work :
-
-- Simple particles system
-- Simple physic components for avoiding Box2D
-- Proof the engine for mobile devices
 - Input management for touch devices
 - Isometric tiles management
+- OBB physics

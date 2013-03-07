@@ -1,42 +1,56 @@
-public class TmxObject
-{
-        public var group:TmxObjectGroup;
-        public var name:String;
-        public var type:String;
-        public var x:int;
-        public var y:int;
-        public var width:int;
-        public var height:int;
-        public var gid:int;
-        public var custom:TmxPropertySet;
-        public var shared:TmxPropertySet;
-
-        public function TmxObject(source:XML, parent:TmxObjectGroup)
-        {
-                group = parent;
-                name = source.@name;
-                type = source.@type;
-                x = source.@x; 
-                y = source.@y; 
-                width = source.@width; 
-                height = source.@height;
-                //resolve inheritence
-                shared = null;
-                gid = -1;
-                if(source.@gid.length != 0) //object with tile association?
-                {
-                        gid = source.@gid;
-                        for each(var tileSet:TmxTileSet in group.map.tileSets)
-                        {
-                                shared = tileSet.getPropertiesByGid(gid);
-                                if(shared)
-                                        break;
-                        }
+/**
+ * 
+ */
+var tmxObject = function (objectNode, parent) {
+    var that = {};
+    /**
+     * 
+     */
+    that.group = parent;
+    that.name = objectNode.getAttribute("name");
+    that.type = objectNode.getAttribute("type");
+    that.x = parseInt(objectNode.getAttribute("x"));
+    that.y = parseInt(objectNode.getAttribute("y"));
+    that.width = parseInt(objectNode.getAttribute("width"));
+    that.height = parseInt(objectNode.getAttribute("height"));
+    //resolve inheritence
+    that.shared = null;
+    that.gid = -1;
+    if (objectNode.getAttribute("gid") && objectNode.getAttribute("gid").length !== 0) {
+        that.gid = parseInt(objectNode.getAttribute("gid"));
+        var tileSets = objectNode.map.getElementsByTagName("tileset"),
+            tileSet,
+            i;
+        if (tileSets) {
+            for (i = 0; i < tileSets.length; i = i + 1) {
+                tileSet = tileSets[i];
+                that.shared = tileSet.getPropertiesByGid(that.gid);
+                if (that.shared) {
+                    break;
                 }
-
-                //load properties
-                var node:XML;
-                for each(node in source.properties)
-                        custom = custom ? custom.extend(node) : new TmxPropertySet(node);
+            }
         }
-}
+    }
+
+    //Load properties
+    var properties = objectNode.getElementsByTagName("properties")[0],
+        property,
+        i;
+    if (properties) {
+        for (i = 0; i < properties.childNodes.length; i = i + 1) {
+            if (properties.hasChildNodes() === true) {
+                property = properties.childNodes[i];
+                if (property.nodeType === 1) {
+                    if (that.custom) {
+                        that.custom.add(property);
+                    } else {
+                        that.custom = tmxPropertySet();
+                        that.custom.add(property);
+                    }
+                }
+            }
+        }
+    }
+
+    return that;
+};

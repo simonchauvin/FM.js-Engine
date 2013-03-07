@@ -27,30 +27,34 @@ var tmxTileSet = function () {
      */
     that.load = function (tileSetNode, parent) {
         map = parent;
-        that.firstGID = tileSetNode.getAttribute("firstgid");
+        that.firstGID = parseInt(tileSetNode.getAttribute("firstgid"));
         that.imageSource = tileSetNode.getElementsByTagName("image")[0].getAttribute("source");
         that.name = tileSetNode.getAttribute("name");
-        that.tileWidth = tileSetNode.getAttribute("tilewidth");
-        that.tileHeight = tileSetNode.getAttribute("tileheight");
-        that.spacing = tileSetNode.getAttribute("spacing");
-        that.margin = tileSetNode.getAttribute("margin");
+        that.tileWidth = parseInt(tileSetNode.getAttribute("tilewidth"));
+        that.tileHeight = parseInt(tileSetNode.getAttribute("tileheight"));
+        that.spacing = parseInt(tileSetNode.getAttribute("spacing"));
+        that.margin = parseInt(tileSetNode.getAttribute("margin"));
 
-        //Read properties
+        //Load properties
         var tiles = tileSetNode.getElementsByTagName("tile"),
             tile,
             properties,
             property,
             i,
             j;
-        for (i = 0; i < tiles.length; i++) {
-            tile = tiles[i];
-            properties = tile.getElementsByTagName("properties")[0];
-            for (j = 0; j < properties.childNodes.length; j++) {
-                if (properties.hasChildNodes() === true) {
-                    property = properties.childNodes[j];
-                    if (property.nodeType === 1) {
-                        tileProperties[tile.getAttribute("id")] = tmxPropertySet();
-                        tileProperties[tile.getAttribute("id")].add(property);
+        if (tiles) {
+            for (i = 0; i < tiles.length; i++) {
+                tile = tiles[i];
+                properties = tile.getElementsByTagName("properties")[0];
+                if (properties) {
+                    for (j = 0; j < properties.childNodes.length; j++) {
+                        if (properties.hasChildNodes() === true) {
+                            property = properties.childNodes[j];
+                            if (property.nodeType === 1) {
+                                tileProperties[tile.getAttribute("id")] = tmxPropertySet();
+                                tileProperties[tile.getAttribute("id")].add(property);
+                            }
+                        }
                     }
                 }
             }
@@ -82,16 +86,16 @@ var tmxTileSet = function () {
     };
 
     that.getPropertiesByGid = function (gid) {
-        return tileProperties[gid - that.firstGID];	
+        return tileProperties[gid - that.firstGID];
     };
 
     that.getProperties = function (id) {
-        return tileProperties[id];	
+        return tileProperties[id];
     };
 
     that.getRect = function (id) {
         //TODO: consider spacing & margin
-        return new Rectangle((id % that.numCols) * that.tileWidth, (id / that.numCols) * that.tileHeight);
+        return new FMENGINE.fmRectangle(0, 0, (id % that.numCols) * that.tileWidth, (id / that.numCols) * that.tileHeight);
     };
 
     return that;

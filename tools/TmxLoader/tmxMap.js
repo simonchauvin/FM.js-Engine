@@ -65,51 +65,59 @@ var tmxMap = function () {
         map = xmlDoc.getElementsByTagName("map")[0];
         that.version = map.getAttribute("version") || "unknown";
         that.orientation = map.getAttribute("orientation") || "orthogonal";
-        that.width = map.getAttribute("width");
-        that.height = map.getAttribute("height");
-        that.tileWidth = map.getAttribute("tilewidth");
-        that.tileHeight = map.getAttribute("tileheight");
+        that.width = parseInt(map.getAttribute("width"));
+        that.height = parseInt(map.getAttribute("height"));
+        that.tileWidth = parseInt(map.getAttribute("tilewidth"));
+        that.tileHeight = parseInt(map.getAttribute("tileheight"));
 
-        //Read properties
         var properties = map.getElementsByTagName("properties")[0],
             tileSets = map.getElementsByTagName("tileset"),
             layers = map.getElementsByTagName("layer"),
-            objectGroups = map.getElementsByTagName("objectGroup"),
+            objectGroups = map.getElementsByTagName("objectgroup"),
             property,
             tileSet,
             layer,
             objectGroup,
             i;
-        for (i = 0; i < properties.childNodes.length; i++) {
-            if (properties.hasChildNodes() === true) {
-                property = properties.childNodes[i];
-                if (property.nodeType === 1) {
-                    if (that.properties) {
-                        that.properties.add(property);
-                    } else {
-                        that.properties = tmxPropertySet();
-                        that.properties.add(property);
+        //Load properties
+        if (properties) {
+            for (i = 0; i < properties.childNodes.length; i++) {
+                if (properties.hasChildNodes() === true) {
+                    property = properties.childNodes[i];
+                    if (property.nodeType === 1) {
+                        if (that.properties) {
+                            that.properties.add(property);
+                        } else {
+                            that.properties = tmxPropertySet();
+                            that.properties.add(property);
+                        }
                     }
                 }
             }
         }
         //Load tilesets
-        for (i = 0; i < tileSets.length; i++) {
-            tileSet = tileSets[i];
-            that.tileSets[tileSet.getAttribute("name")] = tmxTileSet();
-            that.tileSets[tileSet.getAttribute("name")].load(tileSet, that);
+        if (tileSets) {
+            for (i = 0; i < tileSets.length; i++) {
+                tileSet = tileSets[i];
+                that.tileSets[tileSet.getAttribute("name")] = tmxTileSet();
+                that.tileSets[tileSet.getAttribute("name")].load(tileSet, that);
+            }
         }
         //Load layer
-        for (i = 0; i < layers.length; i++) {
-            layer = layers[i];
-            that.layers[layer.getAttribute("name")] = tmxLayer();
-            that.layers[layer.getAttribute("name")].load(layer, that);
+        if (layers) {
+            for (i = 0; i < layers.length; i++) {
+                layer = layers[i];
+                that.layers[layer.getAttribute("name")] = tmxLayer();
+                that.layers[layer.getAttribute("name")].load(layer, that);
+            }
         }
         //Load object group
-        for (i = 0; i < objectGroups.length; i++) {
-            objectGroup = objectGroups[i];
-            that.objectGroups[objectGroup.getAttribute("name")] = tmxObjectGroup();
-            that.objectGroups[objectGroup.getAttribute("name")].load(objectGroup, that);
+        if (objectGroups) {
+            for (i = 0; i < objectGroups.length; i++) {
+                objectGroup = objectGroups[i];
+                that.objectGroups[objectGroup.getAttribute("name")] = tmxObjectGroup();
+                that.objectGroups[objectGroup.getAttribute("name")].load(objectGroup, that);
+            }
         }
     };
 
@@ -117,21 +125,21 @@ var tmxMap = function () {
      * 
      */
     that.getTileSet = function (name) {
-        return tileSets[name];
+        return that.tileSets[name];
     };
 
     /**
      * 
      */
     that.getLayer = function (name) {
-            return layers[name];
+        return that.layers[name];
     };
 
     /**
      * 
      */
     that.getObjectGroup = function (name) {
-        return objectGroups[name];	
+        return that.objectGroups[name];	
     };			
 
     /**
@@ -139,13 +147,13 @@ var tmxMap = function () {
      */
     that.getGidOwner = function (gid) {
         var last = null;
-        for (var tileSet in tileSets)
+        for (var tileSet in that.tileSets)
         {
-                if(tileSet.hasGid(gid))
-                        return tileSet;
+            if(tileSet.hasGid(gid))
+                return tileSet;
         }
         return null;
     };
 
     return that;
-}
+};

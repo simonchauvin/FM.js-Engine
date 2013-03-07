@@ -13,12 +13,16 @@ FMENGINE.fmSoundComponent = function (pSound, pOwner) {
         sound = pSound;
 
     /**
-     * Play the sound with a given volume and starting time.
+     * Play the sound given a certain volume and whether the sound loop or not.
      */
-    that.play = function (volume, startingTime) {
+    that.play = function (volume, loop) {
         sound.volume = volume;
-        //TODO give current time
-        //sound.currentTime = startingTime;
+        if (loop) {
+            sound.addEventListener('ended', function() {
+                this.currentTime = 0;
+                this.play();
+            }, false);
+        }
         sound.play();
     };
 

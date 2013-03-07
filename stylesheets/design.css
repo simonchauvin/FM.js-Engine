@@ -75,6 +75,36 @@ a:visited
 	font-size: 1.1em;
 }
 
+#home_content
+{
+    display: block;
+}
+
+#features_content
+{
+    display: none;
+}
+
+#gallery_content
+{
+    display: none;
+}
+
+#download_content
+{
+    display: none;
+}
+
+#community_content
+{
+    display: none;
+}
+
+#help_content
+{
+    display: none;
+}
+
 #content ul
 {
 	float: left;
@@ -202,34 +232,4 @@ a.help:hover
 #footer a
 {
 	color: rgb(66,67,71);
-}
-
-#home_content
-{
-	visibility: visible;
-}
-
-#features_content
-{
-	visibility: hidden;
-}
-
-#gallery_content
-{
-	visibility: hidden;
-}
-
-#download_content
-{
-	visibility: hidden;
-}
-
-#community_content
-{
-	visibility: hidden;
-}
-
-#help_content
-{
-	visibility: hidden;
 }

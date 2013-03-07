@@ -62,7 +62,7 @@ FMENGINE.fmState = function () {
         screenWidth = FMENGINE.fmGame.getScreenWidth();
         screenHeight = FMENGINE.fmGame.getScreenHeight();
         //By default init the world to the size of the screen with all borders solid
-        that.world = FMENGINE.fmWorld(that, screenWidth, screenHeight);
+        that.world = FMENGINE.fmWorld(screenWidth, screenHeight);
 
         //Set the camera size by the chosen screen size
         that.camera.width = screenWidth;

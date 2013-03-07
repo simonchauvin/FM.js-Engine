@@ -122,22 +122,13 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
      */
     that.angularAcceleration = 0;
     /**
-     * Ground friction is a factor between 0 and 1
+     * Friction is a factor between 0 and 1 diminishing the velocity.
      */
-    that.groundFriction = 0;
+    that.friction = 0;
     /**
-     * Air friction is a factor between 0 and 1
+     * Elasticity is a factor between 0 and 1 used for bouncing purposes.
      */
-    that.airFriction = 0;
-    /**
-     * Bouncing is a factor between 0 and 1
-     */
-    that.bouncing = 0;
-    /**
-     * Gravity represent how fast the game object is going toward the bottom
-     * //TODO define an x and y gravity so that it can be a vector !
-     */
-    that.gravity = 0;
+    that.elasticity = 0;
     /**
      * 
      */
@@ -187,12 +178,6 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
 	//Reset accelerations
 	//that.xAcceleration = 0;
 	//that.yAcceleration = 0;
-
-	//Increase yVelocity_ because of gravity
-        //TODO change so that a gravity from other side can be done
-        //if (that.gravity != 0 && !onGround) {
-        that.yVelocity += that.gravity;
-        //}
 
         //If the object has a collider component
         //if (that.collider) {
@@ -331,7 +316,7 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
 	    //If impossible to move the game object is as far as it can be
 	    if (!tryToMove(collisions, worldBounds, vel, 0)) {
 		//Bounce against aabb (tiles) or world bounds
-		that.xVelocity = that.bouncing * -that.xVelocity;
+		that.xVelocity = that.elasticity * -that.xVelocity;
 		break;
 	    }
 	}
@@ -348,7 +333,7 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
 	    //If impossible to move the game object is as far as it can be
 	    if (!tryToMove(collisions, worldBounds, 0, vel)) {
 		//Bounce against aabb (tiles) or world bounds
-		that.yVelocity = that.bouncing * -that.yVelocity;
+		that.yVelocity = that.elasticity * -that.yVelocity;
 		break;
 	    }
 	}

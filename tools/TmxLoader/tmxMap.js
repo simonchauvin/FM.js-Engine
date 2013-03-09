@@ -2,6 +2,7 @@
  * 
  */
 var tmxMap = function () {
+    "use strict";
     var that = {},
         /**
          * 

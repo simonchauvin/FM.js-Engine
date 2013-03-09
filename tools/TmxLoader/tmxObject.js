@@ -2,6 +2,7 @@
  * 
  */
 var tmxObject = function (objectNode, parent) {
+    "use strict";
     var that = {};
     /**
      * 
@@ -18,7 +19,7 @@ var tmxObject = function (objectNode, parent) {
     that.gid = -1;
     if (objectNode.getAttribute("gid") && objectNode.getAttribute("gid").length !== 0) {
         that.gid = parseInt(objectNode.getAttribute("gid"));
-        var tileSets = objectNode.map.getElementsByTagName("tileset"),
+        var tileSets = that.group.map.tileSets,
             tileSet,
             i;
         if (tileSets) {

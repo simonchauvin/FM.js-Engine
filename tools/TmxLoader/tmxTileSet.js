@@ -2,6 +2,7 @@
  * 
  */
 var tmxTileSet = function () {
+    "use strict";
     var that = {},
         tileProperties = [],
         image = null;
@@ -26,7 +27,7 @@ var tmxTileSet = function () {
      * @param {type} parent
      */
     that.load = function (tileSetNode, parent) {
-        map = parent;
+        that.map = parent;
         that.firstGID = parseInt(tileSetNode.getAttribute("firstgid"));
         that.imageSource = tileSetNode.getElementsByTagName("image")[0].getAttribute("source");
         that.name = tileSetNode.getAttribute("name");

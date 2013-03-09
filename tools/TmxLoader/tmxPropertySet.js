@@ -2,6 +2,7 @@
  * 
  */
 var tmxPropertySet = function () {
+    "use strict";
     var that = [];
 
     /**

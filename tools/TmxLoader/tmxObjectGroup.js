@@ -2,6 +2,7 @@
  * 
  */
 var tmxObjectGroup = function () {
+    "use strict";
     var that = {};
     /**
      * 

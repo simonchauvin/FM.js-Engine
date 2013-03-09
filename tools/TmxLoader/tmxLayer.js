@@ -2,6 +2,7 @@
  * 
  */
 var tmxLayer = function () {
+    "use strict";
     var that = {};
     that.map;
     that.name;

@@ -12,31 +12,10 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
      * fmPhysicComponent is based on fmComponent.
      */
     var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.PHYSIC, pOwner),
-	/**
-         *
-         */
-        ANY = 0,
         /**
-         *
+         * 
          */
-        TOP = 1,
-        /**
-         *
-         */
-        BOTTOM = 2,
-        /**
-         *
-         */
-        LEFT = 3,
-        /**
-         *
-         */
-        RIGHT = 4,
-        /**
-         * By default the bounding box allow collisions on every sides
-         * TODO add param in init function and use that to know wich side should be colliding
-         */
-        allowCollisions = FMENGINE.fmParameters.ANY,
+        gameObjects = FMENGINE.fmGame.getCurrentState().gameObjects,
         /**
 	 * World of the game.
 	 */
@@ -45,10 +24,6 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
          * The current direction of the object
          */
         direction = 0,
-        /**
-         * To know if the object is on the ground or not
-         */
-        onGround = false,
 	/**
         * Spatial component reference.
         */

@@ -41,7 +41,7 @@ a:visited
 	height: 132px;
 }
 
-#content
+#background_content
 {
 	float: left;
 	margin-left: 40px;
@@ -51,28 +51,27 @@ a:visited
 	height: 700px;
 }
 
-#content .title
+#background_content .title
 {
 	float: left;
 	width: 800px;
 	height: 30px;
 	margin-left: 210px;
+        margin-top: 6px;
 }
 
-#content p.left
+.content
 {
 	float: left;
-	margin: 30px;
-	text-align: left;
+        margin-top: 60px;
+	margin-left: 40px;
+        margin-right: 40px;
 }
 
-#content p.center
+.content ul
 {
 	float: left;
-	margin-left: 30px;
-	margin-right: 30px;
-	text-align: center;
-	font-size: 1.1em;
+        list-style-type: square;
 }
 
 #home_content
@@ -105,12 +104,6 @@ a:visited
     display: none;
 }
 
-#content ul
-{
-	float: left;
-	list-style-type: square;
-}
-
 a.home
 {
 	float: left;
@@ -123,7 +116,7 @@ a.home
 
 a.home:hover
 {
-	background-position: 100px 0px;
+	background-position: -100px 0px;
 	height: 62px;
 }
 

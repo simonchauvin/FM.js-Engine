@@ -24,76 +24,92 @@
                   <a href="index.html#home"><span class="logo"><img alt="{FM.js(engine);}" title="{FM.js(engine);}" src="images/logo.png" width="550px" border="0"/></span></a>
               </div>
               <div id="menu">
-                <a href="index.html#home" class="home"></a>
-                <a href="index.html#features" class="features"></a>
-                <a href="index.html#gallery" class="gallery"></a>
-                <a href="index.html#download" class="download"></a>
-                <a href="index.html#community" class="community"></a>
-                <a href="index.html#help" class="help"></a>
+                  <a href="index.html#home" class="home" onclick="menuClick('home_content', 'home')"></a>
+                <a href="index.html#features" class="features" onclick="menuClick('features_content', 'features')"></a>
+                <a href="index.html#gallery" class="gallery" onclick="menuClick('gallery_content', 'gallery')"></a>
+                <a href="index.html#download" class="download" onclick="menuClick('download_content', 'download')"></a>
+                <a href="index.html#community" class="community" onclick="menuClick('community_content', 'community')"></a>
+                <a href="index.html#help" class="help" onclick="menuClick('help_content', 'help')"></a>
               </div>
-            <div id="content">
-                  <div id="home_content">
-                      <span class="title"><img alt="Home" title="Home" src="images/home_title.png" width="300px" border="0"/></span>
-                      <p class="center">
-                          <ul>
-                              <li>FM JS Engine is a 2D game engine entirely written in JavaScript that'll empower you to build your games quickly.</li>
-                              <li>It's an easy to learn 2D game engine that should fit your every need while being customizable at the same time.</li>
-                              <li>Games for everyone and for everywhere.</li>
-                              <li>You don't need consoles, plugins or specific platforms.</li>
-                              <li>You just make a game that'll run on every modern browsers.</li>
-                          </ul>
-                      </p>
-                      <p class="left">
-                          If you want to check what you can do with it make sure to visit <a href="index.php?page=features">this</a> page. <br>
-                          In case you are looking for information about the engine please go <a href="index.php?page=help">here</a>. <br>
-                          You can also check the various games and experiments made with FM JS Engine <a href="index.php?page=gallery">here</a>. <br>
-                          Do not hesitate to use the <a href="index.php?page=community">community forum</a> for any questions and requests.
-                          And finally don't forget to <a href="index.php?page=download">download</a> the engine ! <br>
-                      </p>
+            <div id="background_content">
+                <div id="home_content">
+                    <span class="title"><img alt="Home" title="Home" src="images/home_title.png" width="300px" border="0"/></span>
+                    <br>
+                    <div class="content">
+                        <ul>
+                            <li>FM JS Engine is a 2D game engine entirely written in JavaScript that'll empower you to build your games quickly.</li>
+                            <li>It's an easy to learn 2D game engine that should fit your every need while being customizable at the same time.</li>
+                            <li>Games for everyone and for everywhere.</li>
+                            <li>You don't need consoles, plugins or specific platforms.</li>
+                            <li>You just make a game that'll run on every modern browsers.</li>
+                        </ul>
+                        <p>
+                              If you want to check what you can do with it make sure to visit <a href="index.php?page=features">this</a> page. <br>
+                              In case you are looking for information about the engine please go <a href="index.php?page=help">here</a>. <br>
+                              You can also check the various games and experiments made with FM JS Engine <a href="index.php?page=gallery">here</a>. <br>
+                              Do not hesitate to use the <a href="index.php?page=community">community forum</a> for any questions and requests.
+                              And finally don't forget to <a href="index.php?page=download">download</a> the engine ! <br>
+                        </p>
+                    </div>
                   </div>
                     <div id="features_content">
                         <span class="title"><img alt="Features" title="Features" src="images/features_title.png" width="300px" border="0"/></span>
-                        <p class="left">
-                            Demos coming soon.
-                        </p>
+                        <br>
+                        <div class="content">
+                            <p>
+                                Demos coming soon.
+                            </p>
+                        </div>
                     </div>
                 <div id="gallery_content">
                     <span class="title"><img alt="Gallery" title="Gallery" src="images/gallery_title.png" width="300px" border="0"/></span>
-                    <p class="left">
-                        Games are coming someday eventually !
-                    </p>
+                    <br>
+                    <div class="content">
+                        <p>
+                            Games are coming someday eventually !
+                        </p>
+                    </div>
                 </div>
                 <div id="download_content">
                     <span class="title"><img alt="Download" title="Download" src="images/download_title.png" width="300px" border="0"/></span>
-                    <p class="left">
-                        The FM JS Engine comes in three flavors :
+                    <br>
+                    <div class="content">
+                        <p>
+                            The FM JS Engine comes in three flavors :
+                        </p>
                         <ul>
                             <li>Full : if you need to change parts of the code for whatever good reasons.</li>
                             <li>One file : if you just need to be able to see parts of the code from time to time.</li>
                             <li>Minified : once you finished your game this is the best way to keep the file very small.</li>
                         </ul>
-                    </p>
+                    </div>
                     <a href="https://github.com/simonchauvin/FMJSEngine/zipball/master" class="btn">Download as .zip</a>
                     <a href="https://github.com/simonchauvin/FMJSEngine/tarball/master" class="btn">Download as .tar.gz</a>
                     <a href="https://github.com/simonchauvin/FMJSEngine" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
                 </div>
                 <div id="community_content">
                     <span class="title"><img alt="Community" title="Community" src="images/community_title.png" width="300px" border="0"/></span>
-                    <p class="left">
-                        Forum coming soon.
-                    </p>
+                    <br>
+                    <div class="content">
+                        <p>
+                            Forum coming soon.
+                        </p>
+                    </div>
                 </div>
                 <div id="help_content">
                     <span class="title"><img alt="Help" title="Help" src="images/help_title.png" width="300px" border="0"/></span>
-                    <p class="left">
-                        Here you can check the API reference and consult the documentation.
-                    </p>
+                    <br>
+                    <div class="content">
+                        <p>
+                            Here you can check the API reference and consult the documentation.
+                        </p>
 
-                        <pre class="brush: js">
-                                function foo()
-                                {
-                                }
-                        </pre>
+                            <pre class="brush: js">
+                                    function foo()
+                                    {
+                                    }
+                            </pre>
+                    </div>
                 </div>
             </div>
             <div id="footer">

@@ -57,9 +57,9 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
             yReached = false;
         } else if (FMENGINE.fmParameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
-            if (!physic) {
-                console.log("WARNING: path added to a game object with no physic component.");
-            }
+        }
+        if (!physic) {
+            console.log("WARNING: path added to a game object with no physic component.");
         }
     };
 
@@ -72,9 +72,9 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
             active = true;
         } else if (FMENGINE.fmParameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
-            if (!physic) {
-                console.log("WARNING: path added to a game object with no physic component.");
-            }
+        }
+        if (!physic) {
+            console.log("WARNING: path added to a game object with no physic component.");
         }
     };
 
@@ -155,9 +155,14 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
      * Add a waypoint to the path.
      * @param {int} pX x position.
      * @param {int} pY y position.
+     * @param {int} index optional index at which adding the waypoint.
      */
-    that.add = function (pX, pY) {
-        waypoints.push({x : pX, y : pY});
+    that.add = function (pX, pY, index) {
+        if (index === undefined) {
+            waypoints.push({x : pX, y : pY});
+        } else {
+            waypoints[index] = {x : pX, y : pY};
+        }
     };
 
     /**

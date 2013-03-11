@@ -1,7 +1,7 @@
 ***************** {FM.js(engine);} *****************
 
 {FM.js(engine);} is a free and open source 2D game engine for HTML5 developers.
-Entirely built with JavaScript it allows you to build your games and prototypes quickly.
+Entirely written in JavaScript it allows you to build your games and prototypes quickly.
 It runs on every modern browser and does not rely on any external libraries such as jQuery or Prototype.
 
 How to:
@@ -17,17 +17,19 @@ Features:
 - Keyboard and mouse input management
 - Game states management
 - Camera management (viewport, scrolling, culling)
-- Groups game objects together
+- Types affectation (create group)
 - Simple physics with AABB and circles
 - Orthogonal tiles management
+- Import from tmx files (Tiled Map Editor))
 - Texts, sprites and animated sprites management
 - Particles!
 - Simple pathfinding system
-- Assets preloading
+- Assets preloading (custom preloader)
 - Debug information
 
 Future work:
 
+- Quadtree for collision detection
 - Input management for touch devices
 - Isometric tiles management
 - OBB physics

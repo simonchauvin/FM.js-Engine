@@ -23,6 +23,15 @@ FMENGINE.fmState = function () {
          */
         followFrame = null,
         /**
+         * Quad tree containing all game objects with a physic component.
+         */
+        quad = null,
+        /**
+         * Object representing the world topology (bounds, tiles, collisions, 
+         * objects).
+         */
+        world = null,
+        /**
          * Private method that sort game objects according to their z index.
          * @param {int} gameObjectA first game object to be sorted.
          * @param {int} gameObjectB second game object to be sorted.
@@ -42,41 +51,26 @@ FMENGINE.fmState = function () {
      */
     FMENGINE.fmState.lastId = 0;
     /**
-     * Object representing the world topology (bounds, tiles, collisions, objects).
-     */
-    that.world = null;
-    /**
     * Camera (limited by the screen resolution of the game).
     */
     that.camera = FMENGINE.fmRectangle(0, 0, 0, 0);
-    /**
-    * Array of arrays that stores colliders.
-    */
-    //var colliders = [];
 
     /**
     * Initialize the state the state. Can be redefined in sub classes for 
     * specialization.
     */
-    that.init = function () {
+    that.init = function (pWorldWidth, pWorldHeight) {
         screenWidth = FMENGINE.fmGame.getScreenWidth();
         screenHeight = FMENGINE.fmGame.getScreenHeight();
         //By default init the world to the size of the screen with all borders solid
-        that.world = FMENGINE.fmWorld(screenWidth, screenHeight);
+        world = FMENGINE.fmWorld(pWorldWidth || screenWidth, pWorldHeight || screenHeight);
+        //Create the quad tree
+        quad = new QuadTree({x: 0, y: 0, width: pWorldWidth || screenWidth, height: pWorldHeight || screenHeight});
 
         //Set the camera size by the chosen screen size
         that.camera.width = screenWidth;
         that.camera.height = screenHeight;
 
-        //TODO quadtree for colliders (ease up collision detection)
-        /*var i;
-        for (i = 0; i < 8; i++) {
-            colliders.push([]);
-            var j;
-            for (j = 0; j < 8; j++) {
-                colliders[i].push([]);
-            }
-        }*/
         if (FMENGINE.fmParameters.debug) {
             console.log("INIT: The state has been created.");
         }
@@ -98,14 +92,10 @@ FMENGINE.fmState = function () {
         FMENGINE.fmState.lastId += 1;
         gameObject.setId(FMENGINE.fmState.lastId);
 
-//        if (gameObject && gameObject.components[fmComponentTypes.renderer]) {
-//                var spatial = gameObject.components[fmComponentTypes.spatial];
-//                if (gameObject.components[fmComponentTypes.collider]) {
-//                        var indexI = Math.floor((spatial.x - 1) / (that.worldBounds.width / 8));
-//                        var indexJ = Math.floor((spatial.y - 1) / (that.worldBounds.height / 8));
-//                        colliders[indexI][indexJ].push(gameObject);
-//                }
-//        }
+        //Add the game object to the quad tree if it's got a physic component
+        if (gameObject.getComponent(FMENGINE.fmComponentTypes.PHYSIC)) {
+            quad.insert(gameObject);
+        }
     };
 
     /**
@@ -134,10 +124,10 @@ FMENGINE.fmState = function () {
         //Update the Box2D world if it is present
         //TODO fix the physics timestep !
         //TODO regular simple physics should update here too
-        var world = that.world.box2DWorld;
-        if (world) {
-            world.Step(1 / FMENGINE.fmParameters.FPS, 10, 10);
-            world.ClearForces();
+        var w = world.box2DWorld;
+        if (w) {
+            w.Step(1 / FMENGINE.fmParameters.FPS, 10, 10);
+            w.ClearForces();
         }
         //Update every game object present in the state
         var i, gameObject, components, spatial, physic, pathfinding, emitter;
@@ -183,7 +173,7 @@ FMENGINE.fmState = function () {
                         // Going right
                         if (velocity.x > 0 && farthestXPosition >= followFrame.x + frameWidth) {
                             newOffset = that.camera.x + velocity.x * dt;
-                            if (newOffset + that.camera.width <= that.world.width) {
+                            if (newOffset + that.camera.width <= world.width) {
                                 that.camera.x = newOffset;
                                 followFrame.x += velocity.x * dt;
                             }
@@ -191,7 +181,7 @@ FMENGINE.fmState = function () {
                         // Going down
                         if (velocity.y > 0 && farthestYPosition >= followFrame.y + frameHeight) {
                             newOffset = that.camera.y + velocity.y * dt;
-                            if (newOffset + that.camera.height <= that.world.height) {
+                            if (newOffset + that.camera.height <= world.height) {
                                 that.camera.y = newOffset;
                                 followFrame.y += velocity.y * dt;
                             }
@@ -291,7 +281,7 @@ FMENGINE.fmState = function () {
         if (FMENGINE.fmParameters.debug) {
             //Display the world bounds
             bufferContext.strokeStyle = '#f0f';
-            bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, that.world.width, that.world.height);
+            bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, world.width, world.height);
 
             //Display the camera bounds
             bufferContext.strokeStyle = '#8fc';
@@ -312,11 +302,11 @@ FMENGINE.fmState = function () {
     that.centerCameraOn = function (gameObject) {
         var spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL],
             newPosition = spatial.x - that.camera.width / 2;
-        if (newPosition > that.world.x && newPosition < that.world.width) {
+        if (newPosition > world.x && newPosition < world.width) {
             that.camera.x = newPosition;
         }
         newPosition = spatial.y - that.camera.height / 2;
-        if (newPosition > that.world.y && newPosition < that.world.height) {
+        if (newPosition > world.y && newPosition < world.height) {
             that.camera.y = newPosition;
         }
     };
@@ -328,11 +318,11 @@ FMENGINE.fmState = function () {
     */
     that.centerCameraAt = function (xPosition, yPosition) {
         var newPosition = xPosition - that.camera.width / 2;
-        if (newPosition > that.world.x && newPosition < that.world.width) {
+        if (newPosition > world.x && newPosition < world.width) {
             that.camera.x = newPosition;
         }
         newPosition = yPosition - that.camera.height / 2;
-        if (newPosition > that.world.y && newPosition < that.world.height) {
+        if (newPosition > world.y && newPosition < world.height) {
             that.camera.y = newPosition;
         }
     };
@@ -372,9 +362,26 @@ FMENGINE.fmState = function () {
         followFrame = null;
         that.camera.destroy();
         that.camera = null;
-        that.world.destroy();
-        that.world = null;
+        world.destroy();
+        world = null;
+        // todo destroy quad
         that = null;
+    };
+
+    /**
+     * Get the game object which ID matches the one given.
+     * @return {fmGameObject} the game object that corresponds or null if it
+     * finds nothing.
+     */
+    that.getGameObjectById = function (pId) {
+        var gameObject, i;
+        for (i = 0; i < that.members.length; i = i + 1) {
+            gameObject = that.members[i];
+            if (gameObject.getId() === pId) {
+                return gameObject;
+            }
+        }
+        return null;
     };
 
     /**
@@ -383,6 +390,23 @@ FMENGINE.fmState = function () {
      */
     that.getScroller = function () {
         return scroller;
+    };
+
+    /**
+     * Get the world object.
+     * @return {fmWorld} the world of the game.
+     */
+    that.getWorld = function () {
+        return world;
+    };
+
+    /**
+     * Get the quad tree.
+     * @return {QuadTree} the quad tree containing every game object with a 
+     * physic component.
+     */
+    that.getQuad = function () {
+        return quad;
     };
 
     return that;

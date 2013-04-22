@@ -98,40 +98,40 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
             //Update x position
             if (xPos < waypoints[currentIndex].x) {
                 if (waypoints[currentIndex].x - xPos < speed * dt) {
-                    physic.xVelocity = waypoints[currentIndex].x - xPos;
+                    physic.velocity.x = waypoints[currentIndex].x - xPos;
                     xReached = true;
                 } else {
-                    physic.xVelocity = speed;
+                    physic.velocity.x = speed;
                 }
             } else if (xPos > waypoints[currentIndex].x) {
                 if (xPos - waypoints[currentIndex].x < speed * dt) {
-                    physic.xVelocity = xPos - waypoints[currentIndex].x;
+                    physic.velocity.x = xPos - waypoints[currentIndex].x;
                     xReached = true;
                 } else {
-                    physic.xVelocity = -speed;
+                    physic.velocity.x = -speed;
                 }
             } else {
                 xReached = true;
-                physic.xVelocity = 0;
+                physic.velocity.x = 0;
             }
             //Update y position
             if (yPos < waypoints[currentIndex].y) {
                 if (waypoints[currentIndex].y - yPos < speed * dt) {
-                    physic.yVelocity = waypoints[currentIndex].y - yPos;
+                    physic.velocity.y = waypoints[currentIndex].y - yPos;
                     yReached = true;
                 } else {
-                    physic.yVelocity = speed;
+                    physic.velocity.y = speed;
                 }
             } else if (yPos > waypoints[currentIndex].y) {
                 if (yPos - waypoints[currentIndex].y < speed * dt) {
-                    physic.yVelocity = yPos - waypoints[currentIndex].y;
+                    physic.velocity.y = yPos - waypoints[currentIndex].y;
                     yReached = true;
                 } else {
-                    physic.yVelocity = -speed;
+                    physic.velocity.y = -speed;
                 }
             } else {
                 yReached = true;
-                physic.yVelocity = 0;
+                physic.velocity.y = 0;
             }
             //Select the next waypoint if the current has been reached
             if (xReached && yReached) {
@@ -143,8 +143,7 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
                     active = false;
                     speed = 0;
                     if (physic) {
-                        physic.xVelocity = 0;
-                        physic.yVelocity = 0;
+                        physic.velocity = FMENGINE.fmPoint(0, 0);
                     }
                 }
             }

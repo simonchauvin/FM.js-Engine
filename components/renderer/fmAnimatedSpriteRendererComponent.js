@@ -70,7 +70,8 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
          */
         spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
     /**
-     * 
+     * Read-only attributes that specifies whether the current animation has
+     * finished playing or not.
      */
     that.finished = false;
 

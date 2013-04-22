@@ -1,6 +1,7 @@
 /**
  * Under Creative Commons Licence
- * Make sure pTileWidth and pTileHeight are int or float
+ * No need to add the tilemap to the state, it's done when the tilemap is 
+ * loaded.
  * @param {fmImageAsset} tileSet  Image of the tile set in the order of 
  * the data given
  * @author Simon Chauvin
@@ -42,7 +43,7 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
      * @param {Array} data  Comma and line return sparated string of numbers 
      * representing the position and type of tiles.
      */
-    that.load = function (pData) {
+    that.load = function (pData, type) {
         var rows = pData.split("\n"),
             row = null,
             resultRow = null,
@@ -63,6 +64,7 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
                     tileId = columns[j];
                     if (tileId > 0) {
                         tile = FMENGINE.fmGameObject(zIndex);
+                        tile.addType(type);
                         FMENGINE.fmSpatialComponent(j * tileWidth, i * tileHeight, tile);
                         renderer = FMENGINE.fmSpriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
@@ -90,6 +92,20 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
     that.destroy = function () {
         tileSet = null;
         that = null;
+    };
+
+    /**
+     * Retrive the data.
+     */
+    that.getData = function () {
+        return data;
+    };
+
+    /**
+     * Retrive the types associated with the tilemap.
+     */
+    that.hasType = function (pName) {
+        return types.indexOf(pName) !== -1;
     };
 
     /**

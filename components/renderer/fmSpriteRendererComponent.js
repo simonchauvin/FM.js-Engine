@@ -38,10 +38,9 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     * Draw the sprite.
     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
     * drawing is done.
-    * @param {float} dt time in seconds since the last frame.
     */
-    that.draw = function (bufferContext, dt) {
-        var xPosition = spatial.x, yPosition = spatial.y;
+    that.draw = function (bufferContext, newPosition) {
+        var xPosition = newPosition.x, yPosition = newPosition.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
         bufferContext.globalAlpha = alpha;
@@ -67,6 +66,15 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
         spatial = null;
         that.destroy();
         that = null;
+    };
+
+    /**
+     * Set a new image.
+     */
+    that.setImage = function (pImage, pWidth, pHeight) {
+        image = pImage;
+        width = pWidth;
+        height = pHeight;
     };
 
     /**

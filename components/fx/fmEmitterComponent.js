@@ -3,13 +3,21 @@
  * object.
  * @author Simon Chauvin
  */
-FMENGINE.fmEmitterComponent = function (pOwner) {
+FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
     "use strict";
     var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.FX, pOwner),
         /**
          * Particles belonging to this emitter.
          */
         particles = [],
+        /**
+         * Offset from the owner.
+         */
+        offset = pOffset,
+        /**
+         * Directions the particles can take.
+         */
+        directions = [FMENGINE.fmParameters.LEFT, FMENGINE.fmParameters.RIGHT, FMENGINE.fmParameters.UP, FMENGINE.fmParameters.DOWN],
         /**
          * Limit of particles that this emitter can bear.
          * 0 means an infinite number.
@@ -24,13 +32,17 @@ FMENGINE.fmEmitterComponent = function (pOwner) {
          */
         quantity = 0,
         /**
+         * Transparency of the particles.
+         */
+        alpha = 1,
+        /**
          * Minimum velocity of all particles.
          */
-        minParticleVelocity = FMENGINE.fmPoint(-100, -100),
+        minParticleVelocity = FMENGINE.fmVector(-100, -100),
         /**
          * Maximum velocity of all particles.
          */
-        maxParticleVelocity = FMENGINE.fmPoint(100, 100),
+        maxParticleVelocity = FMENGINE.fmVector(100, 100),
         /**
          * Minimum angular velocity of all particles.
          */
@@ -68,15 +80,22 @@ FMENGINE.fmEmitterComponent = function (pOwner) {
      * @param {fmImageAsset} image image to use as a particle.
      * @param {int} width width of the particles.
      * @param {int} height height of the particles.
+     * @param {float} pAlpha transparency of the particles.
+     * @param {int} zIndex z depth of the particles.
      */
-    that.createParticles = function (number, image, width, height) {
-        var i, particle,
+    that.createParticles = function (number, image, width, height, pAlpha, zIndex) {
+        var i, particle, spatial, renderer, physic,
             state = FMENGINE.fmGame.getCurrentState();
+        alpha = pAlpha;
         for (i = 0; i < number; i = i + 1) {
-            particle = FMENGINE.fmGameObject(99);
-            FMENGINE.fmSpatialComponent(spatial.x, spatial.y, particle);
-            FMENGINE.fmSpriteRendererComponent(image, width, height, particle);
-            FMENGINE.fmAabbComponent(width, height, particle);
+            particle = FMENGINE.fmGameObject(zIndex);
+            spatial = FMENGINE.fmSpatialComponent(spatial.position.x + offset.x, spatial.position.y + offset.y, particle);
+            particle.addComponent(spatial);
+            renderer = FMENGINE.fmSpriteRendererComponent(image, width, height, particle);
+            renderer.setAlpha(alpha);
+            particle.addComponent(renderer);
+            physic = FMENGINE.fmAabbComponent(width, height, particle);
+            particle.addComponent(physic);
             particle.age = 0;
             particle.lifeSpan = 0;
             particle.hide();
@@ -110,7 +129,7 @@ FMENGINE.fmEmitterComponent = function (pOwner) {
     that.update = function (dt) {
         if (active) {
             //Update alive particles
-            var i, j, count, particle, particleSpatial, physic, speed;
+            var i, j, count, particle, particleSpatial, physic, renderer, speed;
             for (i = 0; i < particles.length; i = i + 1) {
                 particle = particles[i];
                 if (particle.isAlive()) {
@@ -120,7 +139,10 @@ FMENGINE.fmEmitterComponent = function (pOwner) {
                         particle.kill();
                     } else {
                         //The more the particle is aging the less it is visible
-                        particle.getComponent(FMENGINE.fmComponentTypes.RENDERER).setAlpha(1 - (particle.age / particle.lifeSpan));
+                        renderer = particle.getComponent(FMENGINE.fmComponentTypes.RENDERER);
+                        if (renderer.getAlpha() >= 1 - (particle.age / particle.lifeSpan)) {
+                            renderer.setAlpha(1 - (particle.age / particle.lifeSpan));
+                        }
                         //Aging of the particle
                         particle.age += dt;
                     }
@@ -139,13 +161,24 @@ FMENGINE.fmEmitterComponent = function (pOwner) {
                     if (particle && !particle.isAlive()) {
                         particleSpatial = particle.getComponent(FMENGINE.fmComponentTypes.SPATIAL);
                         physic = particle.components[FMENGINE.fmComponentTypes.PHYSIC];
-                        particleSpatial.x = spatial.x;
-                        particleSpatial.y = spatial.y;
+                        particle.components[FMENGINE.fmComponentTypes.RENDERER].setAlpha(alpha);
+                        particleSpatial.position.x = spatial.position.x + offset.x;
+                        particleSpatial.position.y = spatial.position.y + offset.y;
                         particle.age = 0;
                         speed = Math.random() * (maxParticleVelocity.x - minParticleVelocity.x) + minParticleVelocity.x;
-                        physic.xVelocity = speed;
+                        if (directions.indexOf(FMENGINE.fmParameters.LEFT) !== -1) {
+                            if (Math.random() > 0.5) {
+                                speed = -speed;
+                            }
+                        }
+                        physic.velocity.x = speed;
                         speed = Math.random() * (maxParticleVelocity.y - minParticleVelocity.y) + minParticleVelocity.y;
-                        physic.yVelocity = speed;
+                        if (directions.indexOf(FMENGINE.fmParameters.UP) !== -1) {
+                            if (Math.random() > 0.5) {
+                                speed = -speed;
+                            }
+                        }
+                        physic.velocity.y = speed;
                         speed = Math.random() * (maxParticleAngularVelocity - minParticleAngularVelocity) + minParticleAngularVelocity;
                         physic.angularVelocity = speed;
                         particle.show();
@@ -155,6 +188,26 @@ FMENGINE.fmEmitterComponent = function (pOwner) {
                     j = j + 1;
                 }
             }
+        }
+    };
+
+    /**
+     * Set the directions the particles can take.
+     * @param {Array} pDirections directions the particles can take.
+     */
+    that.setDirections = function (pDirections) {
+        directions = pDirections;
+    };
+
+    /**
+     * Set the transparency of the particles.
+     * @param {float} pAlpha transparency of the particles.
+     */
+    that.setAlpha = function (pAlpha) {
+        alpha = pAlpha;
+        var i;
+        for (i = 0; i < particles.length; i = i + 1) {
+            particles[i].components[FMENGINE.fmComponentTypes.RENDERER].setAlpha(alpha);
         }
     };
 
@@ -186,6 +239,14 @@ FMENGINE.fmEmitterComponent = function (pOwner) {
     that.setAngularVelocity = function (min, max) {
         minParticleAngularVelocity = min;
         maxParticleAngularVelocity = max;
+    };
+
+    /**
+     * Retrieve the transparency of the particles.
+     * @returns {float} current transparency of the particles.
+     */
+    that.getAlpha = function () {
+        return alpha;
     };
 
     /**

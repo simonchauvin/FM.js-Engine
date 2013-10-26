@@ -29,7 +29,7 @@ FMENGINE.fmGameObject = function (pZIndex) {
     /**
      * Allows to specify different degrees of scrolling (useful for parallax).
      */
-    that.scrollFactor = FMENGINE.fmPoint(1, 1);
+    that.scrollFactor = FMENGINE.fmVector(1, 1);
     /**
      * List of the components owned by the game object.
      */

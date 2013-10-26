@@ -1,3 +1,4 @@
+//var FMENGINE = FMENGINE || {};
 /**
  * Under Creative Commons Licence.
  *
@@ -5,12 +6,16 @@
  * @param {fmGameObject} The game object to which the component belongs.
  * @returns {fmCircleComponent} The circle component itself.
  */
-FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
+FMENGINE.fmCircleComponent = function (pCenter, pRadius, pOwner) {
     "use strict";
     /**
      * fmB2CircleComponent is based on fmPhysicComponent.
      */
     var that = FMENGINE.fmPhysicComponent(pRadius * 2, pRadius * 2, pOwner),
+        /**
+         * Center of the circle.
+         */
+        center = pCenter,
 	/**
          * Spatial component reference.
          */
@@ -21,11 +26,18 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
     that.radius = pRadius;
 
     /**
+    * Update the component.
+    */
+    that.update = function (dt) {
+        Object.getPrototypeOf(that).update(dt);
+    };
+
+    /**
      * Check collisions with the world bounds and tiles.
      */
     that.checkWorldCollisions = function (collisions, worldBounds) {
-        var xPos = spatial.x + that.offset.x,
-            yPos = spatial.y + that.offset.y,
+        var xPos = spatial.position.x + that.offset.x,
+            yPos = spatial.position.y + that.offset.y,
             tileWidth,
             tileHeight,
             i1,
@@ -79,15 +91,15 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
     /**
      * Check if the current circle component is colliding with an aabb collider
      */
-    that.isCollidingWithAabb = function (aabb) {
+    that.collidesWithAabb = function (aabb) {
         var otherSpatial = aabb.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
             cornerDist = 0,
-            minX = otherSpatial.x + aabb.offset.x,
+            minX = otherSpatial.position.x + aabb.offset.x,
             maxX = minX + aabb.getWidth(),
-            minY = otherSpatial.y + aabb.offset.y,
+            minY = otherSpatial.position.y + aabb.offset.y,
             maxY = minY + aabb.getHeight(),
-            circleCenterX = spatial.x + that.offset.x + that.radius,
-            circleCenterY = spatial.y + that.offset.y + that.radius;
+            circleCenterX = spatial.position.x + that.offset.x + that.radius,
+            circleCenterY = spatial.position.y + that.offset.y + that.radius;
 
         if (circleCenterX < minX) {
             cornerDist += (minX - circleCenterX) * (minX - circleCenterX);
@@ -106,30 +118,48 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
     /**
      * Check if the current circle component is colliding with another circle collider
      */
-    that.isCollidingWithCircle = function (circle) {
-        var spatialCircle = circle.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            minX = spatial.x + that.offset.x,
-            minY = spatial.y + that.offset.y,
-            circleCenterX = spatialCircle.x + circle.offset.x + circle.radius,
-            circleCenterY = spatialCircle.y + circle.offset.y + circle.radius,
-            dX = (minX + that.radius) - (circleCenterX),
-            dY = (minY + that.radius) - (circleCenterY),
-            sqrD = (dX * dX) + (dY * dY);
+    that.collidesWithCircle = function (circle) {
+        var otherSpatial = circle.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
+            min = FMENGINE.fmVector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
+            otherMin = FMENGINE.fmVector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+            max = FMENGINE.fmVector(min.x + that.width, min.y + that.height),
+            otherMax = FMENGINE.fmVector(otherMin.x + circle.width, otherMin.y + circle.height),
+            center = FMENGINE.fmVector(min.x + that.width / 2, min.y + that.height / 2),
+            otherCenter = FMENGINE.fmVector(otherMin.x + circle.width / 2, otherMin.y + circle.height / 2),
+            dX = center.x - otherCenter.x,
+            dY = center.y - otherCenter.y,
+            sqrD = (dX * dX) + (dY * dY),
+            normal = FMENGINE.fmMathUtils.substractVectors(otherCenter, center),
+            distance = normal.length(),
+            collision = null;
         if (sqrD > (that.radius + circle.radius) * (that.radius + circle.radius)) {
-            return false;
+            return null;
         } else {
-            return true;
+            collision = FMENGINE.fmCollision();
+            collision.a = that;
+            collision.b = circle;
+            if (distance !== 0) {
+                collision.penetration = (that.radius + circle.radius) - distance;
+                collision.normal = normal / distance;
+            } else {
+                collision.penetration = that.radius;
+                collision.normal = FMENGINE.fmVector(1, 0);
+            }
+            return collision;
         }
+        return null;
     };
 
     /**
-     * Draw debug information
+     * Draw debug information.
      */
-    that.drawDebug = function (bufferContext) {
+    that.drawDebug = function (bufferContext, newPosition) {
+        var newCenter = FMENGINE.fmVector(newPosition.x + that.radius, newPosition.y + that.radius);
         bufferContext.beginPath();
-        bufferContext.strokeStyle = "#f4f";
-        bufferContext.arc((spatial.x + that.offset.x + that.radius) - bufferContext.xOffset, (spatial.y + that.offset.y + that.radius) - bufferContext.yOffset, that.radius, 0, 2 * Math.PI, false);
-        bufferContext.stroke();
+        bufferContext.globalAlpha = 0.3;
+        bufferContext.arc((newCenter.x + that.offset.x) - bufferContext.xOffset, (newCenter.y + that.offset.y) - bufferContext.yOffset, that.radius, 0, 2 * Math.PI, false);
+        bufferContext.fill();
+        bufferContext.globalAlpha = 1;
     };
 
     /**
@@ -140,6 +170,14 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
         //TODO destroy parent attributes and objects
         allowCollisions = null;
         that = null;
+    };
+
+    /**
+     * Retrieve the center of the circle.
+     * @returns {fmVector} center of the circle.
+     */
+    that.getCenter = function () {
+        return center;
     };
 
     return that;

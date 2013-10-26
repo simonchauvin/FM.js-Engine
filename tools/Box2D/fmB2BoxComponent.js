@@ -53,8 +53,8 @@ FMENGINE.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
 	var fixDef = new b2FixtureDef, bodyDef = new b2BodyDef;
 	fixDef.shape = new b2PolygonShape;
         fixDef.shape.SetAsBox((width / 2) / parameters.PIXELS_TO_METERS, (height / 2) / parameters.PIXELS_TO_METERS);
-	bodyDef.position.x = spatial.x / parameters.PIXELS_TO_METERS +(width / 2) / parameters.PIXELS_TO_METERS;
-	bodyDef.position.y = spatial.y / parameters.PIXELS_TO_METERS + (height / 2) / parameters.PIXELS_TO_METERS;
+	bodyDef.position.x = spatial.position.x / parameters.PIXELS_TO_METERS +(width / 2) / parameters.PIXELS_TO_METERS;
+	bodyDef.position.y = spatial.position.y / parameters.PIXELS_TO_METERS + (height / 2) / parameters.PIXELS_TO_METERS;
 	bodyDef.angle = spatial.angle;
 	//Type of body
 	switch (pType) {
@@ -96,12 +96,12 @@ FMENGINE.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
 	//If the body is not static
 	if (body.m_type != b2Body.b2_staticBody) {
 	    //Update spatial component based on the body's position
-	    spatial.x = body.GetPosition().x * parameters.PIXELS_TO_METERS - width / 2;
-	    spatial.y = body.GetPosition().y * parameters.PIXELS_TO_METERS - height / 2;
+	    spatial.position.x = body.GetPosition().x * parameters.PIXELS_TO_METERS - width / 2;
+	    spatial.position.y = body.GetPosition().y * parameters.PIXELS_TO_METERS - height / 2;
 	    spatial.angle = body.GetAngle();
 	} else {
 	    //Otherwise the body's position based on the spatial component
-	    body.SetPosition(new b2Vec2((spatial.x + width / 2) / parameters.PIXELS_TO_METERS, (spatial.y + height / 2) / parameters.PIXELS_TO_METERS));
+	    body.SetPosition(new b2Vec2((spatial.position.x + width / 2) / parameters.PIXELS_TO_METERS, (spatial.position.y + height / 2) / parameters.PIXELS_TO_METERS));
 	    body.SetAngle(spatial.angle);
 	}
     };
@@ -118,7 +118,7 @@ FMENGINE.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
      */
     that.drawDebug = function (bufferContext) {
         bufferContext.strokeStyle = '#f4f';
-        bufferContext.strokeRect(spatial.x - bufferContext.xOffset, spatial.y - bufferContext.yOffset, width, height);
+        bufferContext.strokeRect(spatial.position.x - bufferContext.xOffset, spatial.position.y - bufferContext.yOffset, width, height);
     };
 
     /**
@@ -156,7 +156,7 @@ FMENGINE.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
      */
     that.getLinearVelocity = function () {
         var linearVelocity = body.GetLinearVelocity();
-	return FMPoint(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
+	return fmVector(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
     };
 
     /**

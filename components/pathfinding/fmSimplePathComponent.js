@@ -15,23 +15,37 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
          */
         currentIndex = 0,
         /**
+         * Speed at which the game object should follow the path if it is a
+         * movement with a coefficient equals to 1.
+         */
+        desiredSpeed = FMENGINE.fmVector(0, 0),
+        /**
          * Speed at which the game object follow the path.
          */
-        speed = 0,
+        actualSpeed = FMENGINE.fmVector(0, 0),
         /**
          * Whether the path is being followed or not.
          */
         active = false,
         /**
-         * Whether the desired x position of the current waypoint was reached 
+         * Whether the desired x position of the current waypoint was reached.
          * or not.
          */
         xReached = false,
         /**
-         * Whether the desired y position of the current waypoint was reached 
+         * Whether the desired y position of the current waypoint was reached.
          * or not.
          */
         yReached = false,
+        /**
+         * Position before stopping following the path, used to know if the game
+         * object following the path has been moved during the stopping time.
+         */
+        positionBeforeStopping = FMENGINE.fmVector(0, 0),
+        /**
+         * Factor modifying speed so that the movement is linear.
+         */
+        factor = 1,
         /**
          * Spatial component reference.
          */
@@ -49,12 +63,29 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
      * Follow the specified path.
      * @param {int} pSpeed speed at which the game object must follow the path.
      */
-    that.startFollowingPath = function (pSpeed) {
+    that.startFollowingPath = function (pSpeed, pIndexToStartFrom) {
         if (waypoints.length > 0) {
             active = true;
-            speed = pSpeed;
+            currentIndex = pIndexToStartFrom || 0;
             xReached = false;
             yReached = false;
+            desiredSpeed = pSpeed;
+            //Adjust speed so that the movement is linear
+            var xDiff =  Math.abs((spatial.position.x + physic.offset.x + physic.width / 2) - waypoints[currentIndex].x),
+                yDiff =  Math.abs((spatial.position.y + physic.offset.y + physic.height / 2) - waypoints[currentIndex].y),
+                coeff;
+            if (xDiff < yDiff) {
+                coeff = xDiff / yDiff;
+                actualSpeed.x = desiredSpeed * coeff;
+                actualSpeed.y = desiredSpeed;
+            } else if (xDiff > yDiff) {
+                coeff = yDiff / xDiff;
+                actualSpeed.x = desiredSpeed;
+                actualSpeed.y = desiredSpeed * coeff;
+            } else {
+                actualSpeed.x = desiredSpeed;
+                actualSpeed.y = desiredSpeed;
+            }
         } else if (FMENGINE.fmParameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
         }
@@ -70,6 +101,27 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
     that.resumeFollowingPath = function () {
         if (waypoints.length > 0) {
             active = true;
+            if (positionBeforeStopping.x !== spatial.position.x
+                    || positionBeforeStopping.y !== spatial.position.y) {
+                xReached = false;
+                yReached = false;
+                //Adjust speed so that the movement is linear
+                var xDiff =  Math.abs((spatial.position.x + physic.offset.x + physic.width / 2) - waypoints[currentIndex].x),
+                    yDiff =  Math.abs((spatial.position.y + physic.offset.y + physic.height / 2) - waypoints[currentIndex].y),
+                    coeff;
+                if (xDiff < yDiff) {
+                    coeff = xDiff / yDiff;
+                    actualSpeed.x = desiredSpeed * coeff;
+                    actualSpeed.y = desiredSpeed;
+                } else if (xDiff > yDiff) {
+                    coeff = yDiff / xDiff;
+                    actualSpeed.x = desiredSpeed;
+                    actualSpeed.y = desiredSpeed * coeff;
+                } else {
+                    actualSpeed.x = desiredSpeed;
+                    actualSpeed.y = desiredSpeed;
+                }
+            }
         } else if (FMENGINE.fmParameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
         }
@@ -83,6 +135,16 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
      */
     that.stopFollowingPath = function () {
         active = false;
+        physic.velocity.x = 0;
+        physic.velocity.y = 0;
+        positionBeforeStopping = FMENGINE.fmVector(spatial.position.x, spatial.position.y);
+    };
+
+    /**
+     * Erase every waypoints in the path.
+     */
+    that.clearPath = function () {
+        waypoints = [];
     };
 
     /**
@@ -93,22 +155,25 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
         //Update the motion if the path is active
         if (active && physic) {
             //Update motion whether a physic component is present or not
-            var xPos =  spatial.x + physic.offset.x + physic.width / 2,
-                yPos =  spatial.y + physic.offset.y + physic.height / 2;
+            var xPos =  spatial.position.x + physic.offset.x + physic.width / 2,
+                yPos =  spatial.position.y + physic.offset.y + physic.height / 2,
+                xDiff,
+                yDiff,
+                coeff;
             //Update x position
             if (xPos < waypoints[currentIndex].x) {
-                if (waypoints[currentIndex].x - xPos < speed * dt) {
+                if (waypoints[currentIndex].x - xPos < actualSpeed.x * dt) {
                     physic.velocity.x = waypoints[currentIndex].x - xPos;
                     xReached = true;
                 } else {
-                    physic.velocity.x = speed;
+                    physic.velocity.x = actualSpeed.x;
                 }
             } else if (xPos > waypoints[currentIndex].x) {
-                if (xPos - waypoints[currentIndex].x < speed * dt) {
+                if (xPos - waypoints[currentIndex].x < actualSpeed.x * dt) {
                     physic.velocity.x = xPos - waypoints[currentIndex].x;
                     xReached = true;
                 } else {
-                    physic.velocity.x = -speed;
+                    physic.velocity.x = -actualSpeed.x;
                 }
             } else {
                 xReached = true;
@@ -116,18 +181,18 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
             }
             //Update y position
             if (yPos < waypoints[currentIndex].y) {
-                if (waypoints[currentIndex].y - yPos < speed * dt) {
+                if (waypoints[currentIndex].y - yPos < actualSpeed.y * dt) {
                     physic.velocity.y = waypoints[currentIndex].y - yPos;
                     yReached = true;
                 } else {
-                    physic.velocity.y = speed;
+                    physic.velocity.y = actualSpeed.y;
                 }
             } else if (yPos > waypoints[currentIndex].y) {
-                if (yPos - waypoints[currentIndex].y < speed * dt) {
+                if (yPos - waypoints[currentIndex].y < actualSpeed.y * dt) {
                     physic.velocity.y = yPos - waypoints[currentIndex].y;
                     yReached = true;
                 } else {
-                    physic.velocity.y = -speed;
+                    physic.velocity.y = -actualSpeed.y;
                 }
             } else {
                 yReached = true;
@@ -139,11 +204,26 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
                     xReached = false;
                     yReached = false;
                     currentIndex = currentIndex + 1;
+                    //Adjust speed so that the movement is linear
+                    xDiff =  Math.abs(xPos - waypoints[currentIndex].x);
+                    yDiff =  Math.abs(yPos - waypoints[currentIndex].y);
+                    if (xDiff < yDiff) {
+                        coeff = xDiff / yDiff;
+                        actualSpeed.x = desiredSpeed * coeff;
+                        actualSpeed.y = desiredSpeed;
+                    } else if (xDiff > yDiff) {
+                        coeff = yDiff / xDiff;
+                        actualSpeed.x = desiredSpeed;
+                        actualSpeed.y = desiredSpeed * coeff;
+                    } else {
+                        actualSpeed.x = desiredSpeed;
+                        actualSpeed.y = desiredSpeed;
+                    }
                 } else {
                     active = false;
-                    speed = 0;
+                    actualSpeed = FMENGINE.fmVector(0, 0);
                     if (physic) {
-                        physic.velocity = FMENGINE.fmPoint(0, 0);
+                        physic.velocity = FMENGINE.fmVector(0, 0);
                     }
                 }
             }
@@ -170,6 +250,54 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
      */
     that.remove = function (index) {
         waypoints.splice(index, 1);
+    };
+
+    /**
+     * Return the waypoints of the path.
+     * @returns {Array} waypoints of the path.
+     */
+    that.getWaypoints = function () {
+        return waypoints;
+    };
+
+    /**
+     * Return the current index of the waypoint to reach.
+     * @returns {int} index of the waypoint to reach.
+     */
+    that.getCurrentIndex = function () {
+        return currentIndex;
+    };
+
+    /**
+     * Return the current waypoint to reach.
+     * @returns {Waypoint} waypoint to reach.
+     */
+    that.getCurrentWaypoint = function () {
+        return waypoints[currentIndex];
+    };
+
+    /**
+     * Return the number of waypoints.
+     * @returns {int} number of waypoints.
+     */
+    that.getLength = function () {
+        return waypoints.length;
+    };
+
+    /**
+     * Check if the last waypoint has been reached.
+     * @returns {boolean} whether the last waypoint has been reached or not.
+     */
+    that.isLastWaypointReached = function () {
+        return currentIndex === waypoints.length - 1 && !active;
+    };
+
+    /**
+     * Check if the path is being followed.
+     * @returns {boolean} whether the path is being followed.
+     */
+    that.isActive = function () {
+        return active;
     };
 
     /**

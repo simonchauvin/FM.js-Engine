@@ -38,6 +38,10 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
          */
         currentAnim = "",
         /**
+         * Whether there is a flipped version of the animation frames or not.
+         */
+        flipped = false,
+        /**
          * Current horizontal offset of position on the spritesheet.
          */
         xOffset = 0,
@@ -53,6 +57,10 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
          * Current frame being displayed.
          */
         currentFrame = 0,
+        /**
+         * Current time in seconds.
+         */
+        currentTime = 0,
         /**
          * Maximum delay between each frames.
          */
@@ -80,13 +88,17 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
     * @param {String} name name of the animation.
     * @param {Array} pFrames frames of the animation.
     * @param {int} frameRate speed of the animation.
+    * @param {boolean} isReversed whether to generate horizontally flipped
+    * versions of the animation frames or not.
     * @param {boolean} isLooped whether the animation should loop or not.
     */
-    that.addAnimation = function (name, pFrames, frameRate, isLooped) {
+    that.addAnimation = function (name, pFrames, frameRate, isReversed, isLooped) {
         currentFrame = 0;
         currentAnim = name;
         frames[name] = pFrames;
         delay = 1 / frameRate;
+        //TODO generate flipped version
+        flipped = isReversed;
         currentDelay = delay;
         loop[name] = isLooped;
     };
@@ -121,10 +133,10 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
     * Draw the sprite.
     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
     * drawing is done.
-    * @param {float} dt time in seconds since the last frame.
     */
-    that.draw = function (bufferContext, dt) {
-        var xPosition = spatial.x, yPosition = spatial.y;
+    that.draw = function (bufferContext, newPosition) {
+        var xPosition = newPosition.x, yPosition = newPosition.y,
+            newTime = (new Date()).getTime() / 1000;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
         bufferContext.globalAlpha = alpha;
@@ -139,28 +151,36 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
             bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, frameWidth, frameHeight);
         }
         bufferContext.globalAlpha = 1;
-
+        //If the anim is not finished playing
         if (!that.finished) {
             if (currentDelay <= 0) {
                 currentDelay = delay;
-                currentFrame = currentFrame + 1;
-                if (frames[currentAnim] && currentFrame === frames[currentAnim].length - 1) {
-                    if (loop[currentAnim]) {
-                        currentFrame = 0;
+                if (frames[currentAnim]) {
+                    if (frames[currentAnim].length > 1) {
+                        currentFrame = currentFrame + 1;
+                        //If the current anim exists and that the current frame is the last one
+                        if (frames[currentAnim] && (currentFrame === frames[currentAnim].length - 1)) {
+                            if (loop[currentAnim]) {
+                                currentFrame = 0;
+                            } else {
+                                that.finished = true;
+                            }
+                        }
                     } else {
                         that.finished = true;
                     }
-                }
-                xOffset = frames[currentAnim][currentFrame] * frameWidth;
-                yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
-                if (xOffset >= imageWidth) {
+                    xOffset = frames[currentAnim][currentFrame] * frameWidth;
                     yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
-                    xOffset = (xOffset % imageWidth);
+                    if (xOffset >= imageWidth) {
+                        yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
+                        xOffset = (xOffset % imageWidth);
+                    }
                 }
             } else {
-                currentDelay -= dt;
+                currentDelay -= newTime - currentTime;
             }
         }
+        currentTime = newTime;
     };
 
     /**

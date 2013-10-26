@@ -1,3 +1,4 @@
+//var FMENGINE = FMENGINE || {};
 /**
  * Object acting as a container of game objects. It helps structure the game in 
  * states.
@@ -63,9 +64,11 @@ FMENGINE.fmState = function () {
         screenWidth = FMENGINE.fmGame.getScreenWidth();
         screenHeight = FMENGINE.fmGame.getScreenHeight();
         //By default init the world to the size of the screen with all borders solid
-        world = FMENGINE.fmWorld(pWorldWidth || screenWidth, pWorldHeight || screenHeight);
+        world = FMENGINE.fmWorld(pWorldWidth || screenWidth, pWorldHeight
+                || screenHeight);
         //Create the quad tree
-        quad = new QuadTree({x: 0, y: 0, width: pWorldWidth || screenWidth, height: pWorldHeight || screenHeight});
+        quad = FMENGINE.fmQuadTree(0, FMENGINE.fmRectangle(0, 0,
+            pWorldWidth || screenWidth, pWorldHeight || screenHeight));
 
         //Set the camera size by the chosen screen size
         that.camera.width = screenWidth;
@@ -81,20 +84,21 @@ FMENGINE.fmState = function () {
     * @param {fmGameObject} gameObject the game object to add to the state.
     */
     that.add = function (gameObject) {
-        //Add the game object to the state
-        that.members.push(gameObject);
-
-        if (FMENGINE.fmParameters.debug) {
-            //TODO test if it is not a gameobject log a warning
-        }
-
-        //Affect an ID to the game object
-        FMENGINE.fmState.lastId += 1;
-        gameObject.setId(FMENGINE.fmState.lastId);
-
-        //Add the game object to the quad tree if it's got a physic component
-        if (gameObject.getComponent(FMENGINE.fmComponentTypes.PHYSIC)) {
-            quad.insert(gameObject);
+        if (gameObject.components) {
+            //Add the game object to the state
+            that.members.push(gameObject);
+            //Affect an ID to the game object
+            gameObject.setId(FMENGINE.fmState.lastId);
+            FMENGINE.fmState.lastId += 1;
+            //Add the game object to the quad tree if it's got a physic component
+            if (gameObject.components[FMENGINE.fmComponentTypes.PHYSIC]) {
+                quad.insert(gameObject);
+            }
+        } else {
+            if (FMENGINE.fmParameters.debug) {
+                console.log("ERROR: you're trying to add something else" +
+                    "than a game object to the state. This is not allowed.");
+            }
         }
     };
 
@@ -107,6 +111,7 @@ FMENGINE.fmState = function () {
         that.members.splice(that.members.indexOf(gameObject), 1);
         //Destroy the game object
         gameObject.destroy();
+        //TODO remove the object from the quad
     };
 
     /**
@@ -117,20 +122,51 @@ FMENGINE.fmState = function () {
     };
 
     /**
-    * Update the game objects of the state.
-    * @param {float} dt time in seconds since the last frame.
-    */
-    var mainUpdate = function (dt) {
-        //Update the Box2D world if it is present
-        //TODO fix the physics timestep !
-        //TODO regular simple physics should update here too
-        var w = world.box2DWorld;
+     * Update the game physics.
+     * @param {float} fixedDt fixed time in seconds since the last frame.
+     */
+    that.updatePhysics = function (fixedDt) {
+        var w = world.box2DWorld,
+            i,
+            gameObject,
+            components,
+            spatial,
+            physic;
+        //Update the Box2D world is there is one
         if (w) {
             w.Step(1 / FMENGINE.fmParameters.FPS, 10, 10);
             w.ClearForces();
         }
+        //Update the physics of every game object present in the state
+        for (i = 0; i < that.members.length; i = i + 1) {
+            gameObject = that.members[i];
+            if (gameObject.isAlive()) {
+                components = gameObject.components;
+                spatial = components[FMENGINE.fmComponentTypes.SPATIAL];
+                physic = components[FMENGINE.fmComponentTypes.PHYSIC];
+                
+                //Update the physic component
+                if (physic) {
+                    spatial.previous = spatial.position;
+                    physic.update(fixedDt);
+                }
+            }
+        }
+    }
+
+    /**
+    * Update the game objects of the state.
+    * @param {float} dt time in seconds since the last frame.
+    */
+    var mainUpdate = function (dt) {
+        var i,
+            gameObject,
+            components,
+            spatial,
+            physic,
+            pathfinding,
+            emitter;
         //Update every game object present in the state
-        var i, gameObject, components, spatial, physic, pathfinding, emitter;
         for (i = 0; i < that.members.length; i = i + 1) {
             gameObject = that.members[i];
             if (gameObject.isAlive()) {
@@ -139,59 +175,6 @@ FMENGINE.fmState = function () {
                 physic = components[FMENGINE.fmComponentTypes.PHYSIC];
                 pathfinding = components[FMENGINE.fmComponentTypes.PATHFINDING];
                 emitter = components[FMENGINE.fmComponentTypes.FX];
-                //Update the game object
-                if (gameObject.update) {
-                    gameObject.update(dt);
-                }
-                //Update the physic component
-                if (physic) {
-                    physic.update(dt);
-
-                    //Update scrolling
-                    if (scroller === gameObject) {
-                        var newOffset, velocity = physic.getLinearVelocity(),
-                            frameWidth = followFrame.width, frameHeight = followFrame.height,
-                            xPosition = spatial.x + physic.offset.x, yPosition = spatial.y + physic.offset.y,
-                            farthestXPosition = xPosition + physic.width, farthestYPosition = yPosition + physic.height;
-
-                        // Going left
-                        if (velocity.x < 0 && xPosition <= followFrame.x) {
-                            newOffset = that.camera.x + velocity.x * dt;
-                            if (newOffset >= 0) {
-                                that.camera.x = newOffset;
-                                followFrame.x += velocity.x * dt;
-                            }
-                        }
-                        // Going up
-                        if (velocity.y < 0 && yPosition <= followFrame.y) {
-                            newOffset = that.camera.y + velocity.y * dt;
-                            if (newOffset >= 0) {
-                                that.camera.y = newOffset;
-                                followFrame.y += velocity.y * dt;
-                            }
-                        }
-                        // Going right
-                        if (velocity.x > 0 && farthestXPosition >= followFrame.x + frameWidth) {
-                            newOffset = that.camera.x + velocity.x * dt;
-                            if (newOffset + that.camera.width <= world.width) {
-                                that.camera.x = newOffset;
-                                followFrame.x += velocity.x * dt;
-                            }
-                        }
-                        // Going down
-                        if (velocity.y > 0 && farthestYPosition >= followFrame.y + frameHeight) {
-                            newOffset = that.camera.y + velocity.y * dt;
-                            if (newOffset + that.camera.height <= world.height) {
-                                that.camera.y = newOffset;
-                                followFrame.y += velocity.y * dt;
-                            }
-                        }
-                    }
-                } else {
-                    if (FMENGINE.fmParameters.debug && scroller === gameObject) {
-                        console.log("ERROR: The scrolling object must have a physic component.");
-                    }
-                }
                 //Update the path
                 if (pathfinding) {
                     pathfinding.update(dt);
@@ -199,6 +182,56 @@ FMENGINE.fmState = function () {
                 //Update the emitter
                 if (emitter) {
                     emitter.update(dt);
+                }
+                //Update the game object
+                if (gameObject.update) {
+                    gameObject.update(dt);
+                }
+                //Update scrolling
+                if (physic) {
+                    if (scroller === gameObject) {
+                        var newOffset,
+                            frameWidth = followFrame.width, frameHeight = followFrame.height,
+                            xPosition = spatial.position.x + physic.offset.x, yPosition = spatial.position.y + physic.offset.y,
+                            farthestXPosition = xPosition + physic.width, farthestYPosition = yPosition + physic.height;
+
+                        // Going left
+                        if (xPosition <= followFrame.x) {
+                            newOffset = that.camera.x - (followFrame.x - xPosition);
+                            if (newOffset >= 0) {
+                                that.camera.x = newOffset;
+                                followFrame.x = xPosition;
+                            }
+                        }
+                        // Going up
+                        if (yPosition <= followFrame.y) {
+                            newOffset = that.camera.y - (followFrame.y - yPosition);
+                            if (newOffset >= 0) {
+                                that.camera.y = newOffset;
+                                followFrame.y = yPosition;
+                            }
+                        }
+                        // Going right
+                        if (farthestXPosition >= followFrame.x + frameWidth) {
+                            newOffset = that.camera.x + (farthestXPosition - (followFrame.x + frameWidth));
+                            if (newOffset + that.camera.width <= world.width) {
+                                that.camera.x = newOffset;
+                                followFrame.x = farthestXPosition - frameWidth;
+                            }
+                        }
+                        // Going down
+                        if (farthestYPosition >= followFrame.y + frameHeight) {
+                            newOffset = that.camera.y + (farthestYPosition - (followFrame.y + frameHeight));
+                            if (newOffset + that.camera.height <= world.height) {
+                                that.camera.y = newOffset;
+                                followFrame.y = farthestYPosition - frameHeight;
+                            }
+                        }
+                    }
+                } else {
+                    if (FMENGINE.fmParameters.debug && scroller === gameObject) {
+                        console.log("ERROR: The scrolling object must have a physic component.");
+                    }
                 }
             }
         }
@@ -213,7 +246,7 @@ FMENGINE.fmState = function () {
 
     /**
     * Update the state.
-    * @param {float} dt time in seconds since the last frame.
+    * @param {float} variable time in seconds since the last frame.
     */
     that.update = function (dt) {
         mainUpdate(dt);
@@ -231,7 +264,7 @@ FMENGINE.fmState = function () {
     * Draw the game objects of the state.
     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
     * drawing is done.
-    * @param {float} dt time in seconds since the last frame.
+    * @param {float} dt variable time since the last frame.
     */
     that.draw = function (bufferContext, dt) {
         //Clear the screen
@@ -242,38 +275,39 @@ FMENGINE.fmState = function () {
         bufferContext.yOffset = that.camera.y;
 
         //Search for renderer in the game object list
-        var i, gameObject, spatial, renderer;
+        var i, gameObject, newPosition, spatial, physic, renderer;
         for (i = 0; i < that.members.length; i = i + 1) {
             gameObject = that.members[i];
 
-            //If the game object is visible
-            if (gameObject.isVisible()) {
+            //If the game object is visible or is in debug mode and alive
+            if (gameObject.isVisible() || (FMENGINE.fmParameters.debug && gameObject.isAlive())) {
                 spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL];
-                renderer = gameObject.components[FMENGINE.fmComponentTypes.RENDERER];
                 //If there is a spatial component then test if the game object is on the screen
-                if (spatial && renderer) {
-                    var xPosition = spatial.x, yPosition = spatial.y,
-                        farthestXPosition = xPosition + renderer.getWidth(),
-                        farthestYPosition = yPosition + renderer.getHeight(),
-                        newViewX = 0, newViewY = 0;
-                    //If the game object has a scrolling factor then apply it
-                    newViewX = (that.camera.x + (screenWidth - that.camera.width) / 2) * gameObject.scrollFactor.x;
-                    newViewY = (that.camera.y + (screenHeight - that.camera.height) / 2) * gameObject.scrollFactor.y;
+                if (spatial) {
+                    renderer = gameObject.components[FMENGINE.fmComponentTypes.RENDERER];
+                    newPosition = FMENGINE.fmVector(spatial.position.x * dt + spatial.previous.x * (1.0 - dt),
+                    spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
+                    if (renderer && gameObject.isVisible()) {
+                        var xPosition = newPosition.x, yPosition = newPosition.y,
+                            farthestXPosition = xPosition + renderer.getWidth(),
+                            farthestYPosition = yPosition + renderer.getHeight(),
+                            newViewX = 0, newViewY = 0;
+                        //If the game object has a scrolling factor then apply it
+                        newViewX = (that.camera.x + (screenWidth - that.camera.width) / 2) * gameObject.scrollFactor.x;
+                        newViewY = (that.camera.y + (screenHeight - that.camera.height) / 2) * gameObject.scrollFactor.y;
 
-                    //Draw the game object if it is within the bounds of the screen
-                    if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
-                            && xPosition <= newViewX + that.camera.width && yPosition <= newViewY + that.camera.height) {
-                        renderer.draw(bufferContext, dt);
+                        //Draw the game object if it is within the bounds of the screen
+                        if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
+                                && xPosition <= newViewX + that.camera.width && yPosition <= newViewY + that.camera.height) {
+                            renderer.draw(bufferContext, newPosition);
+                        }
                     }
-                }
-            }
-
-            //Draw the physics debug information
-            //TODO draw the debug from box2d
-            if (FMENGINE.fmParameters.debug && gameObject.isAlive()) {
-                var physic = gameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
-                if (physic) {
-                    physic.drawDebug(bufferContext);
+                    if (FMENGINE.fmParameters.debug && gameObject.isAlive()) {
+                        physic = gameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
+                        if (physic) {
+                            physic.drawDebug(bufferContext, newPosition);
+                        }
+                    }
                 }
             }
         }
@@ -301,11 +335,11 @@ FMENGINE.fmState = function () {
     */
     that.centerCameraOn = function (gameObject) {
         var spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL],
-            newPosition = spatial.x - that.camera.width / 2;
+            newPosition = spatial.position.x - that.camera.width / 2;
         if (newPosition > world.x && newPosition < world.width) {
             that.camera.x = newPosition;
         }
-        newPosition = spatial.y - that.camera.height / 2;
+        newPosition = spatial.position.y - that.camera.height / 2;
         if (newPosition > world.y && newPosition < world.height) {
             that.camera.y = newPosition;
         }
@@ -364,7 +398,9 @@ FMENGINE.fmState = function () {
         that.camera = null;
         world.destroy();
         world = null;
-        // todo destroy quad
+        //TODO destroy functions!
+        quad.clear();
+        quad = null;
         that = null;
     };
 

@@ -1,3 +1,4 @@
+//var FMENGINE = FMENGINE || {};
 /**
  * Under Creative Commons Licence
  * Component of basic physics.
@@ -21,13 +22,17 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
 	 */
         quad = FMENGINE.fmGame.getCurrentState().getQuad(),
         /**
-         * Array storing the type of game objects that collide with this one.
+         * Forces applied to the physic object.
          */
-        collidesWith = [],
+        force = FMENGINE.fmVector(0, 0),
         /**
          * The current direction of the object.
          */
         direction = 0,
+        /**
+         * Store the collisions that this object has.
+         */
+        collisions = [],
 	/**
         * Spatial component reference.
         */
@@ -35,7 +40,7 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
     /**
      * Offset of the bounding box or circle.
      */
-    that.offset = FMENGINE.fmPoint(0, 0);
+    that.offset = FMENGINE.fmVector(0, 0);
     /**
      * Width of the collider.
      */
@@ -45,50 +50,29 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
      */
     that.height = pHeight;
     /**
-     * 
+     * Array storing the types of game objects that can collide with this one.
      */
-    that.velocity = FMENGINE.fmPoint(0, 0);
+    that.collidesWith = [];
+    /**
+     * Velocity of the physic component.
+     */
+    that.velocity = FMENGINE.fmVector(0, 0);
     /**
      * Angular velocity.
      */
     that.angularVelocity = 0;
     /**
-     * Velocity on the x-axis at the previous frame.
-     */
-    that.previousXVelocity = 0;
-    /**
-     * Velocity on the y-axis at the previous frame.
-     */
-    that.previousYVelocity = 0;
-    /**
-     * Velocity on the x-axis to be used for drawing.
-     */
-    that.newXVelocity = 0;
-    /**
-     * Velocity on the y-axis to be used for drawing.
-     */
-    that.newYVelocity = 0;
-    /**
-     * Represent the mass of the game object
+     * Represent the mass of the physic game object, 0 means infinite mass.
      */
     that.mass = 1;
     /**
      * Represent the maximum absolute value of the velocity.
      */
-    that.maxVelocity = FMENGINE.fmPoint(10000, 10000);
+    that.maxVelocity = FMENGINE.fmVector(10000, 10000);
     /**
      * Maximum angular velocity.
      */
     that.maxAngularVelocity = 10000;
-    /**
-     * The acceleration represent how fast the game object reach the maximum 
-     * velocity.
-     */
-    that.acceleration = FMENGINE.fmPoint(0, 0);
-    /**
-     * Angular acceleration.
-     */
-    that.angularAcceleration = 0;
     /**
      * Friction is a factor between 0 and 1 diminishing the velocity.
      */
@@ -97,103 +81,81 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
      * Elasticity is a factor between 0 and 1 used for bouncing purposes.
      */
     that.elasticity = 0;
-    /**
-     * 
-     */
-    that.thrust = FMENGINE.fmPoint(1, 1);
 
     /**
-     *
+     * Apply a force to the physic object.
      */
-    that.preUpdate = function () {
-        that.previousXVelocity = that.velocity.x;
-        that.previousYVelocity = that.velocity.y;
+    that.applyForce = function (horizontalForce, verticalForce) {
+        force.x += horizontalForce;
+        force.y += verticalForce;
     };
 
     /**
     * Update the component.
     */
     that.update = function (dt) {
-        //Add x acceleration to x velocity
-        var vel = that.velocity.x + that.acceleration.x * dt,
-            //Retrieve the game objects near the owner of this physic component
-            gameObjects = null;
-        if (Math.abs(vel) <= that.maxVelocity.x) {
-            that.velocity.x = vel;
-        } else if (vel < 0) {
-            that.velocity.x = -that.maxVelocity.x;
-        } else if (vel > 0) {
-            that.velocity.x = that.maxVelocity.x;
+        collisions = [];
+        //Compute inverse mass
+        var invMass = 1 / that.mass, currentVelocity, maxVelocity;
+        if (that.mass === 0) {
+            invMass = 0;
         }
-
-        //Add y acceleration to y velocity
-        vel = that.velocity.y + that.acceleration.y * dt;
-        if (Math.abs(vel) <= that.maxVelocity.y) {
-            that.velocity.y = vel;
-	} else if (vel < 0) {
-            that.velocity.y = -that.maxVelocity.y;
-	} else if (vel > 0) {
-            that.velocity.y = that.maxVelocity.y;
+        
+        //Limit velocity to a max value
+        currentVelocity = that.velocity.x + (invMass * force.x) * dt;
+        maxVelocity = that.maxVelocity.x + (invMass * force.x) * dt;
+        if (Math.abs(currentVelocity) <= maxVelocity) {
+            that.velocity.x = currentVelocity;
+        } else if (currentVelocity < 0) {
+            that.velocity.x = -maxVelocity;
+        } else if (currentVelocity > 0) {
+            that.velocity.x = maxVelocity;
+        }
+        currentVelocity = that.velocity.y + (invMass * force.y) * dt;
+        maxVelocity = that.maxVelocity.y + (invMass * force.y) * dt;
+        if (Math.abs(currentVelocity) <= maxVelocity) {
+            that.velocity.y = currentVelocity;
+        } else if (currentVelocity < 0) {
+            that.velocity.y = -maxVelocity;
+        } else if (currentVelocity > 0) {
+            that.velocity.y = maxVelocity;
 	}
 
-        //Move the game object
-        //move(world.getCollisions(), world.getBounds(), gameObjects, that.xVelocity * elapsedTime(), that.yVelocity * elapsedTime());
+        //Update position
+        //TODO Add friction
+        spatial.position.x += that.velocity.x * dt;
+        spatial.position.y += that.velocity.y * dt;
 
         //If this game object collides with at least one type of game object
-        if (collidesWith.length > 0) {
-            //If there are other game objects near this one
+        var quad, gameObjects, i, j, otherGameObject, otherPhysic, collision;
+        if (that.collidesWith.length > 0) {
+            quad = FMENGINE.fmGame.getCurrentState().getQuad();
             gameObjects = quad.retrieve(pOwner);
-            if (gameObjects.length > 0) {
-                var i, j, otherGameObject, otherSpatial, otherCollider, otherPhysic;
-                for (i = 0; i < gameObjects.length; i = i + 1) {
-                    otherGameObject = gameObjects[i];
-                    //If a game object is found and is not destroyed and is not the current one
-                    if (pOwner.getId() !== otherGameObject.getId() && otherGameObject.isAlive()) {
-                        for (j = 0; j < collidesWith.length; j = j + 1) {
-                            if (otherGameObject.hasType(collidesWith[j])) {
-                                //Retrieve components
-                                otherSpatial = otherGameObject.components[FMENGINE.fmComponentTypes.SPATIAL];
-                                otherPhysic = otherGameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
-                                console.log("collision");
-                                if (otherCollider && otherPhysic && collidesWith.indexOf(otherPhysic) == -1 && otherPhysic.collidesWith.indexOf(that) == -1) {
-
-                                }
-                                break;
+            //gameObjects = FMENGINE.fmGame.getCurrentState().members;
+            //If there are other game objects near this one
+            for (i = 0; i < gameObjects.length; i = i + 1) {
+                otherGameObject = gameObjects[i];
+                otherPhysic = otherGameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
+                //If a game object is found and is alive and is not the current one
+                if (otherPhysic && pOwner.getId() !== otherGameObject.getId() && otherGameObject.isAlive()) {
+                    for (j = 0; j < that.collidesWith.length; j = j + 1) {
+                        if (otherGameObject.hasType(that.collidesWith[j])) {
+                            //TODO make it work for circles and obb
+                            collision = otherPhysic.collidesWithAabb(that);
+                            if (collision !== null) {
+                                that.addCollision(collision);
+                                otherPhysic.addCollision(collision);
+                                that.resolveCollision(otherPhysic, collision);
+                                otherPhysic.resolveCollision(that, collision);
                             }
                         }
                     }
                 }
             }
         }
-
-        //Move the game object
-        spatial.x += that.velocity.x * dt;
-        spatial.y += that.velocity.y * dt;
-
-        /*if (spatial.x > world.width - that.collider.getRadius() * 2) {
-            spatial.x = world.width - that.collider.getRadius() * 2;
-            that.xVelocity *= -1;
-        } else if (spatial.x < 0) {
-            spatial.x = 0;
-            that.xVelocity *= -1;
-        } else if (spatial.y > world.height - that.collider.getRadius() * 2) {
-            spatial.y = world.height - that.collider.getRadius() * 2;
-            that.yVelocity *= -1;
-        } else if (spatial.y < 0) {
-            spatial.y = 0;
-            that.yVelocity *= -1;
-        }*/
-
         
-    //} else {
-        //TODO What do we do in case there is no collider component?
-        //Decrease the velocity according to the ground and air friction factor
-        /*xVelocity_ *= 1 - that.airFriction;
-        yVelocity_ *= 1 - that.airFriction;
-        onGround = false;
-        //Move the game object
-        spatial.x += xVelocity_ * elapsedTime();
-        spatial.y += yVelocity_ * elapsedTime();*/
+        force.x = 0;
+        force.y = 0;
 
         //TODO add direction debug
         /*if (xVelocity_ != 0) {
@@ -204,11 +166,42 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
     };
 
     /**
-     * Update finalizing the physic component
+     * Resolve collision between current game object and the specified one.
      */
-    that.postUpdate = function (alpha) {
-        that.newXVelocity = that.velocity.x * alpha + that.previousXVelocity * (1.0 - alpha);
-        that.newYVelocity = that.velocity.y * alpha + that.previousYVelocity * (1.0 - alpha);
+    that.resolveCollision = function (otherPhysic, collision) {
+        var relativeVelocity = FMENGINE.fmMathUtils.substractVectors(otherPhysic.velocity, that.velocity),
+            velocityAlongNormal = relativeVelocity.dotProduct(collision.normal),
+            //Compute restitution
+            e = Math.min(that.elasticity, otherPhysic.elasticity),
+            j = 0,
+            invMass = 0,
+            otherInvMass = 0,
+            impulse = FMENGINE.fmVector(0, 0);
+        //Compute inverse mass
+        if (that.mass === 0) {
+            invMass = 0;
+        } else {
+            invMass = 1 / that.mass;
+        }
+        if (otherPhysic.mass === 0) {
+            otherInvMass = 0;
+        } else {
+            otherInvMass = 1 / otherPhysic.mass;
+        }
+        //Do not resolve if velocities are separating.
+        if (velocityAlongNormal > 0) {
+            return;
+        }
+        //Compute impulse scalar
+        j = -(1 + e) * velocityAlongNormal;
+        j /= invMass + otherInvMass;
+        //Apply impulse
+        impulse.x = j * collision.normal.x;
+        impulse.y = j * collision.normal.y;
+        that.velocity.x -= invMass * impulse.x;
+        that.velocity.y -= invMass * impulse.y;
+        otherPhysic.velocity.x += otherInvMass * impulse.x;
+        otherPhysic.velocity.y += otherInvMass * impulse.y;
     };
 
     /**
@@ -216,77 +209,29 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
      * objects (with physic components of course).
      */
     that.addTypeToCollideWith = function (pType) {
-        collidesWith.push(pType);
+        that.collidesWith.push(pType);
     };
 
     /**
-     * Simulate a movement according to a given x and y velocity
+     * Remove a type that was supposed to collide with this game object.
      */
-    var tryToMove = function (collisions, worldBounds, xVel, yVel) {
-	//Update the position of the game object's collider according to the x and y velocities
-        spatial.x += xVel;
-        spatial.y += yVel;
-	//If no collision is detected
-        if (that.collider.checkWorldCollisions(collisions, worldBounds)) {
-	    //Rollback to old collider positions
-            spatial.x -= xVel;
-            spatial.y -= yVel;
-	    //Collision detected, impossible to move
-            return false;
-        }
-        //No collision detected, let's move
-        return true;
+    that.removeTypeToCollideWith = function (pType) {
+        that.collidesWith.splice(that.collidesWith.indexOf(pType), 1);
+    };
+    /**
+     * Add a collision object representing the collision to the list of current
+     * collisions.
+     * @param {fmCollision} collision the collision object.
+     */
+    that.addCollision = function (collision) {
+        collisions.push(collision);
     };
 
     /**
-     * Move from a given x and y velocity.
+     * Draw debug information.
      */
-    var move = function (collisions, worldBounds, gameObjects, xVel, yVel) {
-	//If there are collision tiles and if the velocity is greater than the size of the tiles
-        if (collisions.length > 0 && (Math.abs(xVel) >= collisions.getTileWidth() || Math.abs(yVel) >= collisions.getTileHeight())) {
-	    move(collisions, worldBounds, gameObjects, xVel / 2, yVel / 2);
-	    move(collisions, worldBounds, gameObjects, xVel - xVel / 2, yVel - yVel / 2);
-	    return;
-	}
-
-	//Try to move the game object
-	if (tryToMove(collisions, worldBounds, xVel, yVel))
-	    return;
-
-	//Try to move on the x axis
-	var i, maxSpeed = Math.abs(xVel);
-	for (i = 0; i < maxSpeed; i++) {
-	    var vel;
-	    if (xVel == 0)
-		vel = 0;
-	    else if (xVel > 0)
-		vel = 1;
-	    else
-		vel = -1;
-	    //If impossible to move the game object is as far as it can be
-	    if (!tryToMove(collisions, worldBounds, vel, 0)) {
-		//Bounce against aabb (tiles) or world bounds
-		that.velocity.x = that.elasticity * -that.velocity.x;
-		break;
-	    }
-	}
-	//Try to move on the y axis
-	maxSpeed = Math.abs(yVel);
-	for (i = 0; i < maxSpeed; i++) {
-	    var vel;
-	    if (yVel == 0)
-		vel = 0;
-	    if (yVel > 0)
-		vel = 1;
-	    else
-		vel = -1;
-	    //If impossible to move the game object is as far as it can be
-	    if (!tryToMove(collisions, worldBounds, 0, vel)) {
-		//Bounce against aabb (tiles) or world bounds
-		that.velocity.y = that.elasticity * -that.yelocity.y;
-		break;
-	    }
-	}
+    that.drawDebug = function (bufferContext, newPosition) {
+        
     };
 
     /**
@@ -294,6 +239,22 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
      */
     that.getLinearVelocity = function () {
         return that.velocity;
+    };
+
+    /**
+     * Check if the physic component is colliding with a certain type right now.
+     * @returns {boolean} whether collision between the type specified and the 
+     * physic component.
+     */
+    that.isCollidingWith = function (pTypeToTest) {
+        var i;
+        for (i = 0; i < collisions.length; i = i + 1) {
+            if (collisions[i].b.owner.hasType(pTypeToTest)
+                || collisions[i].a.owner.hasType(pTypeToTest)) {
+                return true;
+            }
+        }
+        return false;
     };
 
     return that;

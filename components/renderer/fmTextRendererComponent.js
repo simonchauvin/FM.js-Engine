@@ -38,8 +38,8 @@ FMENGINE.fmTextRendererComponent = function (pTextToDisplay, pOwner) {
     /**
     * Draw the text
     */
-    that.draw = function (bufferContext) {
-        var xPosition = spatial.x, yPosition = spatial.y;
+    that.draw = function (bufferContext, newPosition) {
+        var xPosition = newPosition.x, yPosition = newPosition.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
         bufferContext.fillStyle = that.fillStyle;

@@ -1,12 +1,14 @@
+//var FMENGINE = FMENGINE || {};
 /**
  * Under Creative Commons Licence
  * No need to add the tilemap to the state, it's done when the tilemap is 
  * loaded.
+ * By default a tilemap does not collide to anything.
  * @param {fmImageAsset} tileSet  Image of the tile set in the order of 
  * the data given
  * @author Simon Chauvin
  */
-FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pZIndex) {
+FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pTypes, pTypesToCollideWith, pZIndex) {
     "use strict";
     var that = {},
         /**
@@ -43,18 +45,22 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
      * @param {Array} data  Comma and line return sparated string of numbers 
      * representing the position and type of tiles.
      */
-    that.load = function (pData, type) {
+    that.load = function (pData) {
         var rows = pData.split("\n"),
             row = null,
             resultRow = null,
             columns = null,
             tileId = null,
             tile = null,
+            state = FMENGINE.fmGame.getCurrentState(),
+            spatial,
             renderer,
+            physic,
             xOffset,
             yOffset,
             i,
-            j;
+            j,
+            n;
         for (i = 0; i < rows.length; i = i + 1) {
             row = rows[i];
             if (row) {
@@ -64,8 +70,11 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
                     tileId = columns[j];
                     if (tileId > 0) {
                         tile = FMENGINE.fmGameObject(zIndex);
-                        tile.addType(type);
-                        FMENGINE.fmSpatialComponent(j * tileWidth, i * tileHeight, tile);
+                        for (n = 0; n < pTypes.length; n = n + 1) {
+                            tile.addType(pTypes[n]);
+                        }
+                        spatial = FMENGINE.fmSpatialComponent(j * tileWidth, i * tileHeight, tile);
+                        tile.addComponent(spatial);
                         renderer = FMENGINE.fmSpriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
                         xOffset = tileId * tileWidth;
@@ -76,8 +85,14 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
                         }
                         renderer.setXOffset(xOffset);
                         renderer.setYOffset(yOffset);
-                        FMENGINE.fmAabbComponent(tileWidth, tileHeight, tile);
-                        FMENGINE.fmGame.getCurrentState().add(tile);
+                        tile.addComponent(renderer);
+                        physic = FMENGINE.fmAabbComponent(tileWidth, tileHeight, tile);
+                        for (n = 0; n < pTypesToCollideWith.length; n = n + 1) {
+                            Object.getPrototypeOf(physic).mass = 0;
+                            physic.addTypeToCollideWith(pTypesToCollideWith[n]);
+                        }
+                        tile.addComponent(physic);
+                        state.add(tile);
                     }
                     resultRow.push(tileId);
                 }
@@ -90,6 +105,7 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
     * Destroy the tile map and its objects.
     */
     that.destroy = function () {
+        data = null;
         tileSet = null;
         that = null;
     };
@@ -99,13 +115,6 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
      */
     that.getData = function () {
         return data;
-    };
-
-    /**
-     * Retrive the types associated with the tilemap.
-     */
-    that.hasType = function (pName) {
-        return types.indexOf(pName) !== -1;
     };
 
     /**
@@ -158,4 +167,4 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
     };
 
     return that;
-}
+};

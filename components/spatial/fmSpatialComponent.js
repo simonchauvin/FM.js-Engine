@@ -6,13 +6,10 @@ FMENGINE.fmSpatialComponent = function (pX, pY, pOwner) {
     "use strict";
     var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.SPATIAL, pOwner);
     /**
-     * x position.
+     * Current position.
      */
-    that.x = pX;
-    /**
-     * y position.
-     */
-    that.y = pY;
+    that.position = FMENGINE.fmVector(pX, pY);
+    that.previous = FMENGINE.fmVector(pX, pY);
     /**
      * Angle of the object defined in radians.
      */
@@ -22,6 +19,8 @@ FMENGINE.fmSpatialComponent = function (pX, pY, pOwner) {
     * Destroy the component and its objects.
     */
     that.destroy = function () {
+        that.position = null;
+        that.previous = null;
         that.destroy();
         that = null;
     };

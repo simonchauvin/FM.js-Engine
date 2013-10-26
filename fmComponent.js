@@ -17,10 +17,6 @@ FMENGINE.fmComponent = function (pComponentType, pComponentOwner) {
          * Component's owner.
          */
         that.owner = pComponentOwner;
-        /**
-         * Add the component to the owner.
-         */
-        that.owner.addComponent(that);
     } else {
         if (FMENGINE.fmParameters.debug) {
             console.log("ERROR: the owner of the " + pComponentType

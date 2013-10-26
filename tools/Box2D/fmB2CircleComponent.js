@@ -49,8 +49,8 @@ FMENGINE.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
 	//Definition of the shape and its position
 	var fixDef = new b2FixtureDef, bodyDef = new b2BodyDef;
 	fixDef.shape = new b2CircleShape(radius / parameters.PIXELS_TO_METERS);
-	bodyDef.position.x = spatial.x / parameters.PIXELS_TO_METERS;
-	bodyDef.position.y = spatial.y / parameters.PIXELS_TO_METERS;
+	bodyDef.position.x = spatial.position.x / parameters.PIXELS_TO_METERS;
+	bodyDef.position.y = spatial.position.y / parameters.PIXELS_TO_METERS;
 	bodyDef.angle = spatial.angle;
 	//Type of body
 	switch (pType) {
@@ -85,12 +85,12 @@ FMENGINE.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
         //If the body is not static
 	if (body.m_type !== b2Body.b2_staticBody) {
 	    //Update spatial component based on the body's position
-	    spatial.x = body.GetPosition().x * parameters.PIXELS_TO_METERS - radius;
-            spatial.y = body.GetPosition().y * parameters.PIXELS_TO_METERS - radius;
+	    spatial.position.x = body.GetPosition().x * parameters.PIXELS_TO_METERS - radius;
+            spatial.position.y = body.GetPosition().y * parameters.PIXELS_TO_METERS - radius;
             spatial.angle = body.GetAngle();
 	} else {
 	    //Otherwise the body's position based on the spatial component
-	    body.SetPosition(new b2Vec2((spatial.x + radius / 2) / parameters.PIXELS_TO_METERS, (spatial.y + radius / 2) / parameters.PIXELS_TO_METERS));
+	    body.SetPosition(new b2Vec2((spatial.position.x + radius / 2) / parameters.PIXELS_TO_METERS, (spatial.position.y + radius / 2) / parameters.PIXELS_TO_METERS));
 	    body.SetAngle(spatial.angle);
 	}
     };
@@ -102,20 +102,20 @@ FMENGINE.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
         //Draw the circle
         bufferContext.beginPath();
         bufferContext.strokeStyle = "#f4f";
-        bufferContext.arc((spatial.x + radius) - bufferContext.xOffset, (spatial.y + radius) - bufferContext.yOffset, radius, 0, 2 * Math.PI, false);
+        bufferContext.arc((spatial.position.x + radius) - bufferContext.xOffset, (spatial.position.y + radius) - bufferContext.yOffset, radius, 0, 2 * Math.PI, false);
         bufferContext.stroke();
 
         //Rotate the line
         bufferContext.save();
-        bufferContext.translate(spatial.x + radius - bufferContext.xOffset, spatial.y + radius - bufferContext.yOffset);
+        bufferContext.translate(spatial.position.x + radius - bufferContext.xOffset, spatial.position.y + radius - bufferContext.yOffset);
         bufferContext.rotate(spatial.angle);
-        bufferContext.translate(-(spatial.x + radius - bufferContext.xOffset), -(spatial.y + radius - bufferContext.yOffset));
+        bufferContext.translate(-(spatial.position.x + radius - bufferContext.xOffset), -(spatial.position.y + radius - bufferContext.yOffset));
 
         //Draw the line
         bufferContext.beginPath();
         bufferContext.strokeStyle = "#f4f";
-        bufferContext.moveTo(spatial.x + radius - bufferContext.xOffset, spatial.y + radius - bufferContext.yOffset);
-        bufferContext.lineTo(spatial.x - bufferContext.xOffset, spatial.y - bufferContext.yOffset);
+        bufferContext.moveTo(spatial.position.x + radius - bufferContext.xOffset, spatial.position.y + radius - bufferContext.yOffset);
+        bufferContext.lineTo(spatial.position.x - bufferContext.xOffset, spatial.position.y - bufferContext.yOffset);
         bufferContext.stroke();
         bufferContext.restore();
     };
@@ -155,7 +155,7 @@ FMENGINE.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
      */
     that.getLinearVelocity = function () {
         var linearVelocity = body.GetLinearVelocity();
-        return FMENGINE.fmPoint(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
+        return FMENGINE.fmVector(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
     };
 
     /**

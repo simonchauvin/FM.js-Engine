@@ -50,7 +50,12 @@ FMENGINE.fmGame = (function () {
         /**
          * Total time elapsed since the start of the game.
          */
-        totalTimeElapsed = 0,
+        totalTimeElapsed = 0.0,
+        /**
+         * Desired delta time.
+         * @type Number
+         */
+        dt = 1 / 60.0,
         /**
          * Actual FPS at which the game is running.
          */
@@ -59,6 +64,11 @@ FMENGINE.fmGame = (function () {
          * Current time.
          */
         currentTime = (new Date()).getTime() / 1000,
+        /**
+         * Delay accumulated by the physics engine.
+         * @type Number
+         */
+        accumulator = 0.0,
         /**
         * Currently pressed keys.
         */
@@ -103,21 +113,34 @@ FMENGINE.fmGame = (function () {
 
             //Retrieve the current time
             var newTime = (new Date()).getTime() / 1000,
-                //Compute the time since last frame
-                frameTime = newTime - currentTime;
+                //Compute actual time since last frame
+                frameTime = newTime - currentTime,
+                alpha = 0;
+            //Avoid spiral of death
+            if (frameTime > 0.25) {
+                frameTime = 0.25;
+            }
             currentTime = newTime;
-
-            //Calculate the actual FPS at which the game is running
-            totalFrames = totalFrames + 1;
-            totalTimeElapsed += frameTime;
-            actualFps = Math.round(totalFrames / totalTimeElapsed);
+            //Update the accumulator
+            accumulator += frameTime;
 
             if (!pause) {
+                while (accumulator >= dt) {
+                    accumulator -= dt;
+                    //Update physics
+                    currentState.updatePhysics(dt);
+                    //Calculate the actual FPS at which the game is running
+                    totalFrames = totalFrames + 1;
+                    totalTimeElapsed += dt;
+                    actualFps = Math.round(totalFrames / totalTimeElapsed);
+                }
+                
+                alpha = accumulator / dt;
                 //Update the current state of the game
-                currentState.update(frameTime);
+                currentState.update(alpha);
             }
             //Draw the current state of the game
-            currentState.draw(bufferContext, frameTime);
+            currentState.draw(bufferContext, alpha);
 
             if (pause) {
                 //Fade screen

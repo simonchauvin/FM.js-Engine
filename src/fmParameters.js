@@ -4,6 +4,9 @@
  * @author Simon Chauvin
  */
 FMENGINE.fmParameters = {
+    //FPS at which the game is running
+    FPS: 60.0,
+
     //The name of the library directory
     libFolder: "lib",
 

@@ -1,0 +1,77 @@
+<project name="{FM.js(Engine);}"  basedir=".">
+    <property name="root" location="" />
+    <property name="concat" location="concat" />
+    <property name="min" location="min" />
+    <property name="src" location="src" />
+    <property name="system" location="${src}/system" />
+    <property name="tools" location="${src}/tools" />
+    <property name="components" location="${src}/components" />
+    <property name="fx" location="${components}/fx" />
+    <property name="pathfinding" location="${components}/pathfinding" />
+    <property name="physic" location="${components}/physic" />
+    <property name="renderer" location="${components}/renderer" />
+    <property name="sound" location="${components}/sound" />
+    <property name="spatial" location="${components}/spatial" />
+    <property name="tmx" location="${tools}/tmx_loader" />
+    <property name="compressor"  location="${root}/yui_compressor/yuicompressor-2.4.7.jar"/>
+    <target name="clean">
+        <delete dir="${concat}"/>
+        <delete dir="${min}"/>
+    </target>
+    <target name="init">
+        <mkdir dir="${concat}"/>
+        <mkdir dir="${min}"/>
+    </target>
+    <target name="concat">
+        <concat destfile="${concat}/fmjsengine-concat.js" encoding="UTF-8" >
+            <filelist dir="${src}" files= "fmAssetManager.js, fmAudioAsset.js,
+                fmParameters.js, 
+                fmCircle.js, fmComponent.js, fmFileAsset.js, fmGame.js, 
+                fmGameObject.js, fmImageAsset.js, fmKeyboard.js, fmMathUtils.js, 
+                fmRectangle.js, fmState.js, fmTilemap.js,
+                fmVector.js, fmWorld.js">
+            </filelist>
+            <filelist dir="${system}" files= "fmCollision.js, fmComponentTypes.js, 
+                fmPreloader.js, fmQuadTree.js, fmUtils.js">
+            </filelist>
+            <filelist dir="${tmx}" files= "tmxLayer.js, tmxMap.js, 
+                tmxObject.js, tmxObjectGroup.js, tmxPropertySet.js,
+                tmxTileSet.js">
+            </filelist>
+            <filelist dir="${fx}" files= "fmEmitterComponent.js">
+            </filelist>
+            <filelist dir="${pathfinding}" files= "fmSimplePathComponent.js">
+            </filelist>
+            <filelist dir="${physic}" files= "fmAabbComponent.js, 
+                fmCircleComponent.js, fmPhysicComponent.js">
+            </filelist>
+            <filelist dir="${renderer}" files= "fmAnimatedSpriteRendererComponent.js, 
+                fmBoxRendererComponent.js, fmCircleRendererComponent.js, fmLineRendererComponent.js, 
+                fmSpriteRendererComponent.js, fmTextRendererComponent.js">
+            </filelist>
+            <filelist dir="${sound}" files= "fmSoundComponent.js">
+            </filelist>
+            <filelist dir="${spatial}" files= "fmSpatialComponent.js">
+            </filelist>
+        </concat>
+    </target>
+    <target name="min">
+        <apply executable="java" parallel="false" dest="${min}" taskname="yui">
+            <fileset dir="${concat}">
+                <patternset>
+                    <include name="fmjsengine-concat.js"/>
+                </patternset>
+            </fileset>
+            <arg line="-jar"></arg>
+            <arg path="${compressor}"></arg>
+            <arg line="--charset UTF-8"/>
+            <arg line="-v"></arg>
+            <srcfile/>
+            <arg line="-o"></arg>
+            <mapper type="glob" from="*-concat.js" to="*-min.js"></mapper>
+            <targetfile/>
+       </apply>       
+    </target>
+    <target name="build" depends="clean, init, concat, min">   
+    </target>
+</project>

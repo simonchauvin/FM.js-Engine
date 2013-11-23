@@ -2,9 +2,9 @@
  * World represent the concrete space of the game.
  * @author Simon Chauvin
  */
-FMENGINE.fmBox2DWorld = function (pState, pWidth, pHeight) {
+FM.fmBox2DWorld = function (pState, pWidth, pHeight) {
     "use strict";
-    var that = Object.create(FMENGINE.fmWorld(pState, pWidth, pHeight));
+    var that = Object.create(FM.world(pState, pWidth, pHeight));
 
     /**
      * Init the Box2D world.
@@ -12,7 +12,7 @@ FMENGINE.fmBox2DWorld = function (pState, pWidth, pHeight) {
     that.init = function (gravity, sleep) {
         var b2World = Box2D.Dynamics.b2World,
         b2Vec2 = Box2D.Common.Math.b2Vec2;
-        new b2World(new b2Vec2(gravity.x / FMENGINE.fmParameters.PIXELS_TO_METERS, gravity.y / FMENGINE.fmParameters.PIXELS_TO_METERS), sleep);
+        new b2World(new b2Vec2(gravity.x / FM.parameters.PIXELS_TO_METERS, gravity.y / FM.parameters.PIXELS_TO_METERS), sleep);
     };
 
     /**
@@ -27,10 +27,10 @@ FMENGINE.fmBox2DWorld = function (pState, pWidth, pHeight) {
                 var tile = tileMap[i][j], tileSetWidth = tileSet.width, tileSetHeight = tileSet.height, xOffset, yOffset;
                 if (tile > 0) {
                     //Create Box2D tile
-                    tileMap[i][j] = FMENGINE.fmGameObject(tileMap.getZIndex());
-                    spatial = FMENGINE.fmSpatialComponent(j * tileWidth, i * tileHeight, tileMap[i][j]);
+                    tileMap[i][j] = FM.gameObject(tileMap.getZIndex());
+                    spatial = FM.spatialComponent(j * tileWidth, i * tileHeight, tileMap[i][j]);
                     tileMap[i][j].addComponent(spatial);
-                    renderer = FMENGINE.fmSpriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
+                    renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
                     //Select the right tile in the tile set
                     xOffset = (tile - 1) * tileWidth;
                     yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
@@ -42,8 +42,8 @@ FMENGINE.fmBox2DWorld = function (pState, pWidth, pHeight) {
                     renderer.setYOffset(yOffset);
                     tileMap[i][j].addComponent(renderer);
 
-                    physic = FMENGINE.fmB2BoxComponent(tileWidth, tileHeight, that, tileMap[i][j]);
-                    physic.init(FMENGINE.fmParameters.STATIC, 1, 0, 0);
+                    physic = FM.fmB2BoxComponent(tileWidth, tileHeight, that, tileMap[i][j]);
+                    physic.init(FM.parameters.STATIC, 1, 0, 0);
                     tileMap[i][j].addComponent(physic);
                     //TODO Remove tiles from the game objects list
                     //It shoult have its own list

@@ -3,20 +3,20 @@
  *
  * @author Simon Chauvin.
  * @param {int} pRadius radius of the circle.
- * @param {fmGameObject} The game object to which the component belongs.
- * @returns {fmCircleComponent} The circle component itself.
+ * @param {gameObject} The game object to which the component belongs.
+ * @returns {circleComponent} The circle component itself.
  */
-FMENGINE.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
+FM.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
     "use strict";
     /**
-     * fmB2CircleComponent is based on fmComponent.
+     * fmB2CircleComponent is based on component.
      */
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.PHYSIC, pOwner),
+    var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
         /**
          * Imports.
          */
-         parameters = FMENGINE.fmParameters,
-         componentTypes = FMENGINE.fmComponentTypes,
+         parameters = FM.parameters,
+         componentTypes = FM.componentTypes,
 	/**
 	 * Box2D imports.
 	 */
@@ -155,7 +155,7 @@ FMENGINE.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
      */
     that.getLinearVelocity = function () {
         var linearVelocity = body.GetLinearVelocity();
-        return FMENGINE.fmVector(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
+        return FM.vector(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
     };
 
     /**
@@ -163,7 +163,7 @@ FMENGINE.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
      */
     that.setLinearVelocity = function (pLinearVelocity) {
         //Imports
-        var param = FMENGINE.fmParameters;
+        var param = FM.parameters;
 	body.SetAwake(true);
         body.SetLinearVelocity(new b2Vec2(pLinearVelocity.x / parameters.PIXELS_TO_METERS, pLinearVelocity.y / parameters.PIXELS_TO_METERS));
     };

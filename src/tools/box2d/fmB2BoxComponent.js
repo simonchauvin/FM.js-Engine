@@ -2,20 +2,20 @@
  * Under Creative Commons Licence.
  *
  * @author Simon Chauvin.
- * @param {fmGameObject} The game object to which the component belongs.
- * @returns {fmCircleComponent} The circle component itself.
+ * @param {gameObject} The game object to which the component belongs.
+ * @returns {circleComponent} The circle component itself.
  */
-FMENGINE.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
+FM.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
     "use strict";
     /**
-     * fmB2BoxComponent is based on fmComponent.
+     * fmB2BoxComponent is based on component.
      */
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.PHYSIC, pOwner),
+    var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
         /**
          * Imports.
          */
-         parameters = FMENGINE.fmParameters,
-         componentTypes = FMENGINE.fmComponentTypes,
+         parameters = FM.parameters,
+         componentTypes = FM.componentTypes,
 	/**
 	 * Box2D imports.
 	 */
@@ -156,7 +156,7 @@ FMENGINE.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
      */
     that.getLinearVelocity = function () {
         var linearVelocity = body.GetLinearVelocity();
-	return fmVector(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
+	return vector(linearVelocity.x * parameters.PIXELS_TO_METERS, linearVelocity.y * parameters.PIXELS_TO_METERS);
     };
 
     /**

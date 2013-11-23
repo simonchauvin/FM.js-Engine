@@ -96,7 +96,7 @@ var tmxTileSet = function () {
 
     that.getRect = function (id) {
         //TODO: consider spacing & margin
-        return new FMENGINE.fmRectangle(0, 0, (id % that.numCols) * that.tileWidth, (id / that.numCols) * that.tileHeight);
+        return new FM.rectangle(0, 0, (id % that.numCols) * that.tileWidth, (id / that.numCols) * that.tileHeight);
     };
 
     return that;

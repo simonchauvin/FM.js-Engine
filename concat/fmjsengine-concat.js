@@ -1,9 +1,9 @@
-var FMENGINE = FMENGINE || {};
+var FM = FM || {};
 /**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-FMENGINE.fmAssetManager = {
+FM.assetManager = {
     //List of assets
     assets: [],
 
@@ -20,20 +20,20 @@ FMENGINE.fmAssetManager = {
      */
     addAsset: function (name, type, path) {
         "use strict";
-        var assetManager = FMENGINE.fmAssetManager,
-            param = FMENGINE.fmParameters,
+        var assetManager = FM.assetManager,
+            param = FM.parameters,
             asset = assetManager.getAssetByName(name);
         if (type === param.IMAGE) {
             if (!asset) {
-                assetManager.assets.push(FMENGINE.fmImageAsset(name, path));
+                assetManager.assets.push(FM.imageAsset(name, path));
             }
         } else if (type === param.AUDIO) {
             if (!asset) {
-                var sound = FMENGINE.fmAudioAsset(name, path);
+                var sound = FM.audioAsset(name, path);
                 //Add the asset only if it is supported by the browser
                 if (sound.isSupported()) {
                     assetManager.assets.push(sound);
-                } else if (FMENGINE.fmParameters.debug) {
+                } else if (FM.parameters.debug) {
                     console.log("WARNING: The " + 
                             path.substring(path.lastIndexOf('.') + 1) + 
                             " audio format is not supported by this browser.");
@@ -41,7 +41,7 @@ FMENGINE.fmAssetManager = {
             }
         } else if (type === param.FILE) {
             if (!asset) {
-                assetManager.assets.push(FMENGINE.fmFileAsset(name, path));
+                assetManager.assets.push(FM.fileAsset(name, path));
             }
         }
     },
@@ -51,7 +51,7 @@ FMENGINE.fmAssetManager = {
      */
     loadAssets: function () {
         "use strict";
-        var i, assetManager = FMENGINE.fmAssetManager;
+        var i, assetManager = FM.assetManager;
         for (i = 0; i < assetManager.assets.length; i = i + 1) {
             assetManager.assets[i].load();
         }
@@ -62,7 +62,7 @@ FMENGINE.fmAssetManager = {
      */
     assetLoaded: function () {
         "use strict";
-        var assetManager = FMENGINE.fmAssetManager;
+        var assetManager = FM.assetManager;
         assetManager.loadingProgress += 100 / assetManager.assets.length;
     },
 
@@ -71,7 +71,7 @@ FMENGINE.fmAssetManager = {
      */
     areAllAssetsLoaded: function () {
         "use strict";
-        return Math.round(FMENGINE.fmAssetManager.loadingProgress) >= 100;
+        return Math.round(FM.assetManager.loadingProgress) >= 100;
     },
 
     /**
@@ -79,7 +79,7 @@ FMENGINE.fmAssetManager = {
      */
     getAssetByName: function (name) {
         "use strict";
-        var asset = null, i = 0, assetManager = FMENGINE.fmAssetManager;
+        var asset = null, i = 0, assetManager = FM.assetManager;
         for (i = 0; i < assetManager.assets.length; i = i + 1) {
             if (assetManager.assets[i].getName() === name) {
                 asset = assetManager.assets[i];
@@ -87,11 +87,12 @@ FMENGINE.fmAssetManager = {
         }
         return asset;
     }
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-FMENGINE.fmAudioAsset = function (pName, pPath) {
+FM.audioAsset = function (pName, pPath) {
     "use strict";
     var that = new Audio(),
 
@@ -116,7 +117,7 @@ FMENGINE.fmAudioAsset = function (pName, pPath) {
          */
         loadComplete = function () {
             loaded = true;
-            FMENGINE.fmAssetManager.assetLoaded();
+            FM.assetManager.assetLoaded();
         };
 
     /**
@@ -176,12 +177,13 @@ FMENGINE.fmAudioAsset = function (pName, pPath) {
     };
 
     return that;
-};/**
+};
+/**
  * Under Creative Commons Licence
  * 
  * @author Simon Chauvin
  */
-FMENGINE.fmParameters = {
+FM.parameters = {
     //FPS at which the game is running
     FPS: 60.0,
 
@@ -214,13 +216,14 @@ FMENGINE.fmParameters = {
 
     //Background color
     backgroundColor: 'rgb(0,0,0)'
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  * @param radius
- * @returns {fmCircle}
+ * @returns {circle}
  */
-FMENGINE.fmCircle = function (pX, pY, pRadius) {
+FM.circle = function (pX, pY, pRadius) {
     "use strict";
     var that = {};
 
@@ -246,47 +249,12 @@ FMENGINE.fmCircle = function (pX, pY, pRadius) {
     };
 
     return that;
-};/**
- * Top level object shared by every components.
- * The component is automatically added to the game object specified as owner.
- * @author Simon Chauvin
- * @param {String} pComponentType type of the component to add.
- * @param {fmGameObject} pComponentOwner game object that owns the component.
- */
-FMENGINE.fmComponent = function (pComponentType, pComponentOwner) {
-    "use strict";
-    var that = {};
-    if (pComponentOwner.components !== undefined) {
-        /**
-         * Component's name.
-         */
-        that.name = pComponentType;
-        /**
-         * Component's owner.
-         */
-        that.owner = pComponentOwner;
-    } else {
-        if (FMENGINE.fmParameters.debug) {
-            console.log("ERROR: the owner of the " + pComponentType
-                    + " component must be a fmGameObject.");
-        }
-    }
-
-    /**
-    * Destroy the component and its objects.
-    */
-    that.destroy = function () {
-        that.name = null;
-        that.owner = null;
-        that = null;
-    };
-
-    return that;
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-FMENGINE.fmFileAsset = function (pName, pPath) {
+FM.fileAsset = function (pName, pPath) {
     "use strict";
     var that = new XMLHttpRequest(),
         /**
@@ -311,7 +279,7 @@ FMENGINE.fmFileAsset = function (pName, pPath) {
         loadComplete = function () {
             loaded = true;
             content = that.responseText;
-            FMENGINE.fmAssetManager.assetLoaded();
+            FM.assetManager.assetLoaded();
         };
 
     /**
@@ -362,17 +330,13 @@ FMENGINE.fmFileAsset = function (pName, pPath) {
     };
 
     return that;
-};/**
- * 
- * @namespace Top level namespace of the {FM.js(engine);}
- */
-var FMENGINE = FMENGINE || {};
+};
 /**
- * fmGame is a singleton that represents the game application and
+ * game is a singleton that represents the game application and
  * contains all the necessary information and methods to handle its execution.
  * @author Simon Chauvin
  */
-FMENGINE.fmGame = (function () {
+FM.game = (function () {
     "use strict";
     var that = {},
         /**
@@ -408,22 +372,29 @@ FMENGINE.fmGame = (function () {
          */
         bufferContext = null,
         /**
-         * Number of frames since the start of the game.
+         * Count the number of frames between two FPS computation.
+         * @type Number
          */
-        totalFrames = 0,
+        framesCounter = 0,
         /**
-         * Total time elapsed since the start of the game.
+         * Count the time between two FPS computation.
+         * @type Number
          */
-        totalTimeElapsed = 0.0,
+        timeCounter = 0,
         /**
          * Desired delta time for updating the game.
          * @type Number
          */
-        dt = 1 / FMENGINE.fmParameters.FPS,
+        dt = 1 / FM.parameters.FPS,
         /**
          * Actual FPS at which the game is running.
          */
-        actualFps = 0,
+        actualFps = FM.parameters.FPS,
+        /**
+         * Contains the FPS computed every second.
+         * @type Number
+         */
+        lastComputedFps = FM.parameters.FPS,
         /**
          * Current time.
          */
@@ -472,7 +443,7 @@ FMENGINE.fmGame = (function () {
         gameLoop = function () {
             //Reset the screen
             context.clearRect(0, 0, screenWidth, screenHeight);
-            context.fillStyle = FMENGINE.fmParameters.backgroundColor;
+            context.fillStyle = FM.parameters.backgroundColor;
             context.fillRect(0, 0, screenWidth, screenHeight);
 
             //Retrieve the current time
@@ -489,20 +460,27 @@ FMENGINE.fmGame = (function () {
             accumulator += frameTime;
 
             if (!pause) {
+                timeCounter += frameTime;
+                //Update physics a certain number of times
                 while (accumulator >= dt) {
                     accumulator -= dt;
-                    totalTimeElapsed += dt;
-                    //Update physics
                     currentState.updatePhysics(dt);
                 }
                 alpha = accumulator / dt;
                 //Update the current state of the game
-                currentState.update(alpha);
-                
-                //Calculate the actual FPS at which the game is running
-                totalFrames = totalFrames + 1;
-                actualFps = Math.round(totalFrames / totalTimeElapsed);
+                currentState.update(frameTime);
+            } else {
+                timeCounter += dt;
             }
+            //Compute the actual FPS at which the game is running
+            framesCounter++;
+            if (timeCounter >= 1) {
+                lastComputedFps = framesCounter / timeCounter;
+                framesCounter = 0;
+                timeCounter = 0;
+            }
+            actualFps = Math.round(lastComputedFps);
+
             //Draw the current state of the game
             currentState.draw(bufferContext, alpha);
 
@@ -523,7 +501,7 @@ FMENGINE.fmGame = (function () {
             }
 
             // If debug mode if active
-            if (FMENGINE.fmParameters.debug) {
+            if (FM.parameters.debug) {
                 //Draw the number of frames per seconds
                 bufferContext.fillStyle = '#fcd116';
                 bufferContext.font = '30px sans-serif';
@@ -601,8 +579,8 @@ FMENGINE.fmGame = (function () {
      * @param {string} pName description.
      * @param {int} pWidth description.
      * @param {int} pHeight description.
-     * @param {fmState} pFirstState description.
-     * @param {fmPreloader} pCustomPreloader preloader to be used.
+     * @param {state} pFirstState description.
+     * @param {preloader} pCustomPreloader preloader to be used.
      * 
      */
     that.run = function (pCanvasId, pName, pWidth, pHeight, pFirstState, pCustomPreloader) {
@@ -613,7 +591,7 @@ FMENGINE.fmGame = (function () {
         if (pCustomPreloader) {
             currentState = pCustomPreloader(pFirstState);
         } else {
-            currentState = FMENGINE.fmPreloader(pFirstState);
+            currentState = FM.preloader(pFirstState);
         }
         //Create canvas context if it exists and use double buffering
         if (canvas && canvas.getContext) {
@@ -812,12 +790,13 @@ FMENGINE.fmGame = (function () {
     };
 
     return that;
-}());/**
+}());
+/**
  * Object representing a game object.
  * @author Simon Chauvin
  * @param {int} pZIndex specifies the z position of the game object.
  */
-FMENGINE.fmGameObject = function (pZIndex) {
+FM.gameObject = function (pZIndex) {
     "use strict";
     var that = {},
         /**
@@ -843,7 +822,7 @@ FMENGINE.fmGameObject = function (pZIndex) {
     /**
      * Allows to specify different degrees of scrolling (useful for parallax).
      */
-    that.scrollFactor = FMENGINE.fmVector(1, 1);
+    that.scrollFactor = FM.vector(1, 1);
     /**
      * List of the components owned by the game object.
      */
@@ -855,18 +834,18 @@ FMENGINE.fmGameObject = function (pZIndex) {
 
     /**
      * Specify a type associated to this game object.
-     * @param {String} name the name of the type.
+     * @param {objectType} pType the type to add.
      */
-    that.addType = function (name) {
-        types.push(name);
+    that.addType = function (pType) {
+        types.push(pType);
     };
 
     /**
      * Remove a type associated to this game object.
-     * @param {String} name the name of the type.
+     * @param {objectType} pType the type to remove.
      */
-    that.removeType = function (name) {
-        types.splice(types.indexOf(name), 1);
+    that.removeType = function (pType) {
+        types.splice(types.indexOf(pType), 1);
     };
 
     /**
@@ -875,13 +854,13 @@ FMENGINE.fmGameObject = function (pZIndex) {
      * @return {bool} whether the type specified is associated to this game
      * object or not.
      */
-    that.hasType = function (name) {
-        return types.indexOf(name) !== -1;
+    that.hasType = function (pType) {
+        return types.indexOf(pType) !== -1;
     };
 
     /**
      * Add a component to the game object.
-     * @param {fmComponent} component the component to be added.
+     * @param {component} component the component to be added.
      */
     that.addComponent = function (component) {
         var name = component.name;
@@ -892,8 +871,8 @@ FMENGINE.fmGameObject = function (pZIndex) {
 
     /**
      * Retrive a particular component.
-     * @param {fmComponentTypes} type the component's type to be retrieved.
-     * @return {fmComponent} the component retrieved.
+     * @param {componentTypes} type the component's type to be retrieved.
+     * @return {component} the component retrieved.
      */
     that.getComponent = function (type) {
         return that.components[type];
@@ -902,7 +881,7 @@ FMENGINE.fmGameObject = function (pZIndex) {
     /**
     * Destroy the game object.
     * Don't forget to remove it from the state too.
-    * Better use the remove method from fmState.
+    * Better use the remove method from state.
     */
     that.destroy = function () {
         name = null;
@@ -992,11 +971,12 @@ FMENGINE.fmGameObject = function (pZIndex) {
     };
 
     return that;
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-FMENGINE.fmImageAsset = function (pName, pPath) {
+FM.imageAsset = function (pName, pPath) {
     "use strict";
     var that = new Image(),
 
@@ -1017,7 +997,7 @@ FMENGINE.fmImageAsset = function (pName, pPath) {
          */
         loadComplete = function () {
             loaded = true;
-            FMENGINE.fmAssetManager.assetLoaded();
+            FM.assetManager.assetLoaded();
         };
 
     /**
@@ -1060,11 +1040,12 @@ FMENGINE.fmImageAsset = function (pName, pPath) {
     };
 
     return that;
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-FMENGINE.fmKeyboard = {
+FM.keyboard = {
 	BACKSPACE : 8,
 	TAB : 9,
 	ENTER : 13,
@@ -1164,31 +1145,241 @@ FMENGINE.fmKeyboard = {
         BACK_SLASH : 220,
         CLOSE_BRACKET : 221,
         SINGLE_QUOTE : 222
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-FMENGINE.fmMathUtils = {
+FM.math = {
     addVectors: function (vec1, vec2) {
-        return FMENGINE.fmVector(vec1.x + vec2.x, vec1.y + vec2.y);
+        return FM.vector(vec1.x + vec2.x, vec1.y + vec2.y);
     },
     substractVectors: function (vec1, vec2) {
-        return FMENGINE.fmVector(vec1.x - vec2.x, vec1.y - vec2.y);
+        return FM.vector(vec1.x - vec2.x, vec1.y - vec2.y);
     },
     multiplyVectors: function (vec1, vec2) {
-        return FMENGINE.fmVector(vec1.x * vec2.x, vec1.y * vec2.y);
+        return FM.vector(vec1.x * vec2.x, vec1.y * vec2.y);
     },
     clamp: function(val, min, max) {
         return Math.min(max, Math.max(min, val));
     },
-};/**
+};
+/**
+ * @class objectType
+ * Class that represents a type of game object.
+ * @author Simon Chauvin.
+ */
+FM.objectType = function (pName) {
+    "use strict";
+    var that = {},
+        /**
+         * Name of the type.
+         */
+        name = pName,
+        /**
+         * Specify if the game objects of the current type are alive.
+         */
+        alive = true,
+        /**
+         * Specify if the game objects of the current type are visible.
+         */
+        visible = true,
+        /**
+         * Specify the depth at which the game objects of the current type are drawn.
+         */
+        zIndex = 1,
+        /**
+         * Specify the different degrees of scrolling of game objects with this type.
+         */
+        scrollFactor = FM.vector(1, 1),
+        /**
+         * Other types of game objects the current type has to collide with.
+         */
+        collidesWith = [];
+
+    /**
+     * 
+     */
+    that.overlapsWithType = function (pType) {
+        var state = FM.game.getCurrentState(),
+            gameObjects = state.members,
+            otherGameObjects,
+            quad = state.getQuad(),
+            i, j, hasType, hasOtherType, gameObject, otherGameObject,
+            physic, otherPhysic, collision = null;
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            gameObject = gameObjects[i];
+            physic = gameObject.components[FM.componentTypes.PHYSIC];
+            hasType = gameObject.hasType(that);
+            hasOtherType = gameObject.hasType(pType);
+            if (physic && hasType || hasOtherType) {
+                otherGameObjects = quad.retrieve(gameObject);
+                for (j = 0; j < otherGameObjects.length; j = j + 1) {
+                    otherGameObject = otherGameObjects[j];
+                    otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
+                    if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
+                        && ((hasType && otherGameObject.hasType(pType))
+                        || (hasOtherType && otherGameObject.hasType(that)))) {
+                        return collision = physic.overlapsWithObject(otherPhysic);
+                    }
+                }
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Check if the game objects of the current type are overlapping with a specified game object
+     */
+    that.overlapsWithObject = function (pGameObject) {
+        var quad = FM.game.getCurrentState().getQuad(),
+            gameObjects = quad.retrieve(pGameObject),
+            i, otherGameObject, physic, otherPhysic, collision = null;
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            otherGameObject = gameObjects[i];
+            physic = pGameObject.components[FM.componentTypes.PHYSIC];
+            otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
+            if (physic && otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(that)) {
+                return collision = physic.overlapsWithObject(otherPhysic);
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Ensure that the game objects of the current type collide with a specified one.
+     */
+    that.addTypeToCollideWith = function (pType) {
+        collidesWith.push(pType);
+        var gameObjects = FM.game.getCurrentState().members,
+            i, gameObject, physic;
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            gameObject = gameObjects[i];
+            physic = gameObject.components[FM.componentTypes.PHYSIC];
+            if (physic && gameObject.hasType(that)) {
+                physic.addTypeToCollideWith(pType);
+            }
+        }
+    };
+
+    /**
+     * Remove a type that was supposed to collide with all the game objects of this type.
+     */
+    that.removeTypeToCollideWith = function (pType) {
+        collidesWith.splice(collidesWith.indexOf(pType), 1);
+        var gameObjects = FM.game.getCurrentState().members,
+            i, gameObject, physic;
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            gameObject = gameObjects[i];
+            physic = gameObject.components[FM.componentTypes.PHYSIC];
+            if (physic && gameObject.hasType(that)) {
+                physic.removeTypeToCollideWith(pType);
+            }
+        }
+    };
+
+    /**
+     * Set the z-index of every game objects of the current type.
+     */
+    that.setZIndex = function (pZIndex) {
+        zIndex = pZIndex;
+        var gameObjects = FM.game.getCurrentState().members,
+            i, gameObject;
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            gameObject = gameObjects[i];
+            if (gameObject.hasType(that)) {
+                gameObject.zIndex = zIndex;
+            }
+        }
+    };
+
+    /**
+     * Set the scrollFactor of every game objects of the current type.
+     */
+    that.setScrollFactor = function (pScrollFactor) {
+        scrollFactor = pScrollFactor;
+        var gameObjects = FM.game.getCurrentState().members,
+            i, gameObject;
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            gameObject = gameObjects[i];
+            if (gameObject.hasType(that)) {
+                gameObject.scrollFactor = scrollFactor;
+            }
+        }
+    };
+
+    /**
+     * Kill all the game objects of this type.
+     */
+    that.kill = function () {
+        alive = false;
+    };
+
+    /**
+     * Hide all the game objects of this type.
+     */
+    that.hide = function () {
+        visible = false;
+    };
+
+    /**
+     * Revive all the game objects of this type.
+     */
+    that.revive = function () {
+        alive = true;
+    };
+
+    /**
+     * Show all the game objects of this type.
+     */
+    that.show = function () {
+        visible = true;
+    };
+
+    /**
+     * Check if the game objects of this type are alive.
+     * @return {boolean} true if all the game objects of this type are alive, false otherwise.
+     */
+    that.isAlive = function () {
+        return alive;
+    };
+
+    /**
+     * Check if the game object of this type are visible.
+     * @return {boolean} true if all the game object of this type are visible, false otherwise.
+     */
+    that.isVisible = function () {
+        return visible;
+    };
+
+    /**
+    * Destroy the type.
+    */
+    that.destroy = function () {
+        name = null;
+        scrollFactor = null;
+        collidesWith = null;
+        that = null;
+    };
+
+    /**
+     * Retrieve the name of the type.
+     * @return {string} name of the type.
+     */
+    that.getName = function () {
+        return name;
+    };
+
+    return that;
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  * @param width
  * @param height
  * @returns {___that0}
  */
-FMENGINE.fmRectangle = function (pX, pY, pWidth, pHeight) {
+FM.rectangle = function (pX, pY, pWidth, pHeight) {
     "use strict";
     var that = {};
     /**
@@ -1216,13 +1407,13 @@ FMENGINE.fmRectangle = function (pX, pY, pWidth, pHeight) {
     };
 
     return that;
-};//var FMENGINE = FMENGINE || {};
+};
 /**
  * Object acting as a container of game objects. It helps structure the game in 
  * states.
  * @author Simon Chauvin
  */
-FMENGINE.fmState = function () {
+FM.state = function () {
     "use strict";
     var that = {},
         /**
@@ -1268,53 +1459,51 @@ FMENGINE.fmState = function () {
     /**
      * Static attributes used to store the last ID affected to a game object.
      */
-    FMENGINE.fmState.lastId = 0;
+    FM.state.lastId = 0;
     /**
     * Camera (limited by the screen resolution of the game).
     */
-    that.camera = FMENGINE.fmRectangle(0, 0, 0, 0);
+    that.camera = FM.rectangle(0, 0, 0, 0);
 
     /**
     * Initialize the state. Can be redefined in sub classes for 
     * specialization.
     */
     that.init = function (pWorldWidth, pWorldHeight) {
-        screenWidth = FMENGINE.fmGame.getScreenWidth();
-        screenHeight = FMENGINE.fmGame.getScreenHeight();
+        screenWidth = FM.game.getScreenWidth();
+        screenHeight = FM.game.getScreenHeight();
         //By default init the world to the size of the screen
-        world = FMENGINE.fmWorld(pWorldWidth || screenWidth, pWorldHeight
+        world = FM.world(pWorldWidth || screenWidth, pWorldHeight
                 || screenHeight);
         //Create the quad tree
-        /*quad = FMENGINE.fmQuadTree(0, FMENGINE.fmRectangle(0, 0,
-            pWorldWidth || screenWidth, pWorldHeight || screenHeight));*/
-        quad = FMENGINE.fmQuadTree(0, FMENGINE.fmRectangle(0, 0,
+        quad = FM.quadTree(0, FM.rectangle(0, 0,
             pWorldWidth || screenWidth, pWorldHeight || screenHeight));
         //Set the camera size by the chosen screen size
         that.camera.width = screenWidth;
         that.camera.height = screenHeight;
 
-        if (FMENGINE.fmParameters.debug) {
+        if (FM.parameters.debug) {
             console.log("INIT: The state has been created.");
         }
     };
 
     /**
     * Add a game object to the state.
-    * @param {fmGameObject} gameObject the game object to add to the state.
+    * @param {gameObject} gameObject the game object to add to the state.
     */
     that.add = function (gameObject) {
         if (gameObject.components) {
             //Add the game object to the state
             that.members.push(gameObject);
             //Affect an ID to the game object
-            gameObject.setId(FMENGINE.fmState.lastId);
-            FMENGINE.fmState.lastId += 1;
+            gameObject.setId(FM.state.lastId);
+            FM.state.lastId += 1;
             //Add the game object to the quad tree if it's got a physic component
-            if (gameObject.components[FMENGINE.fmComponentTypes.PHYSIC]) {
+            if (gameObject.components[FM.componentTypes.PHYSIC]) {
                 quad.insert(gameObject);
             }
         } else {
-            if (FMENGINE.fmParameters.debug) {
+            if (FM.parameters.debug) {
                 console.log("ERROR: you're trying to add something else" +
                     "than a game object to the state. This is not allowed.");
             }
@@ -1323,7 +1512,7 @@ FMENGINE.fmState = function () {
 
     /**
     * Remove an object from the state and destroy it.
-    * @param {fmGameObject} gameObject the game object to remove and destroy.
+    * @param {gameObject} gameObject the game object to remove and destroy.
     */
     that.remove = function (gameObject) {
         //Remove the game object from the state
@@ -1345,24 +1534,31 @@ FMENGINE.fmState = function () {
      * @param {float} fixedDt fixed time in seconds since the last frame.
      */
     that.updatePhysics = function (fixedDt) {
-        var w = world.box2DWorld,
-            i,
+        var i,
             gameObject,
             components,
             spatial,
             physic;
-        //Update the Box2D world is there is one
-        if (w) {
-            w.Step(1 / FMENGINE.fmParameters.FPS, 10, 10);
-            w.ClearForces();
+        //Clear and update the quadtree
+        quad.clear();
+        for (i = 0; i < that.members.length; i = i + 1) {
+            gameObject = that.members[i];
+            if (gameObject.isAlive()) {
+                components = gameObject.components;
+                physic = gameObject.components[FM.componentTypes.PHYSIC];
+                //Update the physic component
+                if (physic) {
+                    quad.insert(gameObject);
+                }
+            }
         }
         //Update the physic component of every game object present in the state
         for (i = 0; i < that.members.length; i = i + 1) {
             gameObject = that.members[i];
             if (gameObject.isAlive()) {
                 components = gameObject.components;
-                spatial = components[FMENGINE.fmComponentTypes.SPATIAL];
-                physic = components[FMENGINE.fmComponentTypes.PHYSIC];
+                spatial = components[FM.componentTypes.SPATIAL];
+                physic = components[FM.componentTypes.PHYSIC];
                 //Update the physic component
                 if (physic) {
                     spatial.previous = spatial.position;
@@ -1370,13 +1566,13 @@ FMENGINE.fmState = function () {
                 }
             }
         }
-    }
+    };
 
     /**
     * Update the game objects of the state.
-    * @param {float} dt time in seconds since the last frame.
+    * @param {float} variable time in seconds since the last frame.
     */
-    var mainUpdate = function (dt) {
+    that.update = function (dt) {
         var i,
             gameObject,
             components,
@@ -1389,10 +1585,10 @@ FMENGINE.fmState = function () {
             gameObject = that.members[i];
             if (gameObject.isAlive()) {
                 components = gameObject.components;
-                spatial = components[FMENGINE.fmComponentTypes.SPATIAL];
-                physic = components[FMENGINE.fmComponentTypes.PHYSIC];
-                pathfinding = components[FMENGINE.fmComponentTypes.PATHFINDING];
-                emitter = components[FMENGINE.fmComponentTypes.FX];
+                spatial = components[FM.componentTypes.SPATIAL];
+                physic = components[FM.componentTypes.PHYSIC];
+                pathfinding = components[FM.componentTypes.PATHFINDING];
+                emitter = components[FM.componentTypes.FX];
                 //Update the path
                 if (pathfinding) {
                     pathfinding.update(dt);
@@ -1447,35 +1643,12 @@ FMENGINE.fmState = function () {
                         }
                     }
                 } else {
-                    if (FMENGINE.fmParameters.debug && scroller === gameObject) {
+                    if (FM.parameters.debug && scroller === gameObject) {
                         console.log("ERROR: The scrolling object must have a physic component.");
                     }
                 }
             }
         }
-    };
-
-    /**
-    * Pre update taking place before the main update.
-    */
-    that.preUpdate = function () {
-        //TODO
-    };
-
-    /**
-    * Update the state.
-    * @param {float} variable time in seconds since the last frame.
-    */
-    that.update = function (dt) {
-        mainUpdate(dt);
-    };
-
-    /**
-    * Post update taking place after the main update.
-    * @param {float} alpha
-    */
-    that.postUpdate = function (alpha) {
-        //TODO
     };
 
     /**
@@ -1498,12 +1671,12 @@ FMENGINE.fmState = function () {
             gameObject = that.members[i];
 
             //If the game object is visible or is in debug mode and alive
-            if (gameObject.isVisible() || (FMENGINE.fmParameters.debug && gameObject.isAlive())) {
-                spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL];
+            if (gameObject.isVisible() || (FM.parameters.debug && gameObject.isAlive())) {
+                spatial = gameObject.components[FM.componentTypes.SPATIAL];
                 //If there is a spatial component then test if the game object is on the screen
                 if (spatial) {
-                    renderer = gameObject.components[FMENGINE.fmComponentTypes.RENDERER];
-                    newPosition = FMENGINE.fmVector(spatial.position.x * dt + spatial.previous.x * (1.0 - dt),
+                    renderer = gameObject.components[FM.componentTypes.RENDERER];
+                    newPosition = FM.vector(spatial.position.x * dt + spatial.previous.x * (1.0 - dt),
                     spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
                     if (renderer && gameObject.isVisible()) {
                         var xPosition = newPosition.x, yPosition = newPosition.y,
@@ -1520,8 +1693,8 @@ FMENGINE.fmState = function () {
                             renderer.draw(bufferContext, newPosition);
                         }
                     }
-                    if (FMENGINE.fmParameters.debug && gameObject.isAlive()) {
-                        physic = gameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
+                    if (FM.parameters.debug && gameObject.isAlive()) {
+                        physic = gameObject.components[FM.componentTypes.PHYSIC];
                         if (physic) {
                             physic.drawDebug(bufferContext, newPosition);
                         }
@@ -1530,7 +1703,7 @@ FMENGINE.fmState = function () {
             }
         }
         // Debug
-        if (FMENGINE.fmParameters.debug) {
+        if (FM.parameters.debug) {
             //Display the world bounds
             bufferContext.strokeStyle = '#f0f';
             bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, world.width, world.height);
@@ -1549,10 +1722,10 @@ FMENGINE.fmState = function () {
 
     /**
     * Center the camera on a specific game object.
-    * @param {fmGameObject} gameObject the game object to center the camera on.
+    * @param {gameObject} gameObject the game object to center the camera on.
     */
     that.centerCameraOn = function (gameObject) {
-        var spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL],
+        var spatial = gameObject.components[FM.componentTypes.SPATIAL],
             newPosition = spatial.position.x - that.camera.width / 2;
         if (newPosition > world.x && newPosition < world.width) {
             that.camera.x = newPosition;
@@ -1581,13 +1754,13 @@ FMENGINE.fmState = function () {
 
     /**
     * Make an object as the scroller.
-    * @param {fmGameObject} gameObject the game object to follow.
+    * @param {gameObject} gameObject the game object to follow.
     * @param {int} width the width of the camera.
     * @param {int} height the height of the camera.
     */
     that.follow = function (gameObject, width, height) {
         scroller = gameObject;
-        followFrame = FMENGINE.fmRectangle((screenWidth - width) / 2 + that.camera.x, (screenHeight - height) / 2 + that.camera.y, width, height);
+        followFrame = FM.rectangle((screenWidth - width) / 2 + that.camera.x, (screenHeight - height) / 2 + that.camera.y, width, height);
     };
 
     /**
@@ -1624,7 +1797,7 @@ FMENGINE.fmState = function () {
 
     /**
      * Get the game object which ID matches the one given.
-     * @return {fmGameObject} the game object that corresponds or null if it
+     * @return {gameObject} the game object that corresponds or null if it
      * finds nothing.
      */
     that.getGameObjectById = function (pId) {
@@ -1640,7 +1813,7 @@ FMENGINE.fmState = function () {
 
     /**
      * Get the object that scrolls the screen.
-     * @return {fmGameObject} the game object that scrolls the screen.
+     * @return {gameObject} the game object that scrolls the screen.
      */
     that.getScroller = function () {
         return scroller;
@@ -1648,7 +1821,7 @@ FMENGINE.fmState = function () {
 
     /**
      * Get the world object.
-     * @return {fmWorld} the world of the game.
+     * @return {world} the world of the game.
      */
     that.getWorld = function () {
         return world;
@@ -1664,17 +1837,17 @@ FMENGINE.fmState = function () {
     };
 
     return that;
-};//var FMENGINE = FMENGINE || {};
+};
 /**
  * Under Creative Commons Licence
  * No need to add the tilemap to the state, it's done when the tilemap is 
  * loaded.
  * By default a tilemap does not collide to anything.
- * @param {fmImageAsset} tileSet  Image of the tile set in the order of 
+ * @param {imageAsset} tileSet  Image of the tile set in the order of 
  * the data given
  * @author Simon Chauvin
  */
-FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pTypes, pTypesToCollideWith, pZIndex) {
+FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pTypes, pZIndex, pAllowCollisions) {
     "use strict";
     var that = {},
         /**
@@ -1704,7 +1877,11 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
         /**
          * z-index of the tilemap.
          */
-        zIndex = pZIndex;
+        zIndex = pZIndex,
+        /**
+         * Allow collisions or not with this tile map
+         */
+        allowCollisions = pAllowCollisions;
 
     /**
      * Load the tilemap.
@@ -1718,7 +1895,7 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
             columns = null,
             tileId = null,
             tile = null,
-            state = FMENGINE.fmGame.getCurrentState(),
+            state = FM.game.getCurrentState(),
             spatial,
             renderer,
             physic,
@@ -1735,13 +1912,13 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
                 for (j = 0; j < columns.length; j = j + 1) {
                     tileId = columns[j];
                     if (tileId > 0) {
-                        tile = FMENGINE.fmGameObject(zIndex);
+                        tile = FM.gameObject(zIndex);
                         for (n = 0; n < pTypes.length; n = n + 1) {
                             tile.addType(pTypes[n]);
                         }
-                        spatial = FMENGINE.fmSpatialComponent(j * tileWidth, i * tileHeight, tile);
+                        spatial = FM.spatialComponent(j * tileWidth, i * tileHeight, tile);
                         tile.addComponent(spatial);
-                        renderer = FMENGINE.fmSpriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
+                        renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
                         xOffset = tileId * tileWidth;
                         yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
@@ -1752,12 +1929,11 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
                         renderer.setXOffset(xOffset);
                         renderer.setYOffset(yOffset);
                         tile.addComponent(renderer);
-                        physic = FMENGINE.fmAabbComponent(tileWidth, tileHeight, tile);
-                        for (n = 0; n < pTypesToCollideWith.length; n = n + 1) {
+                        if (allowCollisions) {
+                            physic = FM.aabbComponent(tileWidth, tileHeight, tile);
                             Object.getPrototypeOf(physic).mass = 0;
-                            physic.addTypeToCollideWith(pTypesToCollideWith[n]);
+                            tile.addComponent(physic);
                         }
-                        tile.addComponent(physic);
                         state.add(tile);
                     }
                     resultRow.push(tileId);
@@ -1833,13 +2009,14 @@ FMENGINE.fmTilemap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeigh
     };
 
     return that;
-};/**
+};
+/**
  * Object representing a vector.
  * @author Simon Chauvin
  * @param {int} pX x position.
  * @param {int} pY y position.
  */
-FMENGINE.fmVector = function (pX, pY) {
+FM.vector = function (pX, pY) {
     "use strict";
     var that = {};
 
@@ -1930,7 +2107,7 @@ FMENGINE.fmVector = function (pX, pY) {
      * Clone the current vector.
      */
     that.clone = function() {
-        return new FMENGINE.fmVector(that.x, that.y);
+        return new FM.vector(that.x, that.y);
     };
     /**
      * Check if the current vector is equals to the specified one;
@@ -1947,17 +2124,36 @@ FMENGINE.fmVector = function (pX, pY) {
     };
 
     return that;
-};/**
+};
+/**
  * World represent the concrete space of the game.
  * @author Simon Chauvin
  */
-FMENGINE.fmWorld = function (pWidth, pHeight) {
+FM.world = function (pWidth, pHeight) {
     "use strict";
-    var that = FMENGINE.fmRectangle(0, 0, pWidth, pHeight),
+    var that = FM.rectangle(0, 0, pWidth, pHeight),
         /**
          * Current state.
          */
-        state = FMENGINE.fmGame.getCurrentState();
+        state = FM.game.getCurrentState(),
+        /**
+         * The tile map for the collision (if any).
+         */
+        collisionTileMap;
+
+    /**
+     * Add a tile map for collisions.
+     */
+    that.addCollisionTileMap = function (pCollisionTileMap) {
+        collisionTileMap = pCollisionTileMap;
+    };
+
+    /**
+     * Retrieve the tile map for collisions.
+     */
+    that.getCollisionTileMap = function () {
+        return collisionTileMap;
+    };
 
     /**
     * Destroy the world and its objects
@@ -1968,11 +2164,12 @@ FMENGINE.fmWorld = function (pWidth, pHeight) {
     };
 
     return that;
-};/**
+};
+/**
  * Object representing a collision between two objects.
  * @author Simon Chauvin
  */
-FMENGINE.fmCollision = function () {
+FM.collision = function () {
     "use strict";
     var that = {};
 
@@ -2003,28 +2200,67 @@ FMENGINE.fmCollision = function () {
     };
 
     return that;
-};/**
+};
+/**
+ * Top level object shared by every components.
+ * The component is automatically added to the game object specified as owner.
+ * @author Simon Chauvin
+ * @param {String} pComponentType type of the component to add.
+ * @param {gameObject} pComponentOwner game object that owns the component.
+ */
+FM.component = function (pComponentType, pComponentOwner) {
+    "use strict";
+    var that = {};
+    if (pComponentOwner.components !== undefined) {
+        /**
+         * Component's name.
+         */
+        that.name = pComponentType;
+        /**
+         * Component's owner.
+         */
+        that.owner = pComponentOwner;
+    } else {
+        if (FM.parameters.debug) {
+            console.log("ERROR: the owner of the " + pComponentType
+                    + " component must be a gameObject.");
+        }
+    }
+
+    /**
+    * Destroy the component and its objects.
+    */
+    that.destroy = function () {
+        that.name = null;
+        that.owner = null;
+        that = null;
+    };
+
+    return that;
+};
+/**
  * List of possible component.
  * @author Simon Chauvin
  */
-FMENGINE.fmComponentTypes = {
+FM.componentTypes = {
     SPATIAL: "spatial",
     PATHFINDING: "pathfinding",
     RENDERER: "renderer",
     PHYSIC: "physic",
     SOUND: "sound",
     FX: "fx"
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
- * FMPreloader is used to set the preload page
+ * preloader is used to set the preload page
  * You can create a custom preloader extending this one and providing it to 
- * the init function of fmGame object.
+ * the init function of game object.
  * 
  */
-FMENGINE.fmPreloader = function (pFirstState) {
+FM.preloader = function (pFirstState) {
     "use strict";
-    var that = Object.create(FMENGINE.fmState()),
+    var that = Object.create(FM.state()),
     /**
      * Screen width
      */
@@ -2041,8 +2277,8 @@ FMENGINE.fmPreloader = function (pFirstState) {
         Object.getPrototypeOf(that).init();
 
         //Retrieve the screen width and height
-        screenWidth = FMENGINE.fmGame.getScreenWidth();
-        screenHeight = FMENGINE.fmGame.getScreenHeight();
+        screenWidth = FM.game.getScreenWidth();
+        screenHeight = FM.game.getScreenHeight();
     };
 
     /**
@@ -2052,9 +2288,9 @@ FMENGINE.fmPreloader = function (pFirstState) {
         Object.getPrototypeOf(that).update(dt);
 
         //If all the assets are loaded then start the first state
-        var assetManager = FMENGINE.fmAssetManager;
+        var assetManager = FM.assetManager;
         if (assetManager.assets.length === 0 || assetManager.areAllAssetsLoaded()) {
-            FMENGINE.fmGame.switchState(pFirstState());
+            FM.game.switchState(pFirstState());
         }
     };
 
@@ -2071,14 +2307,15 @@ FMENGINE.fmPreloader = function (pFirstState) {
         bufferContext.fillStyle = '#fff';
         bufferContext.font = '30px sans-serif';
         bufferContext.textBaseline = 'middle';
-        bufferContext.fillText(Math.ceil(FMENGINE.fmAssetManager.loadingProgress) + "%", screenWidth / 2, screenHeight / 2);
+        bufferContext.fillText(Math.ceil(FM.assetManager.loadingProgress) + "%", screenWidth / 2, screenHeight / 2);
     };
 
     return that;
-}/**
+};
+/**
  * 
  */
-FMENGINE.fmQuadTree = function (pLevel, pBounds) {
+FM.quadTree = function (pLevel, pBounds) {
     "use strict";
     var that = {},
         /**
@@ -2112,10 +2349,10 @@ FMENGINE.fmQuadTree = function (pLevel, pBounds) {
          */
         getIndex = function (gameObject) {
             var index = -1,
-                spatial = gameObject.components[FMENGINE.fmComponentTypes.SPATIAL],
-                physic = gameObject.components[FMENGINE.fmComponentTypes.PHYSIC],
+                spatial = gameObject.components[FM.componentTypes.SPATIAL],
+                physic = gameObject.components[FM.componentTypes.PHYSIC],
                 verticalMidpoint = bounds.x + (bounds.width / 2),
-                horizontalMidpoint = bounds.x + (bounds.height / 2),
+                horizontalMidpoint = bounds.y + (bounds.height / 2),
                 topQuadrant = (spatial.position.y < horizontalMidpoint && spatial.position.y + physic.height < horizontalMidpoint),
                 bottomQuadrant = (spatial.position.y > horizontalMidpoint);
             if (spatial.position.x < verticalMidpoint && spatial.position.x + physic.width < verticalMidpoint) {
@@ -2141,10 +2378,10 @@ FMENGINE.fmQuadTree = function (pLevel, pBounds) {
                  subHeight = bounds.height / 2,
                  x = bounds.x,
                  y = bounds.y;
-            nodes.push(FMENGINE.fmQuadTree(level + 1, FMENGINE.fmRectangle(x + subWidth, y, subWidth, subHeight)));
-            nodes.push(FMENGINE.fmQuadTree(level + 1, FMENGINE.fmRectangle(x, y, subWidth, subHeight)));
-            nodes.push(FMENGINE.fmQuadTree(level + 1, FMENGINE.fmRectangle(x, y + subHeight, subWidth, subHeight)));
-            nodes.push(FMENGINE.fmQuadTree(level + 1, FMENGINE.fmRectangle(x + subWidth, y + subHeight, subWidth, subHeight)));
+            nodes.push(FM.quadTree(level + 1, FM.rectangle(x + subWidth, y, subWidth, subHeight)));
+            nodes.push(FM.quadTree(level + 1, FM.rectangle(x, y, subWidth, subHeight)));
+            nodes.push(FM.quadTree(level + 1, FM.rectangle(x, y + subHeight, subWidth, subHeight)));
+            nodes.push(FM.quadTree(level + 1, FM.rectangle(x + subWidth, y + subHeight, subWidth, subHeight)));
          };
 
     /*
@@ -2153,7 +2390,7 @@ FMENGINE.fmQuadTree = function (pLevel, pBounds) {
      * objects to their corresponding nodes.
      */
     that.insert = function (gameObject) {
-        if (nodes[0]) {
+        if (nodes.length > 0) {
             var index = getIndex(gameObject);
             if (index !== -1) {
                 nodes[index].insert(gameObject);
@@ -2162,7 +2399,7 @@ FMENGINE.fmQuadTree = function (pLevel, pBounds) {
         }
         objects.push(gameObject);
         if (objects.length > MAX_OBJECTS && level < MAX_LEVELS) {
-            if (!nodes[0]) {
+            if (nodes.length === 0) {
                 split();
             }
             var i = 0, index;
@@ -2180,17 +2417,18 @@ FMENGINE.fmQuadTree = function (pLevel, pBounds) {
     /*
      * Return all objects that could collide with the given object.
      */
-    that.retrieve = function (returnObjects, gameObject) {
+    that.retrieve = function (gameObject) {
+        var returnObjects = [];
         var index = getIndex(gameObject);
-        if (index !== -1 && nodes[0]) {
-            nodes[index].retrieve(returnObjects, gameObject);
+        if (index !== -1 && nodes.length > 0) {
+            returnObjects = nodes[index].retrieve(gameObject);
         }
         var i;
         for (i = 0; i < objects.length; i = i + 1) {
             returnObjects.push(objects[i]);
         }
         return returnObjects;
-    }
+    };
 
     /**
      * Clears the quadtree.
@@ -2201,7 +2439,7 @@ FMENGINE.fmQuadTree = function (pLevel, pBounds) {
         for (i = 0; i < nodes.length; i = i + 1) {
             if (nodes[i]) {
                 nodes[i].clear();
-                nodes.splice(i, 1);
+                nodes[i] = null;
             }
         }
         nodes = [];
@@ -2238,23 +2476,17 @@ if (typeof Object.getPrototypeOf !== "function") {
     }
 }
 
-function include (filename) {
+FM.includeJsFile = function (filename) {
     "use strict";
-    var head = document.getElementsByTagName("head")[0];
-
+    var head = document.getElementsByTagName("head")[0],
+        script = document.createElement("script");
     script = document.createElement("script");
     script.src = filename;
     script.type = "text/javascript";
 
     head.appendChild(script);
 }
-
-function parseXml (content) {
-    //Parse file as XML
-    var parser = new DOMParser();
-    parser = parser.parseFromString(content, "text/xml");
-    return parser;
-}/**
+/**
  * 
  */
 var tmxLayer = function () {
@@ -2786,7 +3018,7 @@ var tmxTileSet = function () {
 
     that.getRect = function (id) {
         //TODO: consider spacing & margin
-        return new FMENGINE.fmRectangle(0, 0, (id % that.numCols) * that.tileWidth, (id / that.numCols) * that.tileHeight);
+        return new FM.rectangle(0, 0, (id % that.numCols) * that.tileWidth, (id / that.numCols) * that.tileHeight);
     };
 
     return that;
@@ -2795,9 +3027,9 @@ var tmxTileSet = function () {
  * object.
  * @author Simon Chauvin
  */
-FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
+FM.emitterComponent = function (pOffset, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.FX, pOwner),
+    var that = FM.component(FM.componentTypes.FX, pOwner),
         /**
          * Particles belonging to this emitter.
          */
@@ -2809,7 +3041,7 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
         /**
          * Directions the particles can take.
          */
-        directions = [FMENGINE.fmParameters.LEFT, FMENGINE.fmParameters.RIGHT, FMENGINE.fmParameters.UP, FMENGINE.fmParameters.DOWN],
+        directions = [FM.parameters.LEFT, FM.parameters.RIGHT, FM.parameters.UP, FM.parameters.DOWN],
         /**
          * Limit of particles that this emitter can bear.
          * 0 means an infinite number.
@@ -2830,11 +3062,11 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
         /**
          * Minimum velocity of all particles.
          */
-        minParticleVelocity = FMENGINE.fmVector(-100, -100),
+        minParticleVelocity = FM.vector(-100, -100),
         /**
          * Maximum velocity of all particles.
          */
-        maxParticleVelocity = FMENGINE.fmVector(100, 100),
+        maxParticleVelocity = FM.vector(100, 100),
         /**
          * Minimum angular velocity of all particles.
          */
@@ -2854,7 +3086,7 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
         /**
          * Spatial component reference.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
 
     /**
      * Add a particle to this emitter.
@@ -2869,7 +3101,7 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
     /**
      * Add particles to this emitter.
      * @param {int} number number of particles to create.
-     * @param {fmImageAsset} image image to use as a particle.
+     * @param {imageAsset} image image to use as a particle.
      * @param {int} width width of the particles.
      * @param {int} height height of the particles.
      * @param {float} pAlpha transparency of the particles.
@@ -2877,16 +3109,16 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
      */
     that.createParticles = function (number, image, width, height, pAlpha, zIndex) {
         var i, particle, spatial, renderer, physic,
-            state = FMENGINE.fmGame.getCurrentState();
+            state = FM.game.getCurrentState();
         alpha = pAlpha;
         for (i = 0; i < number; i = i + 1) {
-            particle = FMENGINE.fmGameObject(zIndex);
-            spatial = FMENGINE.fmSpatialComponent(spatial.position.x + offset.x, spatial.position.y + offset.y, particle);
+            particle = FM.gameObject(zIndex);
+            spatial = FM.spatialComponent(spatial.position.x + offset.x, spatial.position.y + offset.y, particle);
             particle.addComponent(spatial);
-            renderer = FMENGINE.fmSpriteRendererComponent(image, width, height, particle);
+            renderer = FM.spriteRendererComponent(image, width, height, particle);
             renderer.setAlpha(alpha);
             particle.addComponent(renderer);
-            physic = FMENGINE.fmAabbComponent(width, height, particle);
+            physic = FM.aabbComponent(width, height, particle);
             particle.addComponent(physic);
             particle.age = 0;
             particle.lifeSpan = 0;
@@ -2931,7 +3163,7 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
                         particle.kill();
                     } else {
                         //The more the particle is aging the less it is visible
-                        renderer = particle.getComponent(FMENGINE.fmComponentTypes.RENDERER);
+                        renderer = particle.getComponent(FM.componentTypes.RENDERER);
                         if (renderer.getAlpha() >= 1 - (particle.age / particle.lifeSpan)) {
                             renderer.setAlpha(1 - (particle.age / particle.lifeSpan));
                         }
@@ -2951,21 +3183,21 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
                     particle = particles[j];
                     //Reinit the particle
                     if (particle && !particle.isAlive()) {
-                        particleSpatial = particle.getComponent(FMENGINE.fmComponentTypes.SPATIAL);
-                        physic = particle.components[FMENGINE.fmComponentTypes.PHYSIC];
-                        particle.components[FMENGINE.fmComponentTypes.RENDERER].setAlpha(alpha);
+                        particleSpatial = particle.getComponent(FM.componentTypes.SPATIAL);
+                        physic = particle.components[FM.componentTypes.PHYSIC];
+                        particle.components[FM.componentTypes.RENDERER].setAlpha(alpha);
                         particleSpatial.position.x = spatial.position.x + offset.x;
                         particleSpatial.position.y = spatial.position.y + offset.y;
                         particle.age = 0;
                         speed = Math.random() * (maxParticleVelocity.x - minParticleVelocity.x) + minParticleVelocity.x;
-                        if (directions.indexOf(FMENGINE.fmParameters.LEFT) !== -1) {
+                        if (directions.indexOf(FM.parameters.LEFT) !== -1) {
                             if (Math.random() > 0.5) {
                                 speed = -speed;
                             }
                         }
                         physic.velocity.x = speed;
                         speed = Math.random() * (maxParticleVelocity.y - minParticleVelocity.y) + minParticleVelocity.y;
-                        if (directions.indexOf(FMENGINE.fmParameters.UP) !== -1) {
+                        if (directions.indexOf(FM.parameters.UP) !== -1) {
                             if (Math.random() > 0.5) {
                                 speed = -speed;
                             }
@@ -2999,7 +3231,7 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
         alpha = pAlpha;
         var i;
         for (i = 0; i < particles.length; i = i + 1) {
-            particles[i].components[FMENGINE.fmComponentTypes.RENDERER].setAlpha(alpha);
+            particles[i].components[FM.componentTypes.RENDERER].setAlpha(alpha);
         }
     };
 
@@ -3050,14 +3282,15 @@ FMENGINE.fmEmitterComponent = function (pOffset, pOwner) {
     };
 
     return that;
-};/**
+};
+/**
  * The simple path component allows to affect a path to follow to any game 
  * object.
  * @author Simon Chauvin
  */
-FMENGINE.fmSimplePathComponent = function (pOwner) {
+FM.simplePathComponent = function (pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.PATHFINDING, pOwner),
+    var that = FM.component(FM.componentTypes.PATHFINDING, pOwner),
         /**
          * Waypoints constituing the path.
          */
@@ -3070,11 +3303,11 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
          * Speed at which the game object should follow the path if it is a
          * movement with a coefficient equals to 1.
          */
-        desiredSpeed = FMENGINE.fmVector(0, 0),
+        desiredSpeed = FM.vector(0, 0),
         /**
          * Speed at which the game object follow the path.
          */
-        actualSpeed = FMENGINE.fmVector(0, 0),
+        actualSpeed = FM.vector(0, 0),
         /**
          * Whether the path is being followed or not.
          */
@@ -3093,7 +3326,7 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
          * Position before stopping following the path, used to know if the game
          * object following the path has been moved during the stopping time.
          */
-        positionBeforeStopping = FMENGINE.fmVector(0, 0),
+        positionBeforeStopping = FM.vector(0, 0),
         /**
          * Factor modifying speed so that the movement is linear.
          */
@@ -3101,15 +3334,15 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
         /**
          * Spatial component reference.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL],
+        spatial = pOwner.components[FM.componentTypes.SPATIAL],
         /**
          * Renderer component reference.
          */
-        renderer = pOwner.components[FMENGINE.fmComponentTypes.RENDERER],
+        renderer = pOwner.components[FM.componentTypes.RENDERER],
         /**
          * Physic component reference.
          */
-        physic = pOwner.components[FMENGINE.fmComponentTypes.PHYSIC];
+        physic = pOwner.components[FM.componentTypes.PHYSIC];
 
     /**
      * Follow the specified path.
@@ -3138,7 +3371,7 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
                 actualSpeed.x = desiredSpeed;
                 actualSpeed.y = desiredSpeed;
             }
-        } else if (FMENGINE.fmParameters.debug) {
+        } else if (FM.parameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
         }
         if (!physic) {
@@ -3174,7 +3407,7 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
                     actualSpeed.y = desiredSpeed;
                 }
             }
-        } else if (FMENGINE.fmParameters.debug) {
+        } else if (FM.parameters.debug) {
             console.log("WARNING: path with no waypoints defined.");
         }
         if (!physic) {
@@ -3189,7 +3422,7 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
         active = false;
         physic.velocity.x = 0;
         physic.velocity.y = 0;
-        positionBeforeStopping = FMENGINE.fmVector(spatial.position.x, spatial.position.y);
+        positionBeforeStopping = FM.vector(spatial.position.x, spatial.position.y);
     };
 
     /**
@@ -3273,9 +3506,9 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
                     }
                 } else {
                     active = false;
-                    actualSpeed = FMENGINE.fmVector(0, 0);
+                    actualSpeed = FM.vector(0, 0);
                     if (physic) {
-                        physic.velocity = FMENGINE.fmVector(0, 0);
+                        physic.velocity = FM.vector(0, 0);
                     }
                 }
             }
@@ -3365,26 +3598,26 @@ FMENGINE.fmSimplePathComponent = function (pOwner) {
     };
 
     return that;
-};//var FMENGINE = FMENGINE || {};
+};
 /**
  * Under Creative Commons Licence.
  *
  * @author Simon Chauvin.
  * @param {int} pWidth width of the aabb.
  * @param {int} pHeight height of the aabb.
- * @param {fmGameObject} The game object to which the component belongs.
- * @returns {fmAabbComponent} The axis aligned bounding box component itself.
+ * @param {gameObject} The game object to which the component belongs.
+ * @returns {aabbComponent} The axis aligned bounding box component itself.
  */
-FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
+FM.aabbComponent = function (pWidth, pHeight, pOwner) {
     "use strict";
     /**
-     * fmAabbComponent is based on fmPhysicComponent.
+     * aabbComponent is based on physicComponent.
      */
-    var that = Object.create(FMENGINE.fmPhysicComponent(pWidth, pHeight, pOwner)),
+    var that = Object.create(FM.physicComponent(pWidth, pHeight, pOwner)),
         /**
          * Spatial component reference.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
 
     /**
     * Update the component.
@@ -3394,55 +3627,10 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
     };
 
     /**
-     * Check collisions with the world bounds and tiles.
+     * Check if the current aabb is overlapping with the specified physic object.
      */
-    that.checkWorldCollisions = function (collisions, worldBounds) {
-        var xPos = spatial.position.x + that.offset.x,
-            yPos = spatial.position.y + that.offset.y,
-            tileWidth,
-            tileHeight,
-            i1,
-            j1,
-            i2,
-            j2,
-            i,
-            j;
-        //If the world has solid bounds
-        if (worldBounds.length > 0) {
-            //If the game object is colliding with one of those bounds
-            if ((worldBounds.length > 0 && xPos <= worldBounds[0])
-                    || (worldBounds.length > 1 && xPos + that.width >= worldBounds[1])
-                    || (worldBounds.length > 2 && yPos <= worldBounds[2])
-                    || (worldBounds.length > 3 && yPos + that.height >= worldBounds[3])) {
-                return true;
-            }
-        }
-        //If there are collisions with tiles
-        if (collisions.length > 0) {
-            tileWidth = collisions.getTileWidth();
-            tileHeight = collisions.getTileHeight();
-            i1 = Math.floor(yPos / tileHeight);
-            j1 = Math.floor(xPos / tileWidth);
-            i2 = Math.floor((yPos + that.height) / tileHeight);
-            j2 = Math.floor((xPos + that.width) / tileWidth);
-            for (i = i1; i <= i2; i = i + 1) {
-                for (j = j1; j <= j2; j = j + 1) {
-                    if (collisions[i] && collisions[i][j] === 1) {
-                        if (j === j1 || j === j2 || i === i1 || i === i2) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    };
-
-    /**
-     * Collides the current physic component with an other game object's physic component.
-     */
-    that.collides = function (pPhysic) {
-        var collision = pPhysic.collidesWithAabb(that);
+    that.overlapsWithObject = function (pPhysic) {
+        var collision = pPhysic.overlapsWithAabb(that);
         if (collision) {
             return collision;
         }
@@ -3450,17 +3638,17 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
     };
 
     /**
-     * Check if the current aabb component is colliding with another aabb collider
+     * Check if the current aabb is overlapping with the specified aabb.
      */
-    that.collidesWithAabb = function (aabb) {
-        var otherSpatial = aabb.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            min = FMENGINE.fmVector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
-            otherMin = FMENGINE.fmVector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
-            max = FMENGINE.fmVector(min.x + that.width, min.y + that.height),
-            otherMax = FMENGINE.fmVector(otherMin.x + aabb.width, otherMin.y + aabb.height),
-            center = FMENGINE.fmVector(min.x + that.width / 2, min.y + that.height / 2),
-            otherCenter = FMENGINE.fmVector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
-            normal = FMENGINE.fmMathUtils.substractVectors(otherCenter, center),
+    that.overlapsWithAabb = function (aabb) {
+        var otherSpatial = aabb.owner.components[FM.componentTypes.SPATIAL],
+            min = FM.vector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
+            otherMin = FM.vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
+            max = FM.vector(min.x + that.width, min.y + that.height),
+            otherMax = FM.vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
+            center = FM.vector(min.x + that.width / 2, min.y + that.height / 2),
+            otherCenter = FM.vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
+            normal = FM.math.substractVectors(otherCenter, center),
             extent = (max.x - min.x) / 2,
             otherExtent = (otherMax.x - otherMin.x) / 2,
             xOverlap = extent + otherExtent - Math.abs(normal.x),
@@ -3475,7 +3663,7 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
             otherExtent = (otherMax.y - otherMin.y) / 2;
             yOverlap = extent + otherExtent - Math.abs(normal.y);
             if (yOverlap > 0) {
-                collision = FMENGINE.fmCollision();
+                collision = FM.collision();
                 collision.a = that;
                 collision.b = aabb;
                 // Find out which axis is the one of least penetration
@@ -3501,19 +3689,16 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
     };
 
     /**
-     * Check if the current aabb component is colliding with a circle collider.
+     * Check if the current aabb is overlapping with the specified circle.
      */
-    that.collidesWithCircle = function (circle) {
-        var otherSpatial = circle.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            min = FMENGINE.fmVector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
-            otherMin = FMENGINE.fmVector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
-            max = FMENGINE.fmVector(min.x + that.width, min.y + that.height),
-            otherMax = FMENGINE.fmVector(otherMin.x + circle.width, otherMin.y + circle.height),
-            center = FMENGINE.fmVector(min.x + that.width / 2, min.y + that.height / 2),
-            otherCenter = FMENGINE.fmVector(otherMin.x + circle.radius, otherMin.y + circle.radius),
-            cornerDist = 0,
-            normal = FMENGINE.fmMathUtils.substractVectors(otherCenter, center),
-            newNormal,
+    that.overlapsWithCircle = function (circle) {
+        var otherSpatial = circle.owner.components[FM.componentTypes.SPATIAL],
+            min = FM.vector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
+            otherMin = FM.vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+            max = FM.vector(min.x + that.width, min.y + that.height),
+            center = FM.vector(min.x + that.width / 2, min.y + that.height / 2),
+            otherCenter = FM.vector(otherMin.x + circle.radius, otherMin.y + circle.radius),
+            normal = FM.math.substractVectors(otherCenter, center),
             distance,
             radius,
             closest = normal.clone(),
@@ -3521,8 +3706,8 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
             yExtent = (max.y - min.y) / 2,
             inside = false,
             collision = null;
-        closest.x = FMENGINE.fmMathUtils.clamp(closest.x, -xExtent, xExtent);
-        closest.y = FMENGINE.fmMathUtils.clamp(closest.y, -yExtent, yExtent);
+        closest.x = FM.math.clamp(closest.x, -xExtent, xExtent);
+        closest.y = FM.math.clamp(closest.y, -yExtent, yExtent);
         if (normal.isEquals(closest)) {
             inside = true;
             if (Math.abs(normal.x) > Math.abs(normal.y)) {
@@ -3539,10 +3724,10 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
                 }
             }
         }
-        collision = FMENGINE.fmCollision();
+        collision = FM.collision();
         collision.a = that;
         collision.b = circle;
-        collision.normal = FMENGINE.fmMathUtils.substractVectors(normal, closest);
+        collision.normal = FM.math.substractVectors(normal, closest);
         distance = collision.normal.getLengthSquared();
         radius = circle.radius;
         if (distance > radius * radius && !inside) {
@@ -3554,52 +3739,8 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
             collision.normal.reset(-collision.normal.x, -collision.normal.y);
         }
         collision.normal.normalize();
-        //collision.normal = normal;
-        //console.log(collision);
         return collision;
-        /*var sqDist = that.sqDistPointAABB(otherCenter);
-        var r = circle.radius;
-      
-        if(sqDist <= r * r) {
-            collision = FMENGINE.fmCollision();
-            collision.a = that;
-            collision.b = circle;
-            collision.normal = FMENGINE.fmMathUtils.substractVectors(normal, closest);
-            distance = Math.sqrt(sqDist);
-            collision.penetration = r + distance;
-            if (inside) {
-                collision.normal.reset(-collision.normal.x, -collision.normal.y);
-            }
-            collision.normal.normalize();
-            //collision.normal = normal;
-            return collision;
-        }*/
     };
-    
-    that.sqDistPointAABB = function (circleCenter) {
-        var sqDist = 0.0,
-            v,
-            // get the minX, maxX, minY and maxY points of the AABB
-            minX = spatial.position.x + that.offset.x,
-            maxX = minX + that.width,
-
-            minY = spatial.position.y + that.offset.y,
-            maxY = minY + that.height;
-
-        // test the bounds against the points X axis
-        v = circleCenter.x;
-
-        if (v < minX) sqDist += (minX - v) * (minX - v);
-        if (v > maxX) sqDist += (v - maxX) * (v - maxX);
-
-        // test the bounds against the points Y axis
-        v = circleCenter.y;
-
-        if (v < minY) sqDist += (minY - v) * (minY - v);
-        if (v > maxY) sqDist += (v - maxY) * (v - maxY);
-
-        return sqDist;
-     };
 
     /**
      * Draw debug information.
@@ -3616,29 +3757,29 @@ FMENGINE.fmAabbComponent = function (pWidth, pHeight, pOwner) {
     */
     that.destroy = function () {
         spatial = null;
-        //TODO destroy parent attributes and objects
+        Object.getPrototypeOf(that).destroy();
         that = null;
     };
 
     return that;
-};//var FMENGINE = FMENGINE || {};
+};
 /**
  * Under Creative Commons Licence.
  *
  * @author Simon Chauvin.
- * @param {fmGameObject} The game object to which the component belongs.
- * @returns {fmCircleComponent} The circle component itself.
+ * @param {gameObject} The game object to which the component belongs.
+ * @returns {circleComponent} The circle component itself.
  */
-FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
+FM.circleComponent = function (pRadius, pOwner) {
     "use strict";
     /**
-     * fmB2CircleComponent is based on fmPhysicComponent.
+     * fmB2CircleComponent is based on physicComponent.
      */
-    var that = Object.create(FMENGINE.fmPhysicComponent(pRadius * 2, pRadius * 2, pOwner)),
+    var that = Object.create(FM.physicComponent(pRadius * 2, pRadius * 2, pOwner)),
 	/**
          * Spatial component reference.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
     /**
      * Radius of the circle
      */
@@ -3652,56 +3793,10 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
     };
 
     /**
-     * Check collisions with the world bounds and tiles.
+     * Check if the current circle is overlapping with the specified physic object.
      */
-    that.checkWorldCollisions = function (collisions, worldBounds) {
-        var xPos = spatial.position.x + that.offset.x,
-            yPos = spatial.position.y + that.offset.y,
-            tileWidth,
-            tileHeight,
-            i1,
-            j1,
-            i2,
-            j2,
-            i,
-            j;
-        //If the world has solid bounds
-        if (worldBounds.length > 0) {
-            //If the game object is colliding with one of those bounds
-            if ((worldBounds.length > 0 && xPos <= worldBounds[0])
-                    || (worldBounds.length > 1 && xPos + that.radius * 2 >= worldBounds[1])
-                    || (worldBounds.length > 2 && yPos <= worldBounds[2])
-                    || (worldBounds.length > 3 && yPos + that.radius * 2 >= worldBounds[3])) {
-                return true;
-            }
-        }
-        //If there are collisions in the static world
-        if (collisions.length > 0) {
-            //TODO change so that it is a circle vs aabb collision
-            tileWidth = collisions.getTileWidth();
-            tileHeight = collisions.getTileHeight();
-            i1 = Math.floor(yPos / tileHeight);
-            j1 = Math.floor(xPos / tileWidth);
-            i2 = Math.floor((yPos + that.radius * 2) / tileHeight);
-            j2 = Math.floor((xPos + that.radius * 2) / tileWidth);
-            for (i = i1; i <= i2; i = i + 1) {
-                for (j = j1; j <= j2; j = j + 1) {
-                    if (collisions[i] && collisions[i][j] === 1) {
-                        if (j === j1 || j === j2 || i === i1 || i === i2) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    };
-
-    /**
-     * Collides the current physic component with an other game object's physic component.
-     */
-    that.collides = function (pPhysic) {
-        var collision = pPhysic.collidesWithCircle(that);
+    that.overlapsWithObject = function (pPhysic) {
+        var collision = pPhysic.overlapsWithCircle(that);
         if (collision) {
             return collision;
         }
@@ -3709,19 +3804,16 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
     };
 
     /**
-     * Check if the current circle component is colliding with an aabb collider
+     * Check if the current circle is overlapping with the specified aabb.
      */
-    that.collidesWithAabb = function (aabb) {
-        var otherSpatial = aabb.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            min = FMENGINE.fmVector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
-            otherMin = FMENGINE.fmVector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
-            max = FMENGINE.fmVector(min.x + that.width, min.y + that.height),
-            otherMax = FMENGINE.fmVector(otherMin.x + aabb.width, otherMin.y + aabb.height),
-            center = FMENGINE.fmVector(min.x + that.radius, min.y + that.radius),
-            otherCenter = FMENGINE.fmVector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
-            cornerDist = 0,
-            normal = FMENGINE.fmMathUtils.substractVectors(otherCenter, center),
-            newNormal,
+    that.overlapsWithAabb = function (aabb) {
+        var otherSpatial = aabb.owner.components[FM.componentTypes.SPATIAL],
+            min = FM.vector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
+            otherMin = FM.vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
+            otherMax = FM.vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
+            center = FM.vector(min.x + that.radius, min.y + that.radius),
+            otherCenter = FM.vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
+            normal = FM.math.substractVectors(otherCenter, center),
             distance,
             radius,
             closest = normal.clone(),
@@ -3729,8 +3821,8 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
             yExtent = (otherMax.y - otherMin.y) / 2,
             inside = false,
             collision = null;
-        closest.x = FMENGINE.fmMathUtils.clamp(closest.x, -xExtent, xExtent);
-        closest.y = FMENGINE.fmMathUtils.clamp(closest.y, -yExtent, yExtent);
+        closest.x = FM.math.clamp(closest.x, -xExtent, xExtent);
+        closest.y = FM.math.clamp(closest.y, -yExtent, yExtent);
         if (normal.isEquals(closest)) {
             inside = true;
             if (Math.abs(normal.x) > Math.abs(normal.y)) {
@@ -3747,10 +3839,10 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
                 }
             }
         }
-        collision = FMENGINE.fmCollision();
+        collision = FM.collision();
         collision.a = that;
         collision.b = aabb;
-        collision.normal = FMENGINE.fmMathUtils.substractVectors(normal, closest);
+        collision.normal = FM.math.substractVectors(normal, closest);
         distance = collision.normal.getLengthSquared();
         radius = that.radius;
         if (distance > (radius * radius) && !inside) {
@@ -3762,73 +3854,27 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
             collision.normal.reset(-collision.normal.x, -collision.normal.y);
         }
         collision.normal.normalize();
-        //collision.normal = normal;
         return collision;
-        /*var sqDist = that.sqDistPointAABB(aabb);
-        var r = that.radius;
-      
-        if (sqDist <= r * r) {
-            collision = FMENGINE.fmCollision();
-            collision.a = that;
-            collision.b = aabb;
-            collision.normal = FMENGINE.fmMathUtils.substractVectors(normal, closest);
-            distance = Math.sqrt(sqDist);
-            collision.penetration = r + distance;
-            if (inside) {
-                collision.normal.reset(-collision.normal.x, -collision.normal.y);
-            }
-            collision.normal.normalize();
-            //collision.normal = normal;
-            return collision;
-        }*/
     };
 
-    that.sqDistPointAABB = function (aabb) {
-        var sqDist = 0.0,
-            v,
-            otherSpatial = aabb.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            min = FMENGINE.fmVector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
-            circleCenter = FMENGINE.fmVector(min.x + that.radius, min.y + that.radius),
-            // get the minX, maxX, minY and maxY points of the AABB
-            minX = otherSpatial.position.x + aabb.offset.x,
-            maxX = minX + aabb.width,
-
-            minY = otherSpatial.position.y + aabb.offset.y,
-            maxY = minY + aabb.height;
-
-        // test the bounds against the points X axis
-        v = circleCenter.x;
-
-        if (v < minX) sqDist += (minX - v) * (minX - v);
-        if (v > maxX) sqDist += (v - maxX) * (v - maxX);
-
-        // test the bounds against the points Y axis
-        v = circleCenter.y;
-
-        if (v < minY) sqDist += (minY - v) * (minY - v);
-        if (v > maxY) sqDist += (v - maxY) * (v - maxY);
-
-        return sqDist;
-     };
-
     /**
-     * Check if the current circle component is colliding with another circle collider
+     * Check if the current circle is overlapping with the specified circle.
      */
-    that.collidesWithCircle = function (circle) {
-        var otherSpatial = circle.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            min = FMENGINE.fmVector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
-            otherMin = FMENGINE.fmVector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
-            center = FMENGINE.fmVector(min.x + that.width / 2, min.y + that.height / 2),
-            otherCenter = FMENGINE.fmVector(otherMin.x + circle.width / 2, otherMin.y + circle.height / 2),
+    that.overlapsWithCircle = function (circle) {
+        var otherSpatial = circle.owner.components[FM.componentTypes.SPATIAL],
+            min = FM.vector(spatial.position.x + that.offset.x, spatial.position.y + that.offset.y),
+            otherMin = FM.vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+            center = FM.vector(min.x + that.width / 2, min.y + that.height / 2),
+            otherCenter = FM.vector(otherMin.x + circle.width / 2, otherMin.y + circle.height / 2),
             radius = that.radius + circle.radius,
             radius = radius * radius,
-            normal = FMENGINE.fmMathUtils.substractVectors(otherCenter, center),
+            normal = FM.math.substractVectors(otherCenter, center),
             distance = normal.getLength(),
             collision = null;
         if (normal.getLengthSquared() > radius) {
             return null;
         } else {
-            collision = FMENGINE.fmCollision();
+            collision = FM.collision();
             collision.a = that;
             collision.b = circle;
             if (distance !== 0) {
@@ -3848,7 +3894,7 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
      */
     that.drawDebug = function (bufferContext, newPosition) {
         Object.getPrototypeOf(that).drawDebug(bufferContext);
-        var newCenter = FMENGINE.fmVector(newPosition.x + that.radius, newPosition.y + that.radius);
+        var newCenter = FM.vector(newPosition.x + that.radius, newPosition.y + that.radius);
         bufferContext.beginPath();
         bufferContext.strokeStyle = '#f4f';
         bufferContext.arc((newCenter.x + that.offset.x) - bufferContext.xOffset, (newCenter.y + that.offset.y) - bufferContext.yOffset, that.radius, 0, 2 * Math.PI, false);
@@ -3860,13 +3906,12 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
     */
     that.destroy = function () {
         spatial = null;
-        //TODO destroy parent attributes and objects
-        allowCollisions = null;
+        Object.getPrototypeOf(that).destroy();
         that = null;
     };
 
     return that;
-};//var FMENGINE = FMENGINE || {};
+};
 /**
  * Under Creative Commons Licence
  * Component of basic physics.
@@ -3875,24 +3920,20 @@ FMENGINE.fmCircleComponent = function (pRadius, pOwner) {
  * @param {fmObject} The object that owns this component.
  * @author Simon Chauvin
  */
-FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
+FM.physicComponent = function (pWidth, pHeight, pOwner) {
     "use strict";
     /**
-     * fmPhysicComponent is based on fmComponent.
+     * physicComponent is based on component.
      */
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.PHYSIC, pOwner),
+    var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
         /**
 	 * World of the game.
 	 */
-        world = FMENGINE.fmGame.getCurrentState().getWorld(),
+        world = FM.game.getCurrentState().getWorld(),
         /**
 	 * Quad tree containing all game objects with a physic component.
 	 */
-        quad = FMENGINE.fmGame.getCurrentState().getQuad(),
-        /**
-         * Forces applied to the physic object.
-         */
-        force = FMENGINE.fmVector(0, 0),
+        quad = FM.game.getCurrentState().getQuad(),
         /**
          * The current direction of the object.
          */
@@ -3904,51 +3945,116 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
 	/**
         * Spatial component reference.
         */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL],
+        spatial = pOwner.components[FM.componentTypes.SPATIAL],
         /**
          * Correct the position of the physic component.
          */
         correctPosition = function (collision) {
-        //Position correction
-        var correction = FMENGINE.fmVector(collision.penetration * collision.normal.x, collision.penetration * collision.normal.y),
-            aSpatial = collision.a.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            bSpatial = collision.b.owner.components[FMENGINE.fmComponentTypes.SPATIAL],
-            massSum = 0,
-            invMass = 0,
-            otherInvMass = 0;
-        if (collision.a.mass === 0) {
-            invMass = 0;
-        } else {
-            invMass = 1 / collision.a.mass;
-        }
-        if (collision.b.mass === 0) {
-            otherInvMass = 0;
-        } else {
-            otherInvMass = 1 / collision.b.mass;
-        }
-        massSum = invMass + otherInvMass;
+            //Position correction
+            var correction = FM.vector(collision.penetration * collision.normal.x, collision.penetration * collision.normal.y),
+                aSpatial = collision.a.owner.components[FM.componentTypes.SPATIAL],
+                bSpatial = collision.b.owner.components[FM.componentTypes.SPATIAL],
+                aPhysic = collision.a.owner.components[FM.componentTypes.PHYSIC],
+                bPhysic = collision.b.owner.components[FM.componentTypes.PHYSIC],
+                massSum = 0,
+                invMass = 0,
+                otherInvMass = 0;
+            if (collision.a.mass === 0) {
+                invMass = 0;
+            } else {
+                invMass = 1 / collision.a.mass;
+            }
+            if (collision.b.mass === 0) {
+                otherInvMass = 0;
+            } else {
+                otherInvMass = 1 / collision.b.mass;
+            }
+            massSum = invMass + otherInvMass;
 
-        //TODO make it work instead of the other below
-        /*var percent = 0.2; // usually 20% to 80%
-        var slop = 0.01; // usually 0.01 to 0.1
-        correction.x = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.x;
-        correction.y = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.y;
-        aSpatial.position.x -= invMass * correction.x;
-        aSpatial.position.y -= invMass * correction.y;
-        bSpatial.position.x += otherInvMass * correction.x;
-        bSpatial.position.y += otherInvMass * correction.y;*/
+            //TODO make it work instead of the other below
+            /*var percent = 0.2; // usually 20% to 80%
+            var slop = 0.01; // usually 0.01 to 0.1
+            correction.x = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.x;
+            correction.y = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.y;
+            aSpatial.position.x -= invMass * correction.x;
+            aSpatial.position.y -= invMass * correction.y;
+            bSpatial.position.x += otherInvMass * correction.x;
+            bSpatial.position.y += otherInvMass * correction.y;*/
 
-        //TODO this is here that it goes wrong
-        aSpatial.position.x -= correction.x * (invMass / massSum);
-        aSpatial.position.y -= correction.y * (invMass / massSum);
-        bSpatial.position.x += correction.x * (otherInvMass / massSum);
-        bSpatial.position.y += correction.y * (otherInvMass / massSum);
-    };
+            //TODO this is here that it goes wrong, need to add offset ?
+            aSpatial.position.x -= correction.x * (invMass / massSum);
+            aSpatial.position.y -= correction.y * (invMass / massSum);
+            bSpatial.position.x += correction.x * (otherInvMass / massSum);
+            bSpatial.position.y += correction.y * (otherInvMass / massSum);
+        },
+        /**
+         * 
+         */
+        tryToMove = function (tiles, xVel, yVel) {
+            var spX = spatial.position.x + that.offset.x + xVel,
+                spY = spatial.position.y + that.offset.y + yVel;
+            if (!that.checkCollisions(tiles, spX, spY)) {
+                spatial.position.x = spX;
+                spatial.position.y = spY;
+                return true;
+            }
+            return false;
+        },
+        /**
+         * 
+         */
+        move = function (tiles, xVel, yVel) {
+            if (Math.abs(xVel) >= tiles.getTileWidth() || Math.abs(yVel) >= tiles.getTileHeight()) {
+                move(tiles, xVel / 2, yVel / 2);
+                move(tiles, xVel - xVel / 2, yVel - yVel / 2);
+                return;
+            }
 
+            var hor = tryToMove(tiles, xVel, 0),
+                ver = tryToMove(tiles, 0, yVel);
+            if (hor && ver)
+                return;
+
+            if (!hor) {
+                that.velocity.x = 0;
+                var i;
+                var maxSpeed = Math.abs(xVel);
+                for (i = 0; i < maxSpeed; i++) {
+                    var vel;
+                    if (xVel === 0)
+                        vel = 0;
+                    else if (xVel > 0)
+                        vel = 1;
+                    else
+                        vel = -1;
+                    if (!tryToMove(tiles, vel, 0))
+                        break;
+                    else
+                        that.velocity.x += vel;
+                }
+            }
+            if (!ver) {
+                that.velocity.y = 0;
+                maxSpeed = Math.abs(yVel);
+                for (i = 0; i < maxSpeed; i++) {
+                    var vel;
+                    if (yVel === 0)
+                        vel = 0;
+                    if (yVel > 0)
+                        vel = 1;
+                    else
+                        vel = -1;
+                    if (!tryToMove(tiles, 0, vel))
+                        break;
+                    else
+                        that.velocity.y += vel;
+                }
+            }
+        };
     /**
      * Offset of the bounding box or circle.
      */
-    that.offset = FMENGINE.fmVector(0, 0);
+    that.offset = FM.vector(0, 0);
     /**
      * Width of the collider.
      */
@@ -3964,7 +4070,11 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
     /**
      * Velocity of the physic component.
      */
-    that.velocity = FMENGINE.fmVector(0, 0);
+    that.velocity = FM.vector(0, 0);
+    /**
+     * Acceleration applied to the physic object.
+     */
+    that.acceleration = FM.vector(0, 0);
     /**
      * Angular velocity.
      */
@@ -3976,27 +4086,15 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
     /**
      * Represent the maximum absolute value of the velocity.
      */
-    that.maxVelocity = FMENGINE.fmVector(10000, 10000);
+    that.maxVelocity = FM.vector(1000, 1000);
     /**
      * Maximum angular velocity.
      */
     that.maxAngularVelocity = 10000;
     /**
-     * Friction is a factor between 0 and 1 diminishing the velocity.
-     */
-    that.friction = 0;
-    /**
      * Elasticity is a factor between 0 and 1 used for bouncing purposes.
      */
     that.elasticity = 0;
-
-    /**
-     * Apply a force to the physic object.
-     */
-    that.applyForce = function (horizontalForce, verticalForce) {
-        force.x += horizontalForce;
-        force.y += verticalForce;
-    };
 
     /**
     * Update the component.
@@ -4008,12 +4106,10 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
         if (that.mass === 0) {
             invMass = 0;
         }
-        
-        //TODO use acceleration instead of force, just  like flixel
-        
+
         //Limit velocity to a max value
-        currentVelocity = that.velocity.x + (invMass * force.x) * dt;
-        maxVelocity = that.maxVelocity.x + (invMass * force.x) * dt;
+        currentVelocity = that.velocity.x + (invMass * that.acceleration.x) * dt;
+        maxVelocity = that.maxVelocity.x + (invMass * that.acceleration.x) * dt;
         if (Math.abs(currentVelocity) <= maxVelocity) {
             that.velocity.x = currentVelocity;
         } else if (currentVelocity < 0) {
@@ -4021,8 +4117,8 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
         } else if (currentVelocity > 0) {
             that.velocity.x = maxVelocity;
         }
-        currentVelocity = that.velocity.y + (invMass * force.y) * dt;
-        maxVelocity = that.maxVelocity.y + (invMass * force.y) * dt;
+        currentVelocity = that.velocity.y + (invMass * that.acceleration.y) * dt;
+        maxVelocity = that.maxVelocity.y + (invMass * that.acceleration.y) * dt;
         if (Math.abs(currentVelocity) <= maxVelocity) {
             that.velocity.y = currentVelocity;
         } else if (currentVelocity < 0) {
@@ -4031,36 +4127,32 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
             that.velocity.y = maxVelocity;
 	}
 
-        //TODO elasticity
-        //that.velocity.x = -that.velocity.x * that.elasticity;
-        //that.velocity.y = -that.velocity.y * that.elasticity;
-
         //Update position
-        //TODO Add friction
         spatial.position.x += that.velocity.x * dt;
         spatial.position.y += that.velocity.y * dt;
 
-        //Reset the forces applied to the physic component
-        force.x = 0;
-        force.y = 0;
+        //Reset the acceleration applied to the physic component
+        that.acceleration.x = 0;
+        that.acceleration.y = 0;
+
+        if (world.getCollisionTileMap()) {
+            move(world.getCollisionTileMap(), that.velocity.x * dt, that.velocity.y * dt);
+        }
 
         //If this game object collides with at least one type of game object
         var quad, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
         if (that.collidesWith.length > 0) {
-            quad = FMENGINE.fmGame.getCurrentState().getQuad();
-            gameObjects = [];
-            quad.retrieve(gameObjects, pOwner);
+            quad = FM.game.getCurrentState().getQuad();
+            gameObjects = quad.retrieve(pOwner);
             //If there are other game objects near this one
             for (i = 0; i < gameObjects.length; i = i + 1) {
                 otherGameObject = gameObjects[i];
-                otherPhysic = otherGameObject.components[FMENGINE.fmComponentTypes.PHYSIC];
+                otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
                 //If a game object is found and is alive and is not the current one
-                //TODO remove the test on otherphysic when the quadtree work because it only has physic objects in it
-                if (otherGameObject.isAlive() && otherPhysic && pOwner.getId() !== otherGameObject.getId() && !otherPhysic.isCollidingWith(pOwner) && !that.isCollidingWith(otherGameObject)) {
+                if (otherGameObject.isAlive() && pOwner.getId() !== otherGameObject.getId() && !otherPhysic.isCollidingWith(pOwner) && !that.isCollidingWith(otherGameObject)) {
                     for (j = 0; j < that.collidesWith.length; j = j + 1) {
                         if (otherGameObject.hasType(that.collidesWith[j])) {
-                            //TODO make it work for circles and obb too
-                            collision = pOwner.components[FMENGINE.fmComponentTypes.PHYSIC].collides(otherPhysic);
+                            collision = pOwner.components[FM.componentTypes.PHYSIC].overlapsWithObject(otherPhysic);
                             if (collision !== null) {
                                 that.addCollision(collision);
                                 otherPhysic.addCollision(collision);
@@ -4083,17 +4175,47 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
     };
 
     /**
+     * Check collisions with the tiles.
+     */
+    that.checkTileCollisions = function (tiles, xPos, yPos) {
+        var tileWidth,
+            tileHeight,
+            i1, j1,
+            i2, j2,
+            i, j;
+        //If there are collisions with tiles
+        if (tiles.length > 0) {
+            tileWidth = tiles.getTileWidth();
+            tileHeight = tiles.getTileHeight();
+            i1 = Math.floor(yPos / tileHeight);
+            j1 = Math.floor(xPos / tileWidth);
+            i2 = Math.floor((yPos + that.height) / tileHeight);
+            j2 = Math.floor((xPos + that.width) / tileWidth);
+            for (i = i1; i <= i2; i = i + 1) {
+                for (j = j1; j <= j2; j = j + 1) {
+                    if (tiles[i] && tiles[i][j] === 1) {
+                        if (j === j1 || j === j2 || i === i1 || i === i2) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    };
+
+    /**
      * Resolve collision between current game object and the specified one.
      */
     that.resolveCollision = function (otherPhysic, collision) {
-        var relativeVelocity = FMENGINE.fmMathUtils.substractVectors(otherPhysic.velocity, that.velocity),
+        var relativeVelocity = FM.math.substractVectors(otherPhysic.velocity, that.velocity),
             velocityAlongNormal = relativeVelocity.dotProduct(collision.normal),
             //Compute restitution
             e = Math.min(that.elasticity, otherPhysic.elasticity),
             j = 0,
             invMass = 0,
             otherInvMass = 0,
-            impulse = FMENGINE.fmVector(0, 0);
+            impulse = FM.vector(0, 0);
         //Do not resolve if velocities are separating.
         if (velocityAlongNormal > 0) {
             return;
@@ -4137,7 +4259,7 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
     /**
      * Add a collision object representing the collision to the list of current
      * collisions.
-     * @param {fmCollision} collision the collision object.
+     * @param {collision} collision the collision object.
      */
     that.addCollision = function (collision) {
         collisions.push(collision);
@@ -4178,7 +4300,7 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
      * @returns {boolean} whether there is already collision between the physic components.
      */
     that.isCollidingWith = function (pOtherGameObject) {
-        var i, collision, gameObject = pOwner;
+        var i, collision;
         for (i = 0; i < collisions.length; i = i + 1) {
             collision = collisions[i];
             if ((collision.b && collision.b.owner.getId() === pOtherGameObject.getId())
@@ -4190,17 +4312,18 @@ FMENGINE.fmPhysicComponent = function (pWidth, pHeight, pOwner) {
     };
 
     return that;
-};/**
+};
+/**
  *
  * @author Simon Chauvin
- * @param {fmImageAsset} pImage image of the sprite sheet.
+ * @param {imageAsset} pImage image of the sprite sheet.
  * @param {int} pWidth width of a frame of the spritesheet.
  * @param {int} pHeight height of a frame of the spritesheet.
- * @param {fmGameObject} pOwner game object owner of the component.
+ * @param {gameObject} pOwner game object owner of the component.
  */
-FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
+FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
+    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
         /**
          * Image of the sprite.
          */
@@ -4268,7 +4391,7 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
         /**
          * Spatial component.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
     /**
      * Read-only attributes that specifies whether the current animation has
      * finished playing or not.
@@ -4280,17 +4403,15 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
     * @param {String} name name of the animation.
     * @param {Array} pFrames frames of the animation.
     * @param {int} frameRate speed of the animation.
-    * @param {boolean} isReversed whether to generate horizontally flipped
-    * versions of the animation frames or not.
     * @param {boolean} isLooped whether the animation should loop or not.
     */
-    that.addAnimation = function (name, pFrames, frameRate, isReversed, isLooped) {
+    that.addAnimation = function (name, pFrames, frameRate, isLooped) {
         currentFrame = 0;
         currentAnim = name;
         frames[name] = pFrames;
         delay = 1 / frameRate;
         //TODO generate flipped version
-        flipped = isReversed;
+        //flipped = isReversed;
         currentDelay = delay;
         loop[name] = isLooped;
     };
@@ -4443,13 +4564,14 @@ FMENGINE.fmAnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, 
     };
 
     return that;
-};/**
+};
+/**
  * 
  * @author Simon Chauvin
  */
-FMENGINE.fmBoxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
+FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
+    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
         /**
          * Width of the box.
          */
@@ -4469,7 +4591,7 @@ FMENGINE.fmBoxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
         /**
          * Spatial component.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
 
     /**
     * Draw the box.
@@ -4569,13 +4691,14 @@ FMENGINE.fmBoxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
     };
 
     return that;
-};/**
+};
+/**
  * 
  * @author Simon Chauvin
  */
-FMENGINE.fmCircleRendererComponent = function (pRadius, pColor, pOwner) {
+FM.circleRendererComponent = function (pRadius, pColor, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
+    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
         /**
          * Width of the circle.
          */
@@ -4595,7 +4718,7 @@ FMENGINE.fmCircleRendererComponent = function (pRadius, pColor, pOwner) {
         /**
          * Spatial component.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
 
     /**
     * Draw the circle.
@@ -4605,7 +4728,7 @@ FMENGINE.fmCircleRendererComponent = function (pRadius, pColor, pOwner) {
     that.draw = function (bufferContext, newPosition) {
         var xPosition = newPosition.x - bufferContext.xOffset * pOwner.scrollFactor.x, 
                 yPosition = newPosition.y - bufferContext.yOffset * pOwner.scrollFactor.y,
-            newCenter = FMENGINE.fmVector(xPosition + width / 2, yPosition + height / 2);
+            newCenter = FM.vector(xPosition + width / 2, yPosition + height / 2);
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
@@ -4713,13 +4836,14 @@ FMENGINE.fmCircleRendererComponent = function (pRadius, pColor, pOwner) {
     };
 
     return that;
-};/**
+};
+/**
  * 
  * @author Simon Chauvin
  */
-FMENGINE.fmLineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
+FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
+    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
         /**
          * Points constituing the line.
          */
@@ -4747,10 +4871,10 @@ FMENGINE.fmLineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
         /**
          * Spatial component.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
 
     /**
-    * Draw the circle.
+    * Draw the line.
     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
     * drawing is done.
     */
@@ -4806,7 +4930,7 @@ FMENGINE.fmLineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
 
     /**
      * Add a point to the line.
-     * @param {fmVector} newPoint the new point to add.
+     * @param {vector} newPoint the new point to add.
      */
     that.addPoint = function (newPoint) {
         points.push(newPoint);
@@ -4892,13 +5016,14 @@ FMENGINE.fmLineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
     };
 
     return that;
-};/**
+};
+/**
  * 
  * @author Simon Chauvin
  */
-FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
+FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
+    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
         /**
          * Image of the sprite.
          */
@@ -4926,7 +5051,7 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
         /**
          * Spatial component.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL];
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
 
     /**
     * Draw the sprite.
@@ -5036,17 +5161,18 @@ FMENGINE.fmSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     return that;
-};/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  */
-FMENGINE.fmTextRendererComponent = function (pTextToDisplay, pOwner) {
+FM.textRendererComponent = function (pTextToDisplay, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.RENDERER, pOwner),
+    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
         /**
          * The spatial component.
          */
-        spatial = pOwner.components[FMENGINE.fmComponentTypes.SPATIAL],
+        spatial = pOwner.components[FM.componentTypes.SPATIAL],
         /**
          * With of the text container.
          */
@@ -5114,15 +5240,16 @@ FMENGINE.fmTextRendererComponent = function (pTextToDisplay, pOwner) {
     };
 
     return that;
-}/**
+};
+/**
  * Under Creative Commons Licence
  * @author Simon Chauvin
  * @param owner
- * @returns {fmSoundComponent}
+ * @returns {audioComponent}
  */
-FMENGINE.fmSoundComponent = function (pOwner) {
+FM.audioComponent = function (pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.SOUND, pOwner),
+    var that = FM.component(FM.componentTypes.SOUND, pOwner),
         /**
          * The list of sound objects.
          */
@@ -5132,10 +5259,11 @@ FMENGINE.fmSoundComponent = function (pOwner) {
      * Play the sound given a certain volume and whether the sound loop or not.
      */
     that.play = function (pSoundName, volume, loop) {
-        var i, sound;
+        var i, sound, soundFound = false;
         for (i = 0; i < sounds.length; i = i + 1) {
             sound = sounds[i];
             if (sound.getName() === pSoundName) {
+                soundFound = true;
                 sound.volume = volume;
                 if (loop) {
                     sound.addEventListener('ended', function () {
@@ -5146,7 +5274,11 @@ FMENGINE.fmSoundComponent = function (pOwner) {
                 sound.play();
             }
         }
-        //TODO display warning if sound not existing
+        if (!soundFound) {
+            if (FM.parameters.debug) {
+                console.log("WARNING: you're trying to play a sound that does not exist.");
+            }
+        }
     };
 
     /**
@@ -5197,18 +5329,19 @@ FMENGINE.fmSoundComponent = function (pOwner) {
     };
 
     return that;
-};/**
+};
+/**
  * The spatial component allows positionning of the game object in the 2d space.
  * @author Simon Chauvin
  */
-FMENGINE.fmSpatialComponent = function (pX, pY, pOwner) {
+FM.spatialComponent = function (pX, pY, pOwner) {
     "use strict";
-    var that = FMENGINE.fmComponent(FMENGINE.fmComponentTypes.SPATIAL, pOwner);
+    var that = FM.component(FM.componentTypes.SPATIAL, pOwner);
     /**
      * Current position.
      */
-    that.position = FMENGINE.fmVector(pX, pY);
-    that.previous = FMENGINE.fmVector(pX, pY);
+    that.position = FM.vector(pX, pY);
+    that.previous = FM.vector(pX, pY);
     /**
      * Angle of the object defined in radians.
      */

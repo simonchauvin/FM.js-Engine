@@ -24,34 +24,34 @@
     </target>
     <target name="concat">
         <concat destfile="${concat}/fmjsengine-concat.js" encoding="UTF-8" >
-            <filelist dir="${src}" files= "fmAssetManager.js, fmAudioAsset.js,
-                fmParameters.js, 
-                fmCircle.js, fmComponent.js, fmFileAsset.js, fmGame.js, 
-                fmGameObject.js, fmImageAsset.js, fmKeyboard.js, fmMathUtils.js, 
-                fmRectangle.js, fmState.js, fmTilemap.js,
-                fmVector.js, fmWorld.js">
+            <filelist dir="${src}" files= "assetManager.js, audioAsset.js,
+                parameters.js, 
+                circle.js, fileAsset.js, game.js, 
+                gameObject.js, imageAsset.js, keyboard.js, math.js, 
+                objectType.js, rectangle.js, state.js, tileMap.js,
+                vector.js, world.js">
             </filelist>
-            <filelist dir="${system}" files= "fmCollision.js, fmComponentTypes.js, 
-                fmPreloader.js, fmQuadTree.js, fmUtils.js">
+            <filelist dir="${system}" files= "collision.js, component.js, componentTypes.js, 
+                preloader.js, quadTree.js, utils.js">
             </filelist>
             <filelist dir="${tmx}" files= "tmxLayer.js, tmxMap.js, 
                 tmxObject.js, tmxObjectGroup.js, tmxPropertySet.js,
                 tmxTileSet.js">
             </filelist>
-            <filelist dir="${fx}" files= "fmEmitterComponent.js">
+            <filelist dir="${fx}" files= "emitterComponent.js">
             </filelist>
-            <filelist dir="${pathfinding}" files= "fmSimplePathComponent.js">
+            <filelist dir="${pathfinding}" files= "simplePathComponent.js">
             </filelist>
-            <filelist dir="${physic}" files= "fmAabbComponent.js, 
-                fmCircleComponent.js, fmPhysicComponent.js">
+            <filelist dir="${physic}" files= "aabbComponent.js, 
+                circleComponent.js, physicComponent.js">
             </filelist>
-            <filelist dir="${renderer}" files= "fmAnimatedSpriteRendererComponent.js, 
-                fmBoxRendererComponent.js, fmCircleRendererComponent.js, fmLineRendererComponent.js, 
-                fmSpriteRendererComponent.js, fmTextRendererComponent.js">
+            <filelist dir="${renderer}" files= "animatedSpriteRendererComponent.js, 
+                boxRendererComponent.js, circleRendererComponent.js, lineRendererComponent.js, 
+                spriteRendererComponent.js, textRendererComponent.js">
             </filelist>
-            <filelist dir="${sound}" files= "fmSoundComponent.js">
+            <filelist dir="${sound}" files= "audioComponent.js">
             </filelist>
-            <filelist dir="${spatial}" files= "fmSpatialComponent.js">
+            <filelist dir="${spatial}" files= "spatialComponent.js">
             </filelist>
         </concat>
     </target>

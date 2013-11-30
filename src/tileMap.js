@@ -53,7 +53,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
             row = null,
             resultRow = null,
             columns = null,
-            tileId = null,
+            gid = null,
             tile = null,
             state = FM.game.getCurrentState(),
             spatial,
@@ -70,8 +70,8 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                 resultRow = [];
                 columns = row.split(",", width);
                 for (j = 0; j < columns.length; j = j + 1) {
-                    tileId = columns[j];
-                    if (tileId > 0) {
+                    gid = parseInt(columns[j]);
+                    if (gid > 0) {
                         tile = FM.gameObject(zIndex);
                         for (n = 0; n < pTypes.length; n = n + 1) {
                             tile.addType(pTypes[n]);
@@ -80,14 +80,13 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                         tile.addComponent(spatial);
                         renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
-                        xOffset = tileId * tileWidth;
+                        xOffset = gid * tileWidth;
                         yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
                         if (xOffset >= tileSet.width) {
                             yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
                             xOffset = (xOffset % tileSet.width);
                         }
-                        renderer.setXOffset(xOffset);
-                        renderer.setYOffset(yOffset);
+                        renderer.offset.reset(xOffset, yOffset);
                         tile.addComponent(renderer);
                         if (allowCollisions) {
                             physic = FM.aabbComponent(tileWidth, tileHeight, tile);
@@ -95,8 +94,10 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             tile.addComponent(physic);
                         }
                         state.add(tile);
+                        resultRow.push(tile.getId());
+                    } else {
+                        resultRow.push(-1);
                     }
-                    resultRow.push(tileId);
                 }
                 data.push(resultRow);
             }
@@ -113,7 +114,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
     };
 
     /**
-     * Retrive the data.
+     * Retrive the 2D array of tile IDs.
      */
     that.getData = function () {
         return data;

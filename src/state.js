@@ -261,13 +261,14 @@ FM.state = function () {
             gameObject = that.members[i];
 
             //If the game object is visible or is in debug mode and alive
-            if (gameObject.isVisible() || (FM.parameters.debug && gameObject.isAlive())) {
+            if (gameObject.isVisible() || (FM.parameters.debug && FM.game.isDebugActivated() && gameObject.isAlive())) {
                 spatial = gameObject.components[FM.componentTypes.SPATIAL];
                 //If there is a spatial component then test if the game object is on the screen
                 if (spatial) {
                     renderer = gameObject.components[FM.componentTypes.RENDERER];
                     newPosition = FM.vector(spatial.position.x * dt + spatial.previous.x * (1.0 - dt),
-                    spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
+                        spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
+                    //Draw objects
                     if (renderer && gameObject.isVisible()) {
                         var xPosition = newPosition.x, yPosition = newPosition.y,
                             farthestXPosition = xPosition + renderer.getWidth(),
@@ -283,10 +284,13 @@ FM.state = function () {
                             renderer.draw(bufferContext, newPosition);
                         }
                     }
+                    //Draw physic debug
                     if (FM.parameters.debug && gameObject.isAlive()) {
-                        physic = gameObject.components[FM.componentTypes.PHYSIC];
-                        if (physic) {
-                            physic.drawDebug(bufferContext, newPosition);
+                        if (FM.game.isDebugActivated()) {
+                            physic = gameObject.components[FM.componentTypes.PHYSIC];
+                            if (physic) {
+                                physic.drawDebug(bufferContext, newPosition);
+                            }
                         }
                     }
                 }
@@ -294,18 +298,20 @@ FM.state = function () {
         }
         // Debug
         if (FM.parameters.debug) {
-            //Display the world bounds
-            bufferContext.strokeStyle = '#f0f';
-            bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, world.width, world.height);
+            if (FM.game.isDebugActivated()) {
+                //Display the world bounds
+                bufferContext.strokeStyle = '#f0f';
+                bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, world.width, world.height);
 
-            //Display the camera bounds
-            bufferContext.strokeStyle = '#8fc';
-            bufferContext.strokeRect((screenWidth - that.camera.width) / 2, (screenHeight - that.camera.height) / 2, that.camera.width, that.camera.height);
+                //Display the camera bounds
+                bufferContext.strokeStyle = '#8fc';
+                bufferContext.strokeRect((screenWidth - that.camera.width) / 2, (screenHeight - that.camera.height) / 2, that.camera.width, that.camera.height);
 
-            //Display the scrolling bounds
-            if (followFrame) {
-                bufferContext.strokeStyle = '#f4f';
-                bufferContext.strokeRect(followFrame.x - that.camera.x, followFrame.y - that.camera.y, followFrame.width, followFrame.height);
+                //Display the scrolling bounds
+                if (followFrame) {
+                    bufferContext.strokeStyle = '#f4f';
+                    bufferContext.strokeRect(followFrame.x - that.camera.x, followFrame.y - that.camera.y, followFrame.width, followFrame.height);
+                }
             }
         }
     };

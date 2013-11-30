@@ -103,6 +103,11 @@ FM.game = (function () {
          * Whether the game has been paused or not.
          */
         pause = false,
+        /**
+         * Whether to display the debug information or not.
+         * @type Boolean
+         */
+        debugActivated = false,
 
         /**
         * Main game loop Calling update and draw on game objects.
@@ -128,19 +133,18 @@ FM.game = (function () {
 
             if (!pause) {
                 timeCounter += frameTime;
-                //Update physics a certain number of times
+                //Update the game a fixed number of times
                 while (accumulator >= dt) {
                     accumulator -= dt;
                     currentState.updatePhysics(dt);
+                    currentState.update(frameTime);
                 }
                 alpha = accumulator / dt;
-                //Update the current state of the game
-                currentState.update(frameTime);
             } else {
                 timeCounter += dt;
             }
             //Compute the actual FPS at which the game is running
-            framesCounter++;
+            framesCounter = framesCounter + 1;
             if (timeCounter >= 1) {
                 lastComputedFps = framesCounter / timeCounter;
                 framesCounter = 0;
@@ -169,11 +173,21 @@ FM.game = (function () {
 
             // If debug mode if active
             if (FM.parameters.debug) {
+                //Display debug information
+                if (that.isKeyReleased(FM.keyboard.BACK_SLASH)) {
+                    if (!debugActivated) {
+                        debugActivated = true;
+                    } else {
+                        debugActivated = false;
+                    }
+                }
                 //Draw the number of frames per seconds
-                bufferContext.fillStyle = '#fcd116';
-                bufferContext.font = '30px sans-serif';
-                bufferContext.textBaseline = 'middle';
-                bufferContext.fillText(actualFps, 10, 20);
+                if (debugActivated) {
+                    bufferContext.fillStyle = '#fcd116';
+                    bufferContext.font = '30px sans-serif';
+                    bufferContext.textBaseline = 'middle';
+                    bufferContext.fillText(actualFps, 10, 20);
+                }
             }
 
             //Draw the buffer onto the screen
@@ -394,6 +408,15 @@ FM.game = (function () {
     */
     that.isMouseReleased = function () {
         return mouseReleased;
+    };
+
+    /**
+     * Check if the debug button was pressed and if debug info should
+     * be displayed.
+     * @returns {Boolean}
+     */
+    that.isDebugActivated = function () {
+        return debugActivated;
     };
 
     that.getName = function () {

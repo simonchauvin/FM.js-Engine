@@ -22,17 +22,13 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         alpha = 1,
         /**
-         * Offset on the x axis in case the image width is greater than the sprite width.
-         */
-        xOffset = 0,
-        /**
-         * Offset on the y axis in case the image height is greater than the sprite height.
-         */
-        yOffset = 0,
-        /**
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Offset in case the image width is greater than the sprite.
+     */
+    that.offset = FM.vector(0, 0);
 
     /**
     * Draw the sprite.
@@ -49,10 +45,10 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(width / 2, height / 2);
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, xOffset, yOffset, width, height, -width / 2, -height / 2, width, height);
+            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, -width / 2, -height / 2, width, height);
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, xOffset, yOffset, width, height, xPosition, yPosition, width, height);
+            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, xPosition, yPosition, width, height);
         }
         bufferContext.globalAlpha = 1;
     };
@@ -75,24 +71,6 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
         image = pImage;
         width = pWidth;
         height = pHeight;
-    };
-
-    /**
-     * Allow to specify a position in the image to display if the image is 
-     * larger than the sprite.
-     * @param {int} pXOffset horizontal offset desired.
-     */
-    that.setXOffset = function (pXOffset) {
-        xOffset = pXOffset;
-    };
-
-    /**
-     * Allow to specify a position in the image to display if the image is 
-     * higher than the sprite.
-     * @param {int} pYOffset vertical offset desired.
-     */
-    that.setYOffset = function (pYOffset) {
-        yOffset = pYOffset;
     };
 
     /**

@@ -436,6 +436,11 @@ FM.game = (function () {
          * Whether the game has been paused or not.
          */
         pause = false,
+        /**
+         * Whether to display the debug information or not.
+         * @type Boolean
+         */
+        debugActivated = false,
 
         /**
         * Main game loop Calling update and draw on game objects.
@@ -461,19 +466,18 @@ FM.game = (function () {
 
             if (!pause) {
                 timeCounter += frameTime;
-                //Update physics a certain number of times
+                //Update the game a fixed number of times
                 while (accumulator >= dt) {
                     accumulator -= dt;
                     currentState.updatePhysics(dt);
+                    currentState.update(frameTime);
                 }
                 alpha = accumulator / dt;
-                //Update the current state of the game
-                currentState.update(frameTime);
             } else {
                 timeCounter += dt;
             }
             //Compute the actual FPS at which the game is running
-            framesCounter++;
+            framesCounter = framesCounter + 1;
             if (timeCounter >= 1) {
                 lastComputedFps = framesCounter / timeCounter;
                 framesCounter = 0;
@@ -502,11 +506,21 @@ FM.game = (function () {
 
             // If debug mode if active
             if (FM.parameters.debug) {
+                //Display debug information
+                if (that.isKeyReleased(FM.keyboard.BACK_SLASH)) {
+                    if (!debugActivated) {
+                        debugActivated = true;
+                    } else {
+                        debugActivated = false;
+                    }
+                }
                 //Draw the number of frames per seconds
-                bufferContext.fillStyle = '#fcd116';
-                bufferContext.font = '30px sans-serif';
-                bufferContext.textBaseline = 'middle';
-                bufferContext.fillText(actualFps, 10, 20);
+                if (debugActivated) {
+                    bufferContext.fillStyle = '#fcd116';
+                    bufferContext.font = '30px sans-serif';
+                    bufferContext.textBaseline = 'middle';
+                    bufferContext.fillText(actualFps, 10, 20);
+                }
             }
 
             //Draw the buffer onto the screen
@@ -727,6 +741,15 @@ FM.game = (function () {
     */
     that.isMouseReleased = function () {
         return mouseReleased;
+    };
+
+    /**
+     * Check if the debug button was pressed and if debug info should
+     * be displayed.
+     * @returns {Boolean}
+     */
+    that.isDebugActivated = function () {
+        return debugActivated;
     };
 
     that.getName = function () {
@@ -1671,13 +1694,14 @@ FM.state = function () {
             gameObject = that.members[i];
 
             //If the game object is visible or is in debug mode and alive
-            if (gameObject.isVisible() || (FM.parameters.debug && gameObject.isAlive())) {
+            if (gameObject.isVisible() || (FM.parameters.debug && FM.game.isDebugActivated() && gameObject.isAlive())) {
                 spatial = gameObject.components[FM.componentTypes.SPATIAL];
                 //If there is a spatial component then test if the game object is on the screen
                 if (spatial) {
                     renderer = gameObject.components[FM.componentTypes.RENDERER];
                     newPosition = FM.vector(spatial.position.x * dt + spatial.previous.x * (1.0 - dt),
-                    spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
+                        spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
+                    //Draw objects
                     if (renderer && gameObject.isVisible()) {
                         var xPosition = newPosition.x, yPosition = newPosition.y,
                             farthestXPosition = xPosition + renderer.getWidth(),
@@ -1693,10 +1717,13 @@ FM.state = function () {
                             renderer.draw(bufferContext, newPosition);
                         }
                     }
+                    //Draw physic debug
                     if (FM.parameters.debug && gameObject.isAlive()) {
-                        physic = gameObject.components[FM.componentTypes.PHYSIC];
-                        if (physic) {
-                            physic.drawDebug(bufferContext, newPosition);
+                        if (FM.game.isDebugActivated()) {
+                            physic = gameObject.components[FM.componentTypes.PHYSIC];
+                            if (physic) {
+                                physic.drawDebug(bufferContext, newPosition);
+                            }
                         }
                     }
                 }
@@ -1704,18 +1731,20 @@ FM.state = function () {
         }
         // Debug
         if (FM.parameters.debug) {
-            //Display the world bounds
-            bufferContext.strokeStyle = '#f0f';
-            bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, world.width, world.height);
+            if (FM.game.isDebugActivated()) {
+                //Display the world bounds
+                bufferContext.strokeStyle = '#f0f';
+                bufferContext.strokeRect(0 - that.camera.x, 0 - that.camera.y, world.width, world.height);
 
-            //Display the camera bounds
-            bufferContext.strokeStyle = '#8fc';
-            bufferContext.strokeRect((screenWidth - that.camera.width) / 2, (screenHeight - that.camera.height) / 2, that.camera.width, that.camera.height);
+                //Display the camera bounds
+                bufferContext.strokeStyle = '#8fc';
+                bufferContext.strokeRect((screenWidth - that.camera.width) / 2, (screenHeight - that.camera.height) / 2, that.camera.width, that.camera.height);
 
-            //Display the scrolling bounds
-            if (followFrame) {
-                bufferContext.strokeStyle = '#f4f';
-                bufferContext.strokeRect(followFrame.x - that.camera.x, followFrame.y - that.camera.y, followFrame.width, followFrame.height);
+                //Display the scrolling bounds
+                if (followFrame) {
+                    bufferContext.strokeStyle = '#f4f';
+                    bufferContext.strokeRect(followFrame.x - that.camera.x, followFrame.y - that.camera.y, followFrame.width, followFrame.height);
+                }
             }
         }
     };
@@ -1893,7 +1922,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
             row = null,
             resultRow = null,
             columns = null,
-            tileId = null,
+            gid = null,
             tile = null,
             state = FM.game.getCurrentState(),
             spatial,
@@ -1910,8 +1939,8 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                 resultRow = [];
                 columns = row.split(",", width);
                 for (j = 0; j < columns.length; j = j + 1) {
-                    tileId = columns[j];
-                    if (tileId > 0) {
+                    gid = parseInt(columns[j]);
+                    if (gid > 0) {
                         tile = FM.gameObject(zIndex);
                         for (n = 0; n < pTypes.length; n = n + 1) {
                             tile.addType(pTypes[n]);
@@ -1920,14 +1949,13 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                         tile.addComponent(spatial);
                         renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
-                        xOffset = tileId * tileWidth;
+                        xOffset = gid * tileWidth;
                         yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
                         if (xOffset >= tileSet.width) {
                             yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
                             xOffset = (xOffset % tileSet.width);
                         }
-                        renderer.setXOffset(xOffset);
-                        renderer.setYOffset(yOffset);
+                        renderer.offset.reset(xOffset, yOffset);
                         tile.addComponent(renderer);
                         if (allowCollisions) {
                             physic = FM.aabbComponent(tileWidth, tileHeight, tile);
@@ -1935,8 +1963,10 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             tile.addComponent(physic);
                         }
                         state.add(tile);
+                        resultRow.push(tile.getId());
+                    } else {
+                        resultRow.push(-1);
                     }
-                    resultRow.push(tileId);
                 }
                 data.push(resultRow);
             }
@@ -1953,7 +1983,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
     };
 
     /**
-     * Retrive the data.
+     * Retrive the 2D array of tile IDs.
      */
     that.getData = function () {
         return data;
@@ -5041,17 +5071,13 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         alpha = 1,
         /**
-         * Offset on the x axis in case the image width is greater than the sprite width.
-         */
-        xOffset = 0,
-        /**
-         * Offset on the y axis in case the image height is greater than the sprite height.
-         */
-        yOffset = 0,
-        /**
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Offset in case the image width is greater than the sprite.
+     */
+    that.offset = FM.vector(0, 0);
 
     /**
     * Draw the sprite.
@@ -5068,10 +5094,10 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(width / 2, height / 2);
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, xOffset, yOffset, width, height, -width / 2, -height / 2, width, height);
+            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, -width / 2, -height / 2, width, height);
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, xOffset, yOffset, width, height, xPosition, yPosition, width, height);
+            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, xPosition, yPosition, width, height);
         }
         bufferContext.globalAlpha = 1;
     };
@@ -5094,24 +5120,6 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
         image = pImage;
         width = pWidth;
         height = pHeight;
-    };
-
-    /**
-     * Allow to specify a position in the image to display if the image is 
-     * larger than the sprite.
-     * @param {int} pXOffset horizontal offset desired.
-     */
-    that.setXOffset = function (pXOffset) {
-        xOffset = pXOffset;
-    };
-
-    /**
-     * Allow to specify a position in the image to display if the image is 
-     * higher than the sprite.
-     * @param {int} pYOffset vertical offset desired.
-     */
-    that.setYOffset = function (pYOffset) {
-        yOffset = pYOffset;
     };
 
     /**

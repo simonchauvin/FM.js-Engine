@@ -49,10 +49,10 @@ FM.game = (function () {
          */
         timeCounter = 0,
         /**
-         * Desired delta time for updating the game.
+         * Fixed delta time for updating the game.
          * @type Number
          */
-        dt = 1 / FM.parameters.FPS,
+        fixedDt = 1 / FM.parameters.FPS,
         /**
          * Actual FPS at which the game is running.
          */
@@ -132,17 +132,15 @@ FM.game = (function () {
             accumulator += frameTime;
 
             if (!pause) {
-                timeCounter += frameTime;
                 //Update the game a fixed number of times
-                while (accumulator >= dt) {
-                    accumulator -= dt;
-                    currentState.updatePhysics(dt);
-                    currentState.update(frameTime);
+                while (accumulator >= fixedDt) {
+                    accumulator -= fixedDt;
+                    currentState.updatePhysics(fixedDt);
+                    currentState.update(fixedDt);
                 }
-                alpha = accumulator / dt;
-            } else {
-                timeCounter += dt;
+                alpha = accumulator / fixedDt;
             }
+            timeCounter += frameTime;
             //Compute the actual FPS at which the game is running
             framesCounter = framesCounter + 1;
             if (timeCounter >= 1) {

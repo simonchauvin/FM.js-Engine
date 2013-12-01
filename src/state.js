@@ -160,7 +160,7 @@ FM.state = function () {
 
     /**
     * Update the game objects of the state.
-    * @param {float} variable time in seconds since the last frame.
+    * @param {float} fixed time in seconds since the last frame.
     */
     that.update = function (dt) {
         var i,

@@ -1,7 +1,7 @@
 <project name="{FM.js(Engine);}"  basedir=".">
     <property name="root" location="" />
-    <property name="concat" location="concat" />
-    <property name="min" location="min" />
+    <property name="concat" location="build/concat" />
+    <property name="min" location="build/min" />
     <property name="src" location="src" />
     <property name="system" location="${src}/system" />
     <property name="tools" location="${src}/tools" />
@@ -13,7 +13,7 @@
     <property name="sound" location="${components}/sound" />
     <property name="spatial" location="${components}/spatial" />
     <property name="tmx" location="${tools}/tmx_loader" />
-    <property name="compressor"  location="${root}/yui_compressor/yuicompressor-2.4.7.jar"/>
+    <property name="compressor"  location="build/yui_compressor/yuicompressor-2.4.7.jar"/>
     <target name="clean">
         <delete dir="${concat}"/>
         <delete dir="${min}"/>
@@ -24,14 +24,15 @@
     </target>
     <target name="concat">
         <concat destfile="${concat}/fmjsengine-concat.js" encoding="UTF-8" >
-            <filelist dir="${src}" files= "assetManager.js, audioAsset.js,
-                parameters.js, 
-                circle.js, fileAsset.js, game.js, 
-                gameObject.js, imageAsset.js, keyboard.js, math.js, 
+            <filelist dir="${src}" files= "assetManager.js,
+                parameters.js, componentTypes.js,
+                circle.js,  game.js, 
+                gameObject.js, keyboard.js, math.js, 
                 objectType.js, rectangle.js, state.js, tileMap.js,
                 vector.js, world.js">
             </filelist>
-            <filelist dir="${system}" files= "collision.js, component.js, componentTypes.js, 
+            <filelist dir="${system}" files= "collision.js, component.js, 
+                audioAsset.js, fileAsset.js, imageAsset.js,
                 preloader.js, quadTree.js, utils.js">
             </filelist>
             <filelist dir="${tmx}" files= "tmxLayer.js, tmxMap.js, 

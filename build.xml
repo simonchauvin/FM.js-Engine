@@ -4,7 +4,6 @@
     <property name="min" location="build/min" />
     <property name="src" location="src" />
     <property name="system" location="${src}/system" />
-    <property name="tools" location="${src}/tools" />
     <property name="components" location="${src}/components" />
     <property name="fx" location="${components}/fx" />
     <property name="pathfinding" location="${components}/pathfinding" />
@@ -12,7 +11,7 @@
     <property name="renderer" location="${components}/renderer" />
     <property name="sound" location="${components}/sound" />
     <property name="spatial" location="${components}/spatial" />
-    <property name="tmx" location="${tools}/tmx_loader" />
+    <property name="tmx" location="${system}/tmx_loader" />
     <property name="compressor"  location="build/yui_compressor/yuicompressor-2.4.7.jar"/>
     <target name="clean">
         <delete dir="${concat}"/>

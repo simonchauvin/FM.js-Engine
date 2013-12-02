@@ -13,24 +13,28 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      */
     var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
         /**
-	 * World of the game.
-	 */
+         * World of the game.
+         */
         world = FM.game.getCurrentState().getWorld(),
         /**
-	 * Quad tree containing all game objects with a physic component.
-	 */
+        * Quad tree containing all game objects with a physic component.
+         */
         quad = FM.game.getCurrentState().getQuad(),
         /**
          * The current direction of the object.
          */
         direction = 0,
         /**
+         * Array storing the types of game objects that can collide with this one.
+         */
+        collidesWith = [],
+        /**
          * Store the collisions that this object has.
          */
         collisions = [],
-	/**
-        * Spatial component reference.
-        */
+        /**
+         * Spatial component reference.
+         */
         spatial = pOwner.components[FM.componentTypes.SPATIAL],
         /**
          * Correct the position of the physic component.
@@ -150,10 +154,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      */
     that.height = pHeight;
     /**
-     * Array storing the types of game objects that can collide with this one.
-     */
-    that.collidesWith = [];
-    /**
      * Velocity of the physic component.
      */
     that.velocity = FM.vector(0, 0);
@@ -221,13 +221,17 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         that.acceleration.x = 0;
         that.acceleration.y = 0;
 
-        if (world.getCollisionTileMap()) {
-            move(world.getCollisionTileMap(), that.velocity.x * dt, that.velocity.y * dt);
-        }
-
         //If this game object collides with at least one type of game object
-        var quad, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
-        if (that.collidesWith.length > 0) {
+        if (collidesWith.length > 0) {
+            var quad, tileMap, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
+            if (world.hasTileCollisions()) {
+                for (i = 0; i < collidesWith.length; i = i + 1) {
+                    tileMap = world.getTileMapFromType(collidesWith[i]);
+                    if (tileMap.canCollide()) {
+                        move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
+                    }
+                }
+            }
             quad = FM.game.getCurrentState().getQuad();
             gameObjects = quad.retrieve(pOwner);
             //If there are other game objects near this one
@@ -236,8 +240,8 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                 otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
                 //If a game object is found and is alive and is not the current one
                 if (otherGameObject.isAlive() && pOwner.getId() !== otherGameObject.getId() && !otherPhysic.isCollidingWith(pOwner) && !that.isCollidingWith(otherGameObject)) {
-                    for (j = 0; j < that.collidesWith.length; j = j + 1) {
-                        if (otherGameObject.hasType(that.collidesWith[j])) {
+                    for (j = 0; j < collidesWith.length; j = j + 1) {
+                        if (otherGameObject.hasType(collidesWith[j])) {
                             collision = pOwner.components[FM.componentTypes.PHYSIC].overlapsWithObject(otherPhysic);
                             if (collision !== null) {
                                 that.addCollision(collision);
@@ -333,14 +337,14 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      * objects (with physic components of course).
      */
     that.addTypeToCollideWith = function (pType) {
-        that.collidesWith.push(pType);
+        collidesWith.push(pType);
     };
 
     /**
      * Remove a type that was supposed to collide with this game object.
      */
     that.removeTypeToCollideWith = function (pType) {
-        that.collidesWith.splice(that.collidesWith.indexOf(pType), 1);
+        collidesWith.splice(collidesWith.indexOf(pType), 1);
     };
     /**
      * Add a collision object representing the collision to the list of current

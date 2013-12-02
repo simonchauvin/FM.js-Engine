@@ -7,7 +7,7 @@
  * the data given
  * @author Simon Chauvin
  */
-FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pTypes, pZIndex, pAllowCollisions) {
+FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pTypes, pZIndex, pCollide) {
     "use strict";
     var that = {},
         /**
@@ -35,13 +35,17 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
          */
         tileHeight = pTileHeight,
         /**
+         * Types the tile map is associated to.
+         */
+        types = pTypes,
+        /**
          * z-index of the tilemap.
          */
         zIndex = pZIndex,
         /**
-         * Allow collisions or not with this tile map
+         * Allow collisions or not with this tile map.
          */
-        allowCollisions = pAllowCollisions;
+        collide = pCollide;
 
     /**
      * Load the tilemap.
@@ -88,10 +92,10 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                         }
                         renderer.offset.reset(xOffset, yOffset);
                         tile.addComponent(renderer);
-                        if (allowCollisions) {
-                            physic = FM.aabbComponent(tileWidth, tileHeight, tile);
-                            Object.getPrototypeOf(physic).mass = 0;
-                            tile.addComponent(physic);
+                        if (collide) {
+                            //physic = FM.aabbComponent(tileWidth, tileHeight, tile);
+                            //Object.getPrototypeOf(physic).mass = 0;
+                            //tile.addComponent(physic);
                         }
                         state.add(tile);
                         resultRow.push(tile.getId());
@@ -105,12 +109,42 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
     };
 
     /**
+     * Allow collisions for this tile map.
+     */
+    that.allowCollisions = function () {
+        collide = true;
+    };
+
+    /**
+     * Prevent collisions for this tile map.
+     */
+    that.preventCollisions = function () {
+        collide = false;
+    };
+
+    /**
     * Destroy the tile map and its objects.
     */
     that.destroy = function () {
         data = null;
         tileSet = null;
         that = null;
+    };
+
+    /**
+     * Check if this tile map can collide.
+     * @return {Boolean} whether this tile map can collide or not.
+     */
+    that.canCollide = function () {
+        return collide;
+    };
+
+    /**
+     * Check if this tile map has a specified type.
+     * @return {Boolean} whether this tile map has the given type or not.
+     */
+    that.hasType = function (pType) {
+        return types.indexOf(pType) !== -1;
     };
 
     /**

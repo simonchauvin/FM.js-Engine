@@ -10,22 +10,45 @@ FM.world = function (pWidth, pHeight) {
          */
         state = FM.game.getCurrentState(),
         /**
-         * The tile map for the collision (if any).
+         * Tile maps of the world.
          */
-        collisionTileMap;
+        tileMaps = [];
 
     /**
-     * Add a tile map for collisions.
+     * Add a tile map to the current world.
+     * @param {tileMap} pTileMap tile map to add.
      */
-    that.addCollisionTileMap = function (pCollisionTileMap) {
-        collisionTileMap = pCollisionTileMap;
+    that.addTileMap = function (pTileMap) {
+        tileMaps.push(pTileMap);
     };
 
     /**
-     * Retrieve the tile map for collisions.
+     * Retrieve the tile map from the given type.
+     * @param {objectType} pType the type of the tile map to retrieve.
+     * @return {tileMap} the tile map corresponding to the given type.
      */
-    that.getCollisionTileMap = function () {
-        return collisionTileMap;
+    that.getTileMapFromType = function (pType) {
+        var i;
+        for (i = 0; i < tileMaps.length; i = i + 1) {
+            if (tileMaps[i].canCollide()) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    /**
+     * Check if a tile map allow collisions.
+     * @return {Boolean} Whether there is a tile map with potential collisions.
+     */
+    that.hasTileCollisions = function () {
+        var i;
+        for (i = 0; i < tileMaps.length; i = i + 1) {
+            if (tileMaps[i].canCollide()) {
+                return true;
+            }
+        }
+        return false;
     };
 
     /**

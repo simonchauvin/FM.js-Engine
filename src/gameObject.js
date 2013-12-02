@@ -57,7 +57,7 @@ FM.gameObject = function (pZIndex) {
 
     /**
      * Check if this game object is associated to a given type.
-     * @param {String} name the name of the type to look for.
+     * @param {objectType} pType the type to look for.
      * @return {bool} whether the type specified is associated to this game
      * object or not.
      */

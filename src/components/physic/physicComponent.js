@@ -78,12 +78,34 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             bSpatial.position.y += correction.y * (otherInvMass / massSum);
         },
         /**
+         * Check collisions with a given array of tiles.
+         * @param {tileMap} tiles tiles to test for collisions.
+         */
+        checkCollisionsWithTiles = function (tiles, tileWidth, tileHeight, xPos, yPos) {
+            var i1 = Math.floor(yPos / tileHeight),
+                j1 = Math.floor(xPos / tileWidth),
+                i2 = Math.floor((yPos + that.height) / tileHeight),
+                j2 = Math.floor((xPos + that.width) / tileWidth),
+                i,
+                j;
+            for (i = i1; i <= i2; i = i + 1) {
+                for (j = j1; j <= j2; j = j + 1) {
+                    if (tiles[i] !== 0 && tiles[i][j] !== -1) {
+                        if (j === j1 || j === j2 || i === i1 || i === i2) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        },
+        /**
          * 
          */
-        tryToMove = function (tiles, xVel, yVel) {
-            var spX = spatial.position.x + that.offset.x + xVel,
-                spY = spatial.position.y + that.offset.y + yVel;
-            if (!that.checkCollisions(tiles, spX, spY)) {
+        tryToMove = function (tiles, tileWidth, tileHeight, xVel, yVel) {
+            var spX = spatial.position.x + xVel,
+                spY = spatial.position.y + yVel;
+            if (!checkCollisionsWithTiles(tiles, tileWidth, tileHeight, spX + that.offset.x, spY + that.offset.y)) {
                 spatial.position.x = spX;
                 spatial.position.y = spY;
                 return true;
@@ -93,15 +115,18 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         /**
          * 
          */
-        move = function (tiles, xVel, yVel) {
-            if (Math.abs(xVel) >= tiles.getTileWidth() || Math.abs(yVel) >= tiles.getTileHeight()) {
+        move = function (tileMap, xVel, yVel) {
+            var tiles = tileMap.getData(),
+                tileWidth = tileMap.getTileWidth(),
+                tileHeight = tileMap.getTileHeight();
+            if (Math.abs(xVel) >= tileWidth || Math.abs(yVel) >= tileHeight) {
                 move(tiles, xVel / 2, yVel / 2);
                 move(tiles, xVel - xVel / 2, yVel - yVel / 2);
                 return;
             }
 
-            var hor = tryToMove(tiles, xVel, 0),
-                ver = tryToMove(tiles, 0, yVel);
+            var hor = tryToMove(tiles, tileWidth, tileHeight, xVel, 0),
+                ver = tryToMove(tiles, tileWidth, tileHeight, 0, yVel);
             if (hor && ver)
                 return;
 
@@ -117,7 +142,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                         vel = 1;
                     else
                         vel = -1;
-                    if (!tryToMove(tiles, vel, 0))
+                    if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0))
                         break;
                     else
                         that.velocity.x += vel;
@@ -134,7 +159,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                         vel = 1;
                     else
                         vel = -1;
-                    if (!tryToMove(tiles, 0, vel))
+                    if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel))
                         break;
                     else
                         that.velocity.y += vel;
@@ -213,9 +238,24 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             that.velocity.y = maxVelocity;
 	}
 
+        var canMove = true, quad, tileMap, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
+        if (collidesWith.length > 0) {
+            if (world.hasTileCollisions()) {
+                for (i = 0; i < collidesWith.length; i = i + 1) {
+                    tileMap = world.getTileMapFromType(collidesWith[i]);
+                    if (tileMap.canCollide()) {
+                        move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
+                        canMove = false;
+                    }
+                }
+            }
+        }
+
         //Update position
-        spatial.position.x += that.velocity.x * dt;
-        spatial.position.y += that.velocity.y * dt;
+        if (canMove) {
+            spatial.position.x += that.velocity.x * dt;
+            spatial.position.y += that.velocity.y * dt;
+        }
 
         //Reset the acceleration applied to the physic component
         that.acceleration.x = 0;
@@ -223,15 +263,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
 
         //If this game object collides with at least one type of game object
         if (collidesWith.length > 0) {
-            var quad, tileMap, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
-            if (world.hasTileCollisions()) {
-                for (i = 0; i < collidesWith.length; i = i + 1) {
-                    tileMap = world.getTileMapFromType(collidesWith[i]);
-                    if (tileMap.canCollide()) {
-                        move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
-                    }
-                }
-            }
             quad = FM.game.getCurrentState().getQuad();
             gameObjects = quad.retrieve(pOwner);
             //If there are other game objects near this one

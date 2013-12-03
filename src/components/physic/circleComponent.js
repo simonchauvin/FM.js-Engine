@@ -11,7 +11,7 @@ FM.circleComponent = function (pRadius, pOwner) {
      * fmB2CircleComponent is based on physicComponent.
      */
     var that = Object.create(FM.physicComponent(pRadius * 2, pRadius * 2, pOwner)),
-	/**
+        /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];

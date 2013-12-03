@@ -28,13 +28,14 @@ FM.world = function (pWidth, pHeight) {
      * @return {tileMap} the tile map corresponding to the given type.
      */
     that.getTileMapFromType = function (pType) {
-        var i;
+        var i, tileMap;
         for (i = 0; i < tileMaps.length; i = i + 1) {
-            if (tileMaps[i].canCollide()) {
-                return true;
+            tileMap = tileMaps[i];
+            if (tileMap.hasType(pType)) {
+                return tileMap;
             }
         }
-        return false;
+        return null;
     };
 
     /**

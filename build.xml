@@ -1,7 +1,7 @@
 <project name="{FM.js(Engine);}"  basedir=".">
     <property name="root" location="" />
-    <property name="concat" location="build/concat" />
-    <property name="min" location="build/min" />
+    <property name="concat" location="builds/concat" />
+    <property name="min" location="builds/min" />
     <property name="src" location="src" />
     <property name="system" location="${src}/system" />
     <property name="components" location="${src}/components" />
@@ -12,7 +12,7 @@
     <property name="sound" location="${components}/sound" />
     <property name="spatial" location="${components}/spatial" />
     <property name="tmx" location="${system}/tmx_loader" />
-    <property name="compressor"  location="build/yui_compressor/yuicompressor-2.4.7.jar"/>
+    <property name="compressor"  location="builds/yui_compressor/yuicompressor-2.4.7.jar"/>
     <target name="clean">
         <delete dir="${concat}"/>
         <delete dir="${min}"/>

@@ -2,18 +2,18 @@
  * Object representing a collision between two objects.
  * @author Simon Chauvin
  */
-FM.collision = function () {
+FM.collision = function (pObjectA, pObjectB) {
     "use strict";
     var that = {};
 
     /**
      * Object A.
      */
-    that.a = null;
+    that.a = pObjectA === 'undefined' ? null : pObjectA;
     /**
      * Object B.
      */
-    that.b = null;
+    that.b = pObjectB === 'undefined' ? null : pObjectB;
     /**
      * How much the two objects penetrates one another.
      */

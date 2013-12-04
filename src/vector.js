@@ -11,11 +11,11 @@ FM.vector = function (pX, pY) {
     /**
      * x position.
      */
-    that.x = typeof pX === 'undefined' ? 0 : pX;
+    that.x = pX === 'undefined' ? 0 : pX;
     /**
      * y position.
      */
-    that.y = typeof pY === 'undefined' ? 0 : pY;
+    that.y = pY === 'undefined' ? 0 : pY;
 
     /**
      * Add the specified vector to the current one;

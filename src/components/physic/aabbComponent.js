@@ -62,9 +62,7 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
             otherExtent = (otherMax.y - otherMin.y) / 2;
             yOverlap = extent + otherExtent - Math.abs(normal.y);
             if (yOverlap > 0) {
-                collision = FM.collision();
-                collision.a = that;
-                collision.b = aabb;
+                collision = FM.collision(that, aabb);
                 // Find out which axis is the one of least penetration
                 if (xOverlap < yOverlap) {
                     if (normal.x < 0) {

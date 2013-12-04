@@ -33,6 +33,10 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
          */
         collisions = [],
         /**
+         * Store the types of tile map that this object collides with.
+         */
+        tilesCollisions = [],
+        /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL],
@@ -120,8 +124,8 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                 tileWidth = tileMap.getTileWidth(),
                 tileHeight = tileMap.getTileHeight();
             if (Math.abs(xVel) >= tileWidth || Math.abs(yVel) >= tileHeight) {
-                move(tiles, xVel / 2, yVel / 2);
-                move(tiles, xVel - xVel / 2, yVel - yVel / 2);
+                move(tileMap, xVel / 2, yVel / 2);
+                move(tileMap, xVel - xVel / 2, yVel - yVel / 2);
                 return;
             }
 
@@ -187,9 +191,19 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      */
     that.acceleration = FM.vector(0, 0);
     /**
+     * How much the object's velocity is decreasing when acceleration is
+     * equal to 0.
+     */
+    that.drag = FM.vector(0, 0);
+    /**
      * Angular velocity.
      */
     that.angularVelocity = 0;
+    /**
+     * How much the object's velocity is decreasing when acceleration is
+     * equal to 0.
+     */
+    that.angularDrag = FM.vector(0, 0);
     /**
      * Represent the mass of the physic game object, 0 means infinite mass.
      */
@@ -212,6 +226,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
     */
     that.update = function (dt) {
         collisions = [];
+        tilesCollisions = [];
         //Compute inverse mass
         var invMass = 1 / that.mass, currentVelocity, maxVelocity;
         if (that.mass === 0) {
@@ -238,6 +253,22 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             that.velocity.y = maxVelocity;
 	}
 
+        //Apply drag
+        if (that.acceleration.x === 0) {
+            if (that.velocity.x > 0) {
+                that.velocity.x -= that.drag.x;
+            } else if (that.velocity.x < 0) {
+                that.velocity.x += that.drag.x;
+            }
+        }
+        if (that.acceleration.y === 0) {
+            if (that.velocity.y > 0) {
+                that.velocity.y -= that.drag.y;
+            } else if (that.velocity.y < 0) {
+                that.velocity.y += that.drag.y;
+            }
+        }
+
         var canMove = true, quad, tileMap, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
         if (collidesWith.length > 0) {
             if (world.hasTileCollisions()) {
@@ -246,6 +277,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                     if (tileMap.canCollide()) {
                         move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
                         canMove = false;
+                        tilesCollisions.push({a:that.owner,b:tileMap});
                     }
                 }
             }
@@ -256,10 +288,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             spatial.position.x += that.velocity.x * dt;
             spatial.position.y += that.velocity.y * dt;
         }
-
-        //Reset the acceleration applied to the physic component
-        that.acceleration.x = 0;
-        that.acceleration.y = 0;
 
         //If this game object collides with at least one type of game object
         if (collidesWith.length > 0) {
@@ -410,6 +438,13 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             collision = collisions[i];
             if ((collision.b && collision.b.owner.hasType(pOtherType))
                 || (collision.a && collision.a.owner.hasType(pOtherType))) {
+                return true;
+            }
+        }
+        for (i = 0; i < tilesCollisions.length; i = i + 1) {
+            collision = tilesCollisions[i];
+            if ((collision.b && collision.b.hasType(pOtherType))
+                || (collision.a && collision.a.hasType(pOtherType))) {
                 return true;
             }
         }

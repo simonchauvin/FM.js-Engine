@@ -6,10 +6,6 @@ FM.world = function (pWidth, pHeight) {
     "use strict";
     var that = FM.rectangle(0, 0, pWidth, pHeight),
         /**
-         * Current state.
-         */
-        state = FM.game.getCurrentState(),
-        /**
          * Tile maps of the world.
          */
         tileMaps = [];
@@ -18,7 +14,8 @@ FM.world = function (pWidth, pHeight) {
      * Add a tile map to the current world.
      * @param {tileMap} pTileMap tile map to add.
      */
-    that.addTileMap = function (pTileMap) {
+    that.loadTileMap = function (pTileMap, pMap, pLayerName, pTileSetName) {
+        pTileMap.load(pMap.getLayer(pLayerName).toCsv(pMap.getTileSet(pTileSetName)));
         tileMaps.push(pTileMap);
     };
 
@@ -56,7 +53,6 @@ FM.world = function (pWidth, pHeight) {
     * Destroy the world and its objects
     */
     that.destroy = function () {
-        state = null;
         that = null;
     };
 

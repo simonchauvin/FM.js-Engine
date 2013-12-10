@@ -10,6 +10,10 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         image = pImage,
         /**
+         * 
+         */
+        imageData = null,
+        /**
          * Width of the sprite.
          */
         width = pWidth,
@@ -22,13 +26,13 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         alpha = 1,
         /**
+         * Offset in case the image width is greater than the sprite.
+         */
+        offset = FM.vector(0, 0),
+        /**
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
-    /**
-     * Offset in case the image width is greater than the sprite.
-     */
-    that.offset = FM.vector(0, 0);
 
     /**
     * Draw the sprite.
@@ -45,18 +49,50 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(width / 2, height / 2);
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, -width / 2, -height / 2, width, height);
+            //Draw the image or its data if the image is bigger than the sprite
+            //to display
+            if (imageData) {
+                bufferContext.putImageData(imageData, -width / 2, -height / 2);
+            } else {
+                bufferContext.drawImage(image, -width / 2, -height / 2, width, height);
+            }
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, xPosition, yPosition, width, height);
+            //Draw the image or its data if the image is bigger than the sprite
+            //to display
+            if (imageData) {
+                bufferContext.putImageData(imageData, xPosition, yPosition);
+            } else {
+                bufferContext.drawImage(image, xPosition, yPosition, width, height);
+            }
         }
         bufferContext.globalAlpha = 1;
+    };
+
+    /**
+     * Specifies the offset at which the part of the image to display is. Useful
+     * when using tilesets.
+     */
+    that.setOffset = function (pX, pY) {
+        offset.reset(pX, pY);
+        //Retrieve image data since the drawImage for slicing is not working properly
+        var tmpCanvas = document.createElement("canvas"),
+            tmpContext = tmpCanvas.getContext("2d");
+        tmpCanvas.width = image.width;
+        tmpCanvas.height = image.height;
+        tmpContext.drawImage(image, 0, 0, image.width, image.height);
+        imageData = tmpContext.getImageData(offset.x, offset.y, width, height);
+        delete this.context2;
+        delete this.canvas2;
     };
 
     /**
     * Destroy the component and its objects.
     */
     that.destroy = function () {
+        imageData = null;
+        offset.destroy();
+        offset = null;
         image.destroy();
         image = null;
         spatial = null;

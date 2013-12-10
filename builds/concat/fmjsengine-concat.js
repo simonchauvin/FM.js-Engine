@@ -991,29 +991,38 @@ FM.objectType = function (pName) {
         collidesWith = [];
 
     /**
-     * 
+     * Check if the game objects of the current type overlap with the game objects
+     * of the given type.
+     * @param {objectType} pType type to test if it overlaps with the current one.
+     * @return {collision} collision object if there is overlapping.
      */
     that.overlapsWithType = function (pType) {
         var state = FM.game.getCurrentState(),
             gameObjects = state.members,
             otherGameObjects,
             quad = state.getQuad(),
-            i, j, hasType, hasOtherType, gameObject, otherGameObject,
-            physic, otherPhysic, collision = null;
+            i,
+            j,
+            hasType,
+            hasOtherType,
+            gameObject,
+            otherGameObject,
+            physic,
+            otherPhysic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
             hasType = gameObject.hasType(that);
             hasOtherType = gameObject.hasType(pType);
-            if (physic && hasType || hasOtherType) {
+            if (physic && (hasType || hasOtherType)) {
                 otherGameObjects = quad.retrieve(gameObject);
                 for (j = 0; j < otherGameObjects.length; j = j + 1) {
                     otherGameObject = otherGameObjects[j];
                     otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
                     if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
-                        && ((hasType && otherGameObject.hasType(pType))
-                        || (hasOtherType && otherGameObject.hasType(that)))) {
-                        return collision = physic.overlapsWithObject(otherPhysic);
+                            && ((hasType && otherGameObject.hasType(pType))
+                            || (hasOtherType && otherGameObject.hasType(that)))) {
+                        return physic.overlapsWithObject(otherPhysic);
                     }
                 }
             }
@@ -1022,18 +1031,25 @@ FM.objectType = function (pName) {
     };
 
     /**
-     * Check if the game objects of the current type are overlapping with a specified game object
+     * Check if the game objects of the current type are overlapping with a 
+     * specified game object.
+     * @param {gameObject} pGameObject game object to test with the game objects
+     * of the current type.
+     * @return {collision} collision object if there is overlapping.
      */
     that.overlapsWithObject = function (pGameObject) {
         var quad = FM.game.getCurrentState().getQuad(),
             gameObjects = quad.retrieve(pGameObject),
-            i, otherGameObject, physic, otherPhysic, collision = null;
+            i,
+            otherGameObject,
+            physic,
+            otherPhysic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             otherGameObject = gameObjects[i];
             physic = pGameObject.components[FM.componentTypes.PHYSIC];
             otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
             if (physic && otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(that)) {
-                return collision = physic.overlapsWithObject(otherPhysic);
+                return physic.overlapsWithObject(otherPhysic);
             }
         }
         return null;
@@ -1045,7 +1061,9 @@ FM.objectType = function (pName) {
     that.addTypeToCollideWith = function (pType) {
         collidesWith.push(pType);
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject, physic;
+            i,
+            gameObject,
+            physic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
@@ -1061,7 +1079,9 @@ FM.objectType = function (pName) {
     that.removeTypeToCollideWith = function (pType) {
         collidesWith.splice(collidesWith.indexOf(pType), 1);
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject, physic;
+            i,
+            gameObject,
+            physic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
@@ -1077,7 +1097,8 @@ FM.objectType = function (pName) {
     that.setZIndex = function (pZIndex) {
         zIndex = pZIndex;
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject;
+            i,
+            gameObject;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             if (gameObject.hasType(that)) {
@@ -1092,7 +1113,8 @@ FM.objectType = function (pName) {
     that.setScrollFactor = function (pScrollFactor) {
         scrollFactor = pScrollFactor;
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject;
+            i,
+            gameObject;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             if (gameObject.hasType(that)) {
@@ -1372,7 +1394,16 @@ FM.state = function () {
             spatial,
             physic,
             pathfinding,
-            emitter;
+            emitter,
+            newOffset,
+            frameWidth,
+            frameHeight,
+            xVelocity,
+            yVelocity,
+            xPosition,
+            yPosition,
+            farthestXPosition,
+            farthestYPosition;
         //Update every game object present in the state
         for (i = 0; i < that.members.length; i = i + 1) {
             gameObject = that.members[i];
@@ -1390,17 +1421,17 @@ FM.state = function () {
                 if (emitter) {
                     emitter.update(dt);
                 }
-                //Update the game object
-                if (gameObject.update) {
-                    gameObject.update(dt);
-                }
                 //Update scrolling
                 if (physic) {
                     if (scroller === gameObject) {
-                        var newOffset,
-                            frameWidth = followFrame.width, frameHeight = followFrame.height,
-                            xPosition = spatial.position.x + physic.offset.x, yPosition = spatial.position.y + physic.offset.y,
-                            farthestXPosition = xPosition + physic.width, farthestYPosition = yPosition + physic.height;
+                        frameWidth = followFrame.width;
+                        frameHeight = followFrame.height;
+                        xVelocity = physic.velocity.x;
+                        yVelocity = physic.velocity.y;
+                        xPosition = spatial.position.x + physic.offset.x;
+                        yPosition = spatial.position.y + physic.offset.y;
+                        farthestXPosition = xPosition + physic.width;
+                        farthestYPosition = yPosition + physic.height;
 
                         // Going left
                         if (xPosition <= followFrame.x) {
@@ -1439,6 +1470,10 @@ FM.state = function () {
                     if (FM.parameters.debug && scroller === gameObject) {
                         console.log("ERROR: The scrolling object must have a physic component.");
                     }
+                }
+                //Update the game object
+                if (gameObject.update) {
+                    gameObject.update(dt);
                 }
             }
         }
@@ -1701,7 +1736,6 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
             state = FM.game.getCurrentState(),
             spatial,
             renderer,
-            physic,
             xOffset,
             yOffset,
             i,
@@ -1729,19 +1763,18 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
                             xOffset = (xOffset % tileSet.width);
                         }
-                        renderer.offset.reset(xOffset, yOffset);
+                        renderer.setOffset(xOffset, yOffset);
                         tile.addComponent(renderer);
-                        if (collide) {
-                            //physic = FM.aabbComponent(tileWidth, tileHeight, tile);
-                            //Object.getPrototypeOf(physic).mass = 0;
-                            //tile.addComponent(physic);
-                        }
+                        //Add tile to the state
                         state.add(tile);
+                        //Add the game object's ID
                         resultRow.push(tile.getId());
                     } else {
+                        //No tile
                         resultRow.push(-1);
                     }
                 }
+                //New line
                 data.push(resultRow);
             }
         }
@@ -1967,10 +2000,6 @@ FM.world = function (pWidth, pHeight) {
     "use strict";
     var that = FM.rectangle(0, 0, pWidth, pHeight),
         /**
-         * Current state.
-         */
-        state = FM.game.getCurrentState(),
-        /**
          * Tile maps of the world.
          */
         tileMaps = [];
@@ -1979,7 +2008,8 @@ FM.world = function (pWidth, pHeight) {
      * Add a tile map to the current world.
      * @param {tileMap} pTileMap tile map to add.
      */
-    that.addTileMap = function (pTileMap) {
+    that.loadTileMap = function (pTileMap, pMap, pLayerName, pTileSetName) {
+        pTileMap.load(pMap.getLayer(pLayerName).toCsv(pMap.getTileSet(pTileSetName)));
         tileMaps.push(pTileMap);
     };
 
@@ -2017,7 +2047,6 @@ FM.world = function (pWidth, pHeight) {
     * Destroy the world and its objects
     */
     that.destroy = function () {
-        state = null;
         that = null;
     };
 
@@ -2575,7 +2604,7 @@ FM.includeJsFile = function (filename) {
 /**
  * 
  */
-var tmxLayer = function () {
+FM.tmxLayer = function () {
     "use strict";
     var that = {};
     that.map;
@@ -2618,7 +2647,7 @@ var tmxLayer = function () {
                         if (that.properties) {
                             that.properties.add(property);
                         } else {
-                            that.properties = tmxPropertySet();
+                            that.properties = FM.tmxPropertySet();
                             that.properties.add(property);
                         }
                     }
@@ -2715,7 +2744,7 @@ var tmxLayer = function () {
 };/**
  * 
  */
-var tmxMap = function () {
+FM.tmxMap = function () {
     "use strict";
     var that = {},
         /**
@@ -2803,7 +2832,7 @@ var tmxMap = function () {
                         if (that.properties) {
                             that.properties.add(property);
                         } else {
-                            that.properties = tmxPropertySet();
+                            that.properties = FM.tmxPropertySet();
                             that.properties.add(property);
                         }
                     }
@@ -2814,7 +2843,7 @@ var tmxMap = function () {
         if (tileSets) {
             for (i = 0; i < tileSets.length; i++) {
                 tileSet = tileSets[i];
-                that.tileSets[tileSet.getAttribute("name")] = tmxTileSet();
+                that.tileSets[tileSet.getAttribute("name")] = FM.tmxTileSet();
                 that.tileSets[tileSet.getAttribute("name")].load(tileSet, that);
             }
         }
@@ -2822,7 +2851,7 @@ var tmxMap = function () {
         if (layers) {
             for (i = 0; i < layers.length; i++) {
                 layer = layers[i];
-                that.layers[layer.getAttribute("name")] = tmxLayer();
+                that.layers[layer.getAttribute("name")] = FM.tmxLayer();
                 that.layers[layer.getAttribute("name")].load(layer, that);
             }
         }
@@ -2830,7 +2859,7 @@ var tmxMap = function () {
         if (objectGroups) {
             for (i = 0; i < objectGroups.length; i++) {
                 objectGroup = objectGroups[i];
-                that.objectGroups[objectGroup.getAttribute("name")] = tmxObjectGroup();
+                that.objectGroups[objectGroup.getAttribute("name")] = FM.tmxObjectGroup();
                 that.objectGroups[objectGroup.getAttribute("name")].load(objectGroup, that);
             }
         }
@@ -2874,7 +2903,7 @@ var tmxMap = function () {
 };/**
  * 
  */
-var tmxObject = function (objectNode, parent) {
+FM.tmxObject = function (objectNode, parent) {
     "use strict";
     var that = {};
     /**
@@ -2918,7 +2947,7 @@ var tmxObject = function (objectNode, parent) {
                     if (that.custom) {
                         that.custom.add(property);
                     } else {
-                        that.custom = tmxPropertySet();
+                        that.custom = FM.tmxPropertySet();
                         that.custom.add(property);
                     }
                 }
@@ -2930,7 +2959,7 @@ var tmxObject = function (objectNode, parent) {
 };/**
  * 
  */
-var tmxObjectGroup = function () {
+FM.tmxObjectGroup = function () {
     "use strict";
     var that = {};
     /**
@@ -2972,7 +3001,7 @@ var tmxObjectGroup = function () {
                         if (that.properties) {
                             that.properties.add(property);
                         } else {
-                            that.properties = tmxPropertySet();
+                            that.properties = FM.tmxPropertySet();
                             that.properties.add(property);
                         }
                     }
@@ -2983,7 +3012,7 @@ var tmxObjectGroup = function () {
         if (objects) {
             for (i = 0; i < objects.length; i = i + 1) {
                 object = objects[i];
-                that.objects.push(tmxObject(object, that));
+                that.objects.push(FM.tmxObject(object, that));
             }
         }
     };
@@ -2992,7 +3021,7 @@ var tmxObjectGroup = function () {
 };/**
  * 
  */
-var tmxPropertySet = function () {
+FM.tmxPropertySet = function () {
     "use strict";
     var that = [];
 
@@ -3009,7 +3038,7 @@ var tmxPropertySet = function () {
 };/**
  * 
  */
-var tmxTileSet = function () {
+FM.tmxTileSet = function () {
     "use strict";
     var that = {},
         tileProperties = [],
@@ -3060,7 +3089,7 @@ var tmxTileSet = function () {
                         if (properties.hasChildNodes() === true) {
                             property = properties.childNodes[j];
                             if (property.nodeType === 1) {
-                                tileProperties[tile.getAttribute("id")] = tmxPropertySet();
+                                tileProperties[tile.getAttribute("id")] = FM.tmxPropertySet();
                                 tileProperties[tile.getAttribute("id")].add(property);
                             }
                         }
@@ -4128,43 +4157,47 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             }
 
             var hor = tryToMove(tiles, tileWidth, tileHeight, xVel, 0),
-                ver = tryToMove(tiles, tileWidth, tileHeight, 0, yVel);
-            if (hor && ver)
+                ver = tryToMove(tiles, tileWidth, tileHeight, 0, yVel),
+                i,
+                maxSpeed,
+                vel;
+            if (hor && ver) {
                 return;
-
+            }
             if (!hor) {
                 that.velocity.x = 0;
-                var i;
-                var maxSpeed = Math.abs(xVel);
-                for (i = 0; i < maxSpeed; i++) {
-                    var vel;
-                    if (xVel === 0)
+                maxSpeed = Math.abs(xVel);
+                for (i = 0; i < maxSpeed; i = i + 1) {
+                    if (xVel === 0) {
                         vel = 0;
-                    else if (xVel > 0)
+                    } else if (xVel > 0) {
                         vel = 1;
-                    else
+                    } else {
                         vel = -1;
-                    if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0))
+                    }
+                    if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0)) {
                         break;
-                    else
+                    } else {
                         that.velocity.x += vel;
+                    }
                 }
             }
             if (!ver) {
                 that.velocity.y = 0;
                 maxSpeed = Math.abs(yVel);
-                for (i = 0; i < maxSpeed; i++) {
-                    var vel;
-                    if (yVel === 0)
+                for (i = 0; i < maxSpeed; i = i + 1) {
+                    if (yVel === 0) {
                         vel = 0;
-                    if (yVel > 0)
+                    } else if (yVel > 0) {
                         vel = 1;
-                    else
+                    } else {
                         vel = -1;
-                    if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel))
+                    }
+                    if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel)) {
                         break;
-                    else
+                    } else {
                         that.velocity.y += vel;
+                    }
                 }
             }
         };
@@ -4249,7 +4282,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             that.velocity.y = -maxVelocity;
         } else if (currentVelocity > 0) {
             that.velocity.y = maxVelocity;
-	}
+        }
 
         //Apply drag
         if (that.acceleration.x === 0) {
@@ -4272,7 +4305,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             if (world.hasTileCollisions()) {
                 for (i = 0; i < collidesWith.length; i = i + 1) {
                     tileMap = world.getTileMapFromType(collidesWith[i]);
-                    if (tileMap.canCollide()) {
+                    if (tileMap && tileMap.canCollide()) {
                         move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
                         canMove = false;
                         tilesCollisions.push({a:that.owner,b:tileMap});
@@ -5183,6 +5216,10 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         image = pImage,
         /**
+         * 
+         */
+        imageData = null,
+        /**
          * Width of the sprite.
          */
         width = pWidth,
@@ -5195,13 +5232,13 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         alpha = 1,
         /**
+         * Offset in case the image width is greater than the sprite.
+         */
+        offset = FM.vector(0, 0),
+        /**
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
-    /**
-     * Offset in case the image width is greater than the sprite.
-     */
-    that.offset = FM.vector(0, 0);
 
     /**
     * Draw the sprite.
@@ -5218,18 +5255,50 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(width / 2, height / 2);
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, -width / 2, -height / 2, width, height);
+            //Draw the image or its data if the image is bigger than the sprite
+            //to display
+            if (imageData) {
+                bufferContext.putImageData(imageData, -width / 2, -height / 2);
+            } else {
+                bufferContext.drawImage(image, -width / 2, -height / 2, width, height);
+            }
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, that.offset.x, that.offset.y, width, height, xPosition, yPosition, width, height);
+            //Draw the image or its data if the image is bigger than the sprite
+            //to display
+            if (imageData) {
+                bufferContext.putImageData(imageData, xPosition, yPosition);
+            } else {
+                bufferContext.drawImage(image, xPosition, yPosition, width, height);
+            }
         }
         bufferContext.globalAlpha = 1;
+    };
+
+    /**
+     * Specifies the offset at which the part of the image to display is. Useful
+     * when using tilesets.
+     */
+    that.setOffset = function (pX, pY) {
+        offset.reset(pX, pY);
+        //Retrieve image data since the drawImage for slicing is not working properly
+        var tmpCanvas = document.createElement("canvas"),
+            tmpContext = tmpCanvas.getContext("2d");
+        tmpCanvas.width = image.width;
+        tmpCanvas.height = image.height;
+        tmpContext.drawImage(image, 0, 0, image.width, image.height);
+        imageData = tmpContext.getImageData(offset.x, offset.y, width, height);
+        delete this.context2;
+        delete this.canvas2;
     };
 
     /**
     * Destroy the component and its objects.
     */
     that.destroy = function () {
+        imageData = null;
+        offset.destroy();
+        offset = null;
         image.destroy();
         image = null;
         spatial = null;

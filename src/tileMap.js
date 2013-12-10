@@ -62,7 +62,6 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
             state = FM.game.getCurrentState(),
             spatial,
             renderer,
-            physic,
             xOffset,
             yOffset,
             i,
@@ -90,19 +89,18 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
                             xOffset = (xOffset % tileSet.width);
                         }
-                        renderer.offset.reset(xOffset, yOffset);
+                        renderer.setOffset(xOffset, yOffset);
                         tile.addComponent(renderer);
-                        if (collide) {
-                            //physic = FM.aabbComponent(tileWidth, tileHeight, tile);
-                            //Object.getPrototypeOf(physic).mass = 0;
-                            //tile.addComponent(physic);
-                        }
+                        //Add tile to the state
                         state.add(tile);
+                        //Add the game object's ID
                         resultRow.push(tile.getId());
                     } else {
+                        //No tile
                         resultRow.push(-1);
                     }
                 }
+                //New line
                 data.push(resultRow);
             }
         }

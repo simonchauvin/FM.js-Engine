@@ -32,29 +32,38 @@ FM.objectType = function (pName) {
         collidesWith = [];
 
     /**
-     * 
+     * Check if the game objects of the current type overlap with the game objects
+     * of the given type.
+     * @param {objectType} pType type to test if it overlaps with the current one.
+     * @return {collision} collision object if there is overlapping.
      */
     that.overlapsWithType = function (pType) {
         var state = FM.game.getCurrentState(),
             gameObjects = state.members,
             otherGameObjects,
             quad = state.getQuad(),
-            i, j, hasType, hasOtherType, gameObject, otherGameObject,
-            physic, otherPhysic, collision = null;
+            i,
+            j,
+            hasType,
+            hasOtherType,
+            gameObject,
+            otherGameObject,
+            physic,
+            otherPhysic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
             hasType = gameObject.hasType(that);
             hasOtherType = gameObject.hasType(pType);
-            if (physic && hasType || hasOtherType) {
+            if (physic && (hasType || hasOtherType)) {
                 otherGameObjects = quad.retrieve(gameObject);
                 for (j = 0; j < otherGameObjects.length; j = j + 1) {
                     otherGameObject = otherGameObjects[j];
                     otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
                     if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
-                        && ((hasType && otherGameObject.hasType(pType))
-                        || (hasOtherType && otherGameObject.hasType(that)))) {
-                        return collision = physic.overlapsWithObject(otherPhysic);
+                            && ((hasType && otherGameObject.hasType(pType))
+                            || (hasOtherType && otherGameObject.hasType(that)))) {
+                        return physic.overlapsWithObject(otherPhysic);
                     }
                 }
             }
@@ -63,18 +72,25 @@ FM.objectType = function (pName) {
     };
 
     /**
-     * Check if the game objects of the current type are overlapping with a specified game object
+     * Check if the game objects of the current type are overlapping with a 
+     * specified game object.
+     * @param {gameObject} pGameObject game object to test with the game objects
+     * of the current type.
+     * @return {collision} collision object if there is overlapping.
      */
     that.overlapsWithObject = function (pGameObject) {
         var quad = FM.game.getCurrentState().getQuad(),
             gameObjects = quad.retrieve(pGameObject),
-            i, otherGameObject, physic, otherPhysic, collision = null;
+            i,
+            otherGameObject,
+            physic,
+            otherPhysic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             otherGameObject = gameObjects[i];
             physic = pGameObject.components[FM.componentTypes.PHYSIC];
             otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
             if (physic && otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(that)) {
-                return collision = physic.overlapsWithObject(otherPhysic);
+                return physic.overlapsWithObject(otherPhysic);
             }
         }
         return null;
@@ -86,7 +102,9 @@ FM.objectType = function (pName) {
     that.addTypeToCollideWith = function (pType) {
         collidesWith.push(pType);
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject, physic;
+            i,
+            gameObject,
+            physic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
@@ -102,7 +120,9 @@ FM.objectType = function (pName) {
     that.removeTypeToCollideWith = function (pType) {
         collidesWith.splice(collidesWith.indexOf(pType), 1);
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject, physic;
+            i,
+            gameObject,
+            physic;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
@@ -118,7 +138,8 @@ FM.objectType = function (pName) {
     that.setZIndex = function (pZIndex) {
         zIndex = pZIndex;
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject;
+            i,
+            gameObject;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             if (gameObject.hasType(that)) {
@@ -133,7 +154,8 @@ FM.objectType = function (pName) {
     that.setScrollFactor = function (pScrollFactor) {
         scrollFactor = pScrollFactor;
         var gameObjects = FM.game.getCurrentState().members,
-            i, gameObject;
+            i,
+            gameObject;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             if (gameObject.hasType(that)) {

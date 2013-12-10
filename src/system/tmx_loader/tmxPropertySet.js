@@ -1,7 +1,7 @@
 /**
  * 
  */
-var tmxPropertySet = function () {
+FM.tmxPropertySet = function () {
     "use strict";
     var that = [];
 

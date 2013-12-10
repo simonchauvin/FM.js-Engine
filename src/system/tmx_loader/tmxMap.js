@@ -1,7 +1,7 @@
 /**
  * 
  */
-var tmxMap = function () {
+FM.tmxMap = function () {
     "use strict";
     var that = {},
         /**
@@ -89,7 +89,7 @@ var tmxMap = function () {
                         if (that.properties) {
                             that.properties.add(property);
                         } else {
-                            that.properties = tmxPropertySet();
+                            that.properties = FM.tmxPropertySet();
                             that.properties.add(property);
                         }
                     }
@@ -100,7 +100,7 @@ var tmxMap = function () {
         if (tileSets) {
             for (i = 0; i < tileSets.length; i++) {
                 tileSet = tileSets[i];
-                that.tileSets[tileSet.getAttribute("name")] = tmxTileSet();
+                that.tileSets[tileSet.getAttribute("name")] = FM.tmxTileSet();
                 that.tileSets[tileSet.getAttribute("name")].load(tileSet, that);
             }
         }
@@ -108,7 +108,7 @@ var tmxMap = function () {
         if (layers) {
             for (i = 0; i < layers.length; i++) {
                 layer = layers[i];
-                that.layers[layer.getAttribute("name")] = tmxLayer();
+                that.layers[layer.getAttribute("name")] = FM.tmxLayer();
                 that.layers[layer.getAttribute("name")].load(layer, that);
             }
         }
@@ -116,7 +116,7 @@ var tmxMap = function () {
         if (objectGroups) {
             for (i = 0; i < objectGroups.length; i++) {
                 objectGroup = objectGroups[i];
-                that.objectGroups[objectGroup.getAttribute("name")] = tmxObjectGroup();
+                that.objectGroups[objectGroup.getAttribute("name")] = FM.tmxObjectGroup();
                 that.objectGroups[objectGroup.getAttribute("name")].load(objectGroup, that);
             }
         }

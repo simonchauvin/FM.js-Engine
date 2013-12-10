@@ -1,7 +1,7 @@
 /**
  * 
  */
-var tmxObject = function (objectNode, parent) {
+FM.tmxObject = function (objectNode, parent) {
     "use strict";
     var that = {};
     /**
@@ -45,7 +45,7 @@ var tmxObject = function (objectNode, parent) {
                     if (that.custom) {
                         that.custom.add(property);
                     } else {
-                        that.custom = tmxPropertySet();
+                        that.custom = FM.tmxPropertySet();
                         that.custom.add(property);
                     }
                 }

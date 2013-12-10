@@ -1,7 +1,7 @@
 /**
  * 
  */
-var tmxTileSet = function () {
+FM.tmxTileSet = function () {
     "use strict";
     var that = {},
         tileProperties = [],
@@ -52,7 +52,7 @@ var tmxTileSet = function () {
                         if (properties.hasChildNodes() === true) {
                             property = properties.childNodes[j];
                             if (property.nodeType === 1) {
-                                tileProperties[tile.getAttribute("id")] = tmxPropertySet();
+                                tileProperties[tile.getAttribute("id")] = FM.tmxPropertySet();
                                 tileProperties[tile.getAttribute("id")].add(property);
                             }
                         }

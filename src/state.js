@@ -169,7 +169,16 @@ FM.state = function () {
             spatial,
             physic,
             pathfinding,
-            emitter;
+            emitter,
+            newOffset,
+            frameWidth,
+            frameHeight,
+            xVelocity,
+            yVelocity,
+            xPosition,
+            yPosition,
+            farthestXPosition,
+            farthestYPosition;
         //Update every game object present in the state
         for (i = 0; i < that.members.length; i = i + 1) {
             gameObject = that.members[i];
@@ -187,17 +196,17 @@ FM.state = function () {
                 if (emitter) {
                     emitter.update(dt);
                 }
-                //Update the game object
-                if (gameObject.update) {
-                    gameObject.update(dt);
-                }
                 //Update scrolling
                 if (physic) {
                     if (scroller === gameObject) {
-                        var newOffset,
-                            frameWidth = followFrame.width, frameHeight = followFrame.height,
-                            xPosition = spatial.position.x + physic.offset.x, yPosition = spatial.position.y + physic.offset.y,
-                            farthestXPosition = xPosition + physic.width, farthestYPosition = yPosition + physic.height;
+                        frameWidth = followFrame.width;
+                        frameHeight = followFrame.height;
+                        xVelocity = physic.velocity.x;
+                        yVelocity = physic.velocity.y;
+                        xPosition = spatial.position.x + physic.offset.x;
+                        yPosition = spatial.position.y + physic.offset.y;
+                        farthestXPosition = xPosition + physic.width;
+                        farthestYPosition = yPosition + physic.height;
 
                         // Going left
                         if (xPosition <= followFrame.x) {
@@ -236,6 +245,10 @@ FM.state = function () {
                     if (FM.parameters.debug && scroller === gameObject) {
                         console.log("ERROR: The scrolling object must have a physic component.");
                     }
+                }
+                //Update the game object
+                if (gameObject.update) {
+                    gameObject.update(dt);
                 }
             }
         }

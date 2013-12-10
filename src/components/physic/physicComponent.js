@@ -130,43 +130,47 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             }
 
             var hor = tryToMove(tiles, tileWidth, tileHeight, xVel, 0),
-                ver = tryToMove(tiles, tileWidth, tileHeight, 0, yVel);
-            if (hor && ver)
+                ver = tryToMove(tiles, tileWidth, tileHeight, 0, yVel),
+                i,
+                maxSpeed,
+                vel;
+            if (hor && ver) {
                 return;
-
+            }
             if (!hor) {
                 that.velocity.x = 0;
-                var i;
-                var maxSpeed = Math.abs(xVel);
-                for (i = 0; i < maxSpeed; i++) {
-                    var vel;
-                    if (xVel === 0)
+                maxSpeed = Math.abs(xVel);
+                for (i = 0; i < maxSpeed; i = i + 1) {
+                    if (xVel === 0) {
                         vel = 0;
-                    else if (xVel > 0)
+                    } else if (xVel > 0) {
                         vel = 1;
-                    else
+                    } else {
                         vel = -1;
-                    if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0))
+                    }
+                    if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0)) {
                         break;
-                    else
+                    } else {
                         that.velocity.x += vel;
+                    }
                 }
             }
             if (!ver) {
                 that.velocity.y = 0;
                 maxSpeed = Math.abs(yVel);
-                for (i = 0; i < maxSpeed; i++) {
-                    var vel;
-                    if (yVel === 0)
+                for (i = 0; i < maxSpeed; i = i + 1) {
+                    if (yVel === 0) {
                         vel = 0;
-                    if (yVel > 0)
+                    } else if (yVel > 0) {
                         vel = 1;
-                    else
+                    } else {
                         vel = -1;
-                    if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel))
+                    }
+                    if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel)) {
                         break;
-                    else
+                    } else {
                         that.velocity.y += vel;
+                    }
                 }
             }
         };
@@ -251,7 +255,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             that.velocity.y = -maxVelocity;
         } else if (currentVelocity > 0) {
             that.velocity.y = maxVelocity;
-	}
+        }
 
         //Apply drag
         if (that.acceleration.x === 0) {
@@ -274,7 +278,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             if (world.hasTileCollisions()) {
                 for (i = 0; i < collidesWith.length; i = i + 1) {
                     tileMap = world.getTileMapFromType(collidesWith[i]);
-                    if (tileMap.canCollide()) {
+                    if (tileMap && tileMap.canCollide()) {
                         move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
                         canMove = false;
                         tilesCollisions.push({a:that.owner,b:tileMap});

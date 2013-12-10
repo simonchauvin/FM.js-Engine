@@ -1,7 +1,7 @@
 /**
  * 
  */
-var tmxObjectGroup = function () {
+FM.tmxObjectGroup = function () {
     "use strict";
     var that = {};
     /**
@@ -43,7 +43,7 @@ var tmxObjectGroup = function () {
                         if (that.properties) {
                             that.properties.add(property);
                         } else {
-                            that.properties = tmxPropertySet();
+                            that.properties = FM.tmxPropertySet();
                             that.properties.add(property);
                         }
                     }
@@ -54,7 +54,7 @@ var tmxObjectGroup = function () {
         if (objects) {
             for (i = 0; i < objects.length; i = i + 1) {
                 object = objects[i];
-                that.objects.push(tmxObject(object, that));
+                that.objects.push(FM.tmxObject(object, that));
             }
         }
     };

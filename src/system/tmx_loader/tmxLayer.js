@@ -1,7 +1,7 @@
 /**
  * 
  */
-var tmxLayer = function () {
+FM.tmxLayer = function () {
     "use strict";
     var that = {};
     that.map;
@@ -44,7 +44,7 @@ var tmxLayer = function () {
                         if (that.properties) {
                             that.properties.add(property);
                         } else {
-                            that.properties = tmxPropertySet();
+                            that.properties = FM.tmxPropertySet();
                             that.properties.add(property);
                         }
                     }

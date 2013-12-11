@@ -4,32 +4,25 @@
 Entirely written in JavaScript it allows you to build your games and prototypes quickly.
 It runs on every modern browser and does not rely on any external libraries such as jQuery or Prototype.
 
-How to:
-
-- Just modify the "FMHelloWorld" project that you can find in my repositories here on GitHub and start your game. 
-- The "index.html" file features the name of your game as well as the JS files that must be included. 
-- The "ExampleProject.js" file is the starting point of your game, just modify the name of the file and there 
-you can add assets and choose the screen resolution.
-- Documentation will be available soon.
-
 Features:
 
-- Keyboard and mouse input management
-- Game states management
+- Input management (keyboard and mouse)
+- Game states management (creation, destroying, switching)
 - Camera management (viewport, scrolling, culling)
-- Types affectation (create group)
-- Simple physics with AABB and circles
+- Group management
+- Physics with AABB and circles (QuadTree for optimization)
 - Orthogonal tiles management
-- Import from tmx files (Tiled Map Editor))
-- Texts, sprites and animated sprites management
+- TMX files importer (Tiled Map Editor)
+- Texts, simple shapes, sprites and animated sprites management
 - Particles!
 - Simple pathfinding system
-- Assets preloading (custom preloader)
-- Debug information
+- Assets preloading (possibility of a custom preloader)
+- Debug information (collisions, FPS, etc.) (* key to display)
+- Fully documentated and readable code
 
-Future work:
 
-- Quadtree for collision detection
-- Input management for touch devices
-- Isometric tiles management
-- OBB physics
+How to:
+
+- Just modify the "FMHelloWorld" project that you can find in my repositories here on GitHub and start your game.
+- The "index.html" file features the name of your game as well as the JS files that must be included. It is also the 
+starting point of your game, you can add assets and choose the screen resolution.

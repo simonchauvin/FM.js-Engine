@@ -22,21 +22,23 @@ FM.assetManager = {
         "use strict";
         var assetManager = FM.assetManager,
             param = FM.parameters,
-            asset = assetManager.getAssetByName(name);
+            asset = assetManager.getAssetByName(name),
+            sound;
         if (type === param.IMAGE) {
             if (!asset) {
                 assetManager.assets.push(FM.imageAsset(name, path));
             }
         } else if (type === param.AUDIO) {
             if (!asset) {
-                var sound = FM.audioAsset(name, path);
+                sound = FM.audioAsset(name, path);
                 //Add the asset only if it is supported by the browser
                 if (sound.isSupported()) {
                     assetManager.assets.push(sound);
                 } else if (FM.parameters.debug) {
-                    console.log("WARNING: The " + 
+                    console.log("ERROR: The " + 
                             path.substring(path.lastIndexOf('.') + 1) + 
                             " audio format is not supported by this browser.");
+                    return false;
                 }
             }
         } else if (type === param.FILE) {
@@ -44,6 +46,7 @@ FM.assetManager = {
                 assetManager.assets.push(FM.fileAsset(name, path));
             }
         }
+        return true;
     },
 
     /**
@@ -346,7 +349,7 @@ FM.game = (function () {
             // If debug mode if active
             if (FM.parameters.debug) {
                 //Display debug information
-                if (that.isKeyReleased(FM.keyboard.BACK_SLASH)) {
+                if (that.isKeyReleased(FM.keyboard.HOME)) {
                     if (!debugActivated) {
                         debugActivated = true;
                     } else {

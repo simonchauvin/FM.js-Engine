@@ -172,7 +172,7 @@ FM.game = (function () {
             // If debug mode if active
             if (FM.parameters.debug) {
                 //Display debug information
-                if (that.isKeyReleased(FM.keyboard.BACK_SLASH)) {
+                if (that.isKeyReleased(FM.keyboard.HOME)) {
                     if (!debugActivated) {
                         debugActivated = true;
                     } else {

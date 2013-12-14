@@ -17,7 +17,7 @@ Features:
 - Particles!
 - Simple pathfinding system
 - Assets preloading (possibility of a custom preloader)
-- Debug information (collisions, FPS, etc.) (* key to display)
+- Debug information (collisions, FPS, etc.) (home/start key to display)
 - Fully documented and readable code
 
 

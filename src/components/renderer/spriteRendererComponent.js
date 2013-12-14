@@ -82,8 +82,8 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
         tmpCanvas.height = image.height;
         tmpContext.drawImage(image, 0, 0, image.width, image.height);
         imageData = tmpContext.getImageData(offset.x, offset.y, width, height);
-        delete this.context2;
-        delete this.canvas2;
+        delete this.tmpContext;
+        delete this.tmpCanvas;
     };
 
     /**

@@ -22,13 +22,21 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
          */
         imageHeight = image.height,
         /**
-         * Width of a frame the spritesheet.
+         * Width of a frame of the spritesheet.
          */
         frameWidth = pWidth,
         /**
-         * height of a frame the spritesheet.
+         * Height of a frame of the spritesheet.
          */
         frameHeight = pHeight,
+        /**
+         * Width of a resized frame of the spritesheet.
+         */
+        changedWidth = pWidth,
+        /**
+         * Height of a resized frame of the spritesheet.
+         */
+        changedHeight = pHeight,
         /**
          * Transparency of the sprite.
          */
@@ -77,6 +85,14 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
     /**
      * Read-only attributes that specifies whether the current animation has
      * finished playing or not.
@@ -107,8 +123,8 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      */
     that.play = function (animName) {
         //In case the width of the sprite have been modified
-        imageWidth = image.width;
-        imageHeight = image.height;
+        //imageWidth = image.width;
+        //imageHeight = image.height;
         currentAnim = animName;
         that.finished = false;
         currentFrame = 0;
@@ -121,7 +137,7 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     /**
-     * Stop the animation
+     * Stop the animation.
      */
     that.stop = function () {
         that.finished = true;
@@ -143,10 +159,10 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(frameWidth / 2, frameHeight / 2);
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, -frameWidth / 2, -frameHeight / 2, frameWidth, frameHeight);
+            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, -changedWidth / 2, -changedHeight / 2, changedWidth, changedHeight);
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, frameWidth, frameHeight);
+            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, changedWidth, changedHeight);
         }
         bufferContext.globalAlpha = 1;
         //If the anim is not finished playing
@@ -203,19 +219,12 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     /**
-     * Set the width of a frame of the spritesheet.
-     * @param {int} newWidth new width desired.
+     * Change the size of the sprite.
+     * @param {float} pFactor factor by which the size will be changed.
      */
-    that.setWidth = function (newWidth) {
-        frameWidth = newWidth;
-    };
-
-    /**
-     * Set the height of a frame of the spritesheet.
-     * @param {int} newHeight new height desired.
-     */
-    that.setHeight = function (newHeight) {
-        frameHeight = newHeight;
+    that.changeSize = function (pFactor) {
+        changedWidth = pFactor * frameWidth;
+        changedHeight = pFactor * frameHeight;
     };
 
     /**
@@ -230,13 +239,27 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      * Retrieve the height of a frame of the spritesheet.
      */
     that.getWidth = function () {
-        return frameWidth;
+        return changedWidth;
     };
 
     /**
      * Retrieve the height of a frame of the spritesheet.
      */
     that.getHeight = function () {
+        return changedHeight;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalWidth = function () {
+        return frameWidth;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalHeight = function () {
         return frameHeight;
     };
 

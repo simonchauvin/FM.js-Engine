@@ -14,6 +14,10 @@ FM.spatialComponent = function (pX, pY, pOwner) {
      * Angle of the object defined in radians.
      */
     that.angle = 0;
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
     * Destroy the component and its objects.

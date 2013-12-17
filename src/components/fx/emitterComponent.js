@@ -63,6 +63,16 @@ FM.emitterComponent = function (pOffset, pOwner) {
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Check if a spatial component is present.
+     */
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
      * Add a particle to this emitter.
@@ -90,12 +100,9 @@ FM.emitterComponent = function (pOffset, pOwner) {
         for (i = 0; i < number; i = i + 1) {
             particle = FM.gameObject(zIndex);
             spatial = FM.spatialComponent(spatial.position.x + offset.x, spatial.position.y + offset.y, particle);
-            particle.addComponent(spatial);
             renderer = FM.spriteRendererComponent(image, width, height, particle);
             renderer.setAlpha(alpha);
-            particle.addComponent(renderer);
             physic = FM.aabbComponent(width, height, particle);
-            particle.addComponent(physic);
             particle.age = 0;
             particle.lifeSpan = 0;
             particle.hide();

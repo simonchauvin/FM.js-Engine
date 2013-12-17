@@ -10,21 +10,34 @@ FM.circleComponent = function (pRadius, pOwner) {
     /**
      * fmB2CircleComponent is based on physicComponent.
      */
-    var that = Object.create(FM.physicComponent(pRadius * 2, pRadius * 2, pOwner)),
+    var that = FM.physicComponent(pRadius * 2, pRadius * 2, pOwner),
         /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Check if the needed components are present.
+     */
+    if (FM.parameters.debug) {
+        if (!spatial) {
+            console.log("ERROR: No spatial component was added and you need one for physics.");
+        }
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
     /**
      * Radius of the circle
      */
     that.radius = pRadius;
 
     /**
-    * Update the component.
-    */
-    that.update = function (dt) {
-        Object.getPrototypeOf(that).update(dt);
+     * Check if the current circle is overlapping with the specified type.
+     */
+    that.overlapsWithType = function (pType) {
+        //TODO
+        return null;
     };
 
     /**
@@ -128,7 +141,6 @@ FM.circleComponent = function (pRadius, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
-        Object.getPrototypeOf(that).drawDebug(bufferContext);
         var newCenter = FM.vector(newPosition.x + that.radius, newPosition.y + that.radius);
         bufferContext.beginPath();
         bufferContext.strokeStyle = '#f4f';

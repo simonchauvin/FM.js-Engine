@@ -307,18 +307,19 @@ FM.game = (function () {
             currentTime = newTime;
             //Update the accumulator
             accumulator += frameTime;
-
+            //Update if not on pause
             if (!pause) {
-                //Update the game a fixed number of times
+                //Update the physic a fixed number of times
                 while (accumulator >= fixedDt) {
                     accumulator -= fixedDt;
                     currentState.updatePhysics(fixedDt);
-                    currentState.update(fixedDt);
                 }
                 alpha = accumulator / fixedDt;
+                //Update the current state
+                currentState.update(frameTime);
             }
-            timeCounter += frameTime;
             //Compute the actual FPS at which the game is running
+            timeCounter += frameTime;
             framesCounter = framesCounter + 1;
             if (timeCounter >= 1) {
                 lastComputedFps = framesCounter / timeCounter;
@@ -788,6 +789,14 @@ FM.gameObject = function (pZIndex) {
     };
 
     /**
+     * Retrieve the types of the game object.
+     * @return {Array} types of the game object.
+     */
+    that.getTypes = function () {
+        return types;
+    };
+
+    /**
      * Retrieve the name of the game object.
      * @return {string} name of the game object.
      */
@@ -1001,9 +1010,9 @@ FM.objectType = function (pName) {
      */
     that.overlapsWithType = function (pType) {
         var state = FM.game.getCurrentState(),
+            quad = state.getQuad(),
             gameObjects = state.members,
             otherGameObjects,
-            quad = state.getQuad(),
             i,
             j,
             hasType,
@@ -1011,7 +1020,8 @@ FM.objectType = function (pName) {
             gameObject,
             otherGameObject,
             physic,
-            otherPhysic;
+            otherPhysic,
+            collision = null;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
@@ -1025,12 +1035,12 @@ FM.objectType = function (pName) {
                     if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
                             && ((hasType && otherGameObject.hasType(pType))
                             || (hasOtherType && otherGameObject.hasType(that)))) {
-                        return physic.overlapsWithObject(otherPhysic);
+                        collision = physic.overlapsWithObject(otherPhysic);
                     }
                 }
             }
         }
-        return null;
+        return collision;
     };
 
     /**
@@ -1041,21 +1051,26 @@ FM.objectType = function (pName) {
      * @return {collision} collision object if there is overlapping.
      */
     that.overlapsWithObject = function (pGameObject) {
-        var quad = FM.game.getCurrentState().getQuad(),
-            gameObjects = quad.retrieve(pGameObject),
+        var gameObjects = FM.game.getCurrentState().getQuad().retrieve(pGameObject),
             i,
             otherGameObject,
-            physic,
-            otherPhysic;
-        for (i = 0; i < gameObjects.length; i = i + 1) {
-            otherGameObject = gameObjects[i];
-            physic = pGameObject.components[FM.componentTypes.PHYSIC];
-            otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
-            if (physic && otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(that)) {
-                return physic.overlapsWithObject(otherPhysic);
+            physic = pGameObject.components[FM.componentTypes.PHYSIC],
+            otherPhysic,
+            collision = null;
+        if (physic) {
+            for (i = 0; i < gameObjects.length; i = i + 1) {
+                otherGameObject = gameObjects[i];
+                otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
+                if (otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(that)) {
+                    collision = physic.overlapsWithObject(otherPhysic);
+                }
+            }
+        } else {
+            if (FM.parameters.debug) {
+                console.log("WARNING: you need to specify a game object with a physic component for checking overlaps.");
             }
         }
-        return null;
+        return collision;
     };
 
     /**
@@ -1364,7 +1379,7 @@ FM.state = function () {
             if (gameObject.isAlive()) {
                 components = gameObject.components;
                 physic = gameObject.components[FM.componentTypes.PHYSIC];
-                //Update the physic component
+                //Add physic objects in the quad tree
                 if (physic) {
                     quad.insert(gameObject);
                 }
@@ -1379,7 +1394,7 @@ FM.state = function () {
                 physic = components[FM.componentTypes.PHYSIC];
                 //Update the physic component
                 if (physic) {
-                    spatial.previous = spatial.position;
+                    //spatial.previous.copy(spatial.position);
                     physic.update(fixedDt);
                 }
             }
@@ -1388,7 +1403,7 @@ FM.state = function () {
 
     /**
     * Update the game objects of the state.
-    * @param {float} fixed time in seconds since the last frame.
+    * @param {float} variable time in seconds since the last frame.
     */
     that.update = function (dt) {
         var i,
@@ -1401,8 +1416,6 @@ FM.state = function () {
             newOffset,
             frameWidth,
             frameHeight,
-            xVelocity,
-            yVelocity,
             xPosition,
             yPosition,
             farthestXPosition,
@@ -1429,8 +1442,6 @@ FM.state = function () {
                     if (scroller === gameObject) {
                         frameWidth = followFrame.width;
                         frameHeight = followFrame.height;
-                        xVelocity = physic.velocity.x;
-                        yVelocity = physic.velocity.y;
                         xPosition = spatial.position.x + physic.offset.x;
                         yPosition = spatial.position.y + physic.offset.y;
                         farthestXPosition = xPosition + physic.width;
@@ -1507,6 +1518,7 @@ FM.state = function () {
                 //If there is a spatial component then test if the game object is on the screen
                 if (spatial) {
                     renderer = gameObject.components[FM.componentTypes.RENDERER];
+                    spatial.previous.copy(spatial.position);
                     newPosition = FM.vector(spatial.position.x * dt + spatial.previous.x * (1.0 - dt),
                         spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
                     //Draw objects
@@ -1757,7 +1769,6 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             tile.addType(pTypes[n]);
                         }
                         spatial = FM.spatialComponent(j * tileWidth, i * tileHeight, tile);
-                        tile.addComponent(spatial);
                         renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
                         xOffset = gid * tileWidth;
@@ -1767,7 +1778,6 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             xOffset = (xOffset % tileSet.width);
                         }
                         renderer.setOffset(xOffset, yOffset);
-                        tile.addComponent(renderer);
                         //Add tile to the state
                         state.add(tile);
                         //Add the game object's ID
@@ -2101,19 +2111,25 @@ FM.collision = function (pObjectA, pObjectB) {
 FM.component = function (pComponentType, pComponentOwner) {
     "use strict";
     var that = {};
-    if (pComponentOwner.components !== undefined) {
-        /**
-         * Component's name.
-         */
-        that.name = pComponentType;
-        /**
-         * Component's owner.
-         */
-        that.owner = pComponentOwner;
+    if (pComponentOwner) {
+        if (pComponentOwner.components !== undefined) {
+            /**
+             * Component's name.
+             */
+            that.name = pComponentType;
+            /**
+             * Component's owner.
+             */
+            that.owner = pComponentOwner;
+        } else {
+            if (FM.parameters.debug) {
+                console.log("ERROR: the owner of the " + pComponentType
+                        + " component must be a gameObject.");
+            }
+        }
     } else {
         if (FM.parameters.debug) {
-            console.log("ERROR: the owner of the " + pComponentType
-                    + " component must be a gameObject.");
+            console.log("ERROR: a owner game object must be specified.");
         }
     }
 
@@ -3205,6 +3221,16 @@ FM.emitterComponent = function (pOffset, pOwner) {
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Check if a spatial component is present.
+     */
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
      * Add a particle to this emitter.
@@ -3232,12 +3258,9 @@ FM.emitterComponent = function (pOffset, pOwner) {
         for (i = 0; i < number; i = i + 1) {
             particle = FM.gameObject(zIndex);
             spatial = FM.spatialComponent(spatial.position.x + offset.x, spatial.position.y + offset.y, particle);
-            particle.addComponent(spatial);
             renderer = FM.spriteRendererComponent(image, width, height, particle);
             renderer.setAlpha(alpha);
-            particle.addComponent(renderer);
             physic = FM.aabbComponent(width, height, particle);
-            particle.addComponent(physic);
             particle.age = 0;
             particle.lifeSpan = 0;
             particle.hide();
@@ -3454,13 +3477,24 @@ FM.simplePathComponent = function (pOwner) {
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL],
         /**
-         * Renderer component reference.
-         */
-        renderer = pOwner.components[FM.componentTypes.RENDERER],
-        /**
          * Physic component reference.
          */
         physic = pOwner.components[FM.componentTypes.PHYSIC];
+    /**
+     * Check if the needed components are present.
+     */
+    if (FM.parameters.debug) {
+        if (!spatial) {
+            console.log("ERROR: No spatial component was added and you need one for using the path component.");
+        }
+        if (!physic) {
+            console.log("ERROR: No physic component was added and you need one for using the path component.");
+        }
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
      * Follow the specified path.
@@ -3625,9 +3659,8 @@ FM.simplePathComponent = function (pOwner) {
                 } else {
                     active = false;
                     actualSpeed = FM.vector(0, 0);
-                    if (physic) {
-                        physic.velocity = FM.vector(0, 0);
-                    }
+                    desiredSpeed = 0;
+                    physic.velocity = FM.vector(0, 0);
                 }
             }
         }
@@ -3709,7 +3742,6 @@ FM.simplePathComponent = function (pOwner) {
     that.destroy = function () {
         waypoints = null;
         spatial = null;
-        renderer = null;
         physic = null;
         that.destroy();
         that = null;
@@ -3731,17 +3763,30 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
     /**
      * aabbComponent is based on physicComponent.
      */
-    var that = Object.create(FM.physicComponent(pWidth, pHeight, pOwner)),
+    var that = FM.physicComponent(pWidth, pHeight, pOwner),
         /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Check if the needed components are present.
+     */
+    if (FM.parameters.debug) {
+        if (!spatial) {
+            console.log("ERROR: No spatial component was added and you need one for physics.");
+        }
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
-    * Update the component.
-    */
-    that.update = function (dt) {
-        Object.getPrototypeOf(that).update(dt);
+     * Check if the current circle is overlapping with the specified type.
+     */
+    that.overlapsWithType = function (pType) {
+        //TODO
+        return null;
     };
 
     /**
@@ -3773,9 +3818,9 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
             yOverlap,
             collision = null;
         // Exit with no intersection if found separated along an axis
-        if (max.x < otherMin.x || min.x > otherMax.x) return null;
-        if (max.y < otherMin.y || min.y > otherMax.y) return null;
-        
+        if (max.x < otherMin.x || min.x > otherMax.x) { return null; }
+        if (max.y < otherMin.y || min.y > otherMax.y) { return null; }
+
         if (xOverlap > 0) {
             extent = (max.y - min.y) / 2;
             otherExtent = (otherMax.y - otherMin.y) / 2;
@@ -3862,7 +3907,6 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
-        Object.getPrototypeOf(that).drawDebug(bufferContext);
         bufferContext.strokeStyle = '#f4f';
         bufferContext.strokeRect(newPosition.x + that.offset.x - bufferContext.xOffset, newPosition.y + that.offset.y - bufferContext.yOffset, that.width,
                                 that.height);
@@ -3891,21 +3935,34 @@ FM.circleComponent = function (pRadius, pOwner) {
     /**
      * fmB2CircleComponent is based on physicComponent.
      */
-    var that = Object.create(FM.physicComponent(pRadius * 2, pRadius * 2, pOwner)),
+    var that = FM.physicComponent(pRadius * 2, pRadius * 2, pOwner),
         /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Check if the needed components are present.
+     */
+    if (FM.parameters.debug) {
+        if (!spatial) {
+            console.log("ERROR: No spatial component was added and you need one for physics.");
+        }
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
     /**
      * Radius of the circle
      */
     that.radius = pRadius;
 
     /**
-    * Update the component.
-    */
-    that.update = function (dt) {
-        Object.getPrototypeOf(that).update(dt);
+     * Check if the current circle is overlapping with the specified type.
+     */
+    that.overlapsWithType = function (pType) {
+        //TODO
+        return null;
     };
 
     /**
@@ -4009,7 +4066,6 @@ FM.circleComponent = function (pRadius, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
-        Object.getPrototypeOf(that).drawDebug(bufferContext);
         var newCenter = FM.vector(newPosition.x + that.radius, newPosition.y + that.radius);
         bufferContext.beginPath();
         bufferContext.strokeStyle = '#f4f';
@@ -4039,7 +4095,7 @@ FM.circleComponent = function (pRadius, pOwner) {
 FM.physicComponent = function (pWidth, pHeight, pOwner) {
     "use strict";
     /**
-     * physicComponent is based on component.
+     * FM.physicComponent is based on component.
      */
     var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
         /**
@@ -4254,6 +4310,10 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      * Elasticity is a factor between 0 and 1 used for bouncing purposes.
      */
     that.elasticity = 0;
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for physics.");
+    }
 
     /**
     * Update the component.
@@ -4311,7 +4371,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                     if (tileMap && tileMap.canCollide()) {
                         move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
                         canMove = false;
-                        tilesCollisions.push({a:that.owner,b:tileMap});
+                        tilesCollisions.push({a: that.owner, b: tileMap});
                     }
                 }
             }
@@ -4449,13 +4509,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
     };
 
     /**
-     * Draw debug information.
-     */
-    that.drawDebug = function (bufferContext, newPosition) {
-        
-    };
-
-    /**
      * Get the velocity.
      */
     that.getLinearVelocity = function () {
@@ -4471,14 +4524,14 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         for (i = 0; i < collisions.length; i = i + 1) {
             collision = collisions[i];
             if ((collision.b && collision.b.owner.hasType(pOtherType))
-                || (collision.a && collision.a.owner.hasType(pOtherType))) {
+                    || (collision.a && collision.a.owner.hasType(pOtherType))) {
                 return true;
             }
         }
         for (i = 0; i < tilesCollisions.length; i = i + 1) {
             collision = tilesCollisions[i];
             if ((collision.b && collision.b.hasType(pOtherType))
-                || (collision.a && collision.a.hasType(pOtherType))) {
+                    || (collision.a && collision.a.hasType(pOtherType))) {
                 return true;
             }
         }
@@ -4527,13 +4580,21 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
          */
         imageHeight = image.height,
         /**
-         * Width of a frame the spritesheet.
+         * Width of a frame of the spritesheet.
          */
         frameWidth = pWidth,
         /**
-         * height of a frame the spritesheet.
+         * Height of a frame of the spritesheet.
          */
         frameHeight = pHeight,
+        /**
+         * Width of a resized frame of the spritesheet.
+         */
+        changedWidth = pWidth,
+        /**
+         * Height of a resized frame of the spritesheet.
+         */
+        changedHeight = pHeight,
         /**
          * Transparency of the sprite.
          */
@@ -4582,6 +4643,14 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
     /**
      * Read-only attributes that specifies whether the current animation has
      * finished playing or not.
@@ -4612,8 +4681,8 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      */
     that.play = function (animName) {
         //In case the width of the sprite have been modified
-        imageWidth = image.width;
-        imageHeight = image.height;
+        //imageWidth = image.width;
+        //imageHeight = image.height;
         currentAnim = animName;
         that.finished = false;
         currentFrame = 0;
@@ -4626,7 +4695,7 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     /**
-     * Stop the animation
+     * Stop the animation.
      */
     that.stop = function () {
         that.finished = true;
@@ -4648,10 +4717,10 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
             bufferContext.translate(xPosition, yPosition);
             bufferContext.translate(frameWidth / 2, frameHeight / 2);
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, -frameWidth / 2, -frameHeight / 2, frameWidth, frameHeight);
+            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, -changedWidth / 2, -changedHeight / 2, changedWidth, changedHeight);
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, frameWidth, frameHeight);
+            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, changedWidth, changedHeight);
         }
         bufferContext.globalAlpha = 1;
         //If the anim is not finished playing
@@ -4708,19 +4777,12 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     };
 
     /**
-     * Set the width of a frame of the spritesheet.
-     * @param {int} newWidth new width desired.
+     * Change the size of the sprite.
+     * @param {float} pFactor factor by which the size will be changed.
      */
-    that.setWidth = function (newWidth) {
-        frameWidth = newWidth;
-    };
-
-    /**
-     * Set the height of a frame of the spritesheet.
-     * @param {int} newHeight new height desired.
-     */
-    that.setHeight = function (newHeight) {
-        frameHeight = newHeight;
+    that.changeSize = function (pFactor) {
+        changedWidth = pFactor * frameWidth;
+        changedHeight = pFactor * frameHeight;
     };
 
     /**
@@ -4735,13 +4797,27 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      * Retrieve the height of a frame of the spritesheet.
      */
     that.getWidth = function () {
-        return frameWidth;
+        return changedWidth;
     };
 
     /**
      * Retrieve the height of a frame of the spritesheet.
      */
     that.getHeight = function () {
+        return changedHeight;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalWidth = function () {
+        return frameWidth;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalHeight = function () {
         return frameHeight;
     };
 
@@ -4782,6 +4858,14 @@ FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
     * Draw the box.
@@ -4909,6 +4993,14 @@ FM.circleRendererComponent = function (pRadius, pColor, pOwner) {
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
     * Draw the circle.
@@ -5062,6 +5154,14 @@ FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
     * Draw the line.
@@ -5242,12 +5342,20 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
-    * Draw the sprite.
-    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
-    * drawing is done.
-    */
+     * Draw the sprite.
+     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
+     * drawing is done.
+     */
     that.draw = function (bufferContext, newPosition) {
         var xPosition = newPosition.x, yPosition = newPosition.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
@@ -5261,6 +5369,7 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
             //Draw the image or its data if the image is bigger than the sprite
             //to display
             if (imageData) {
+                //TODO allow a sprite to be resized
                 bufferContext.putImageData(imageData, -width / 2, -height / 2);
             } else {
                 bufferContext.drawImage(image, -width / 2, -height / 2, width, height);
@@ -5291,8 +5400,8 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
         tmpCanvas.height = image.height;
         tmpContext.drawImage(image, 0, 0, image.width, image.height);
         imageData = tmpContext.getImageData(offset.x, offset.y, width, height);
-        delete this.tmpCanvas;
         delete this.tmpContext;
+        delete this.tmpCanvas;
     };
 
     /**
@@ -5385,6 +5494,14 @@ FM.textRendererComponent = function (pTextToDisplay, pOwner) {
          * Height of the text container.
          */
         height = 50;
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     //Text to be displayed
     that.text = pTextToDisplay;
@@ -5458,6 +5575,10 @@ FM.audioComponent = function (pOwner) {
          * The list of sound objects.
          */
         sounds = [];
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
      * Play the sound given a certain volume and whether the sound loop or not.
@@ -5471,10 +5592,12 @@ FM.audioComponent = function (pOwner) {
                 sound.volume = volume;
                 if (loop) {
                     sound.addEventListener('ended', function () {
+                        if (window.chrome) { this.load(); }
                         this.currentTime = 0;
                         this.play();
                     }, false);
                 }
+                if (window.chrome) { sound.load(); }
                 sound.play();
             }
         }
@@ -5550,6 +5673,10 @@ FM.spatialComponent = function (pX, pY, pOwner) {
      * Angle of the object defined in radians.
      */
     that.angle = 0;
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
     * Destroy the component and its objects.

@@ -8,19 +8,25 @@
 FM.component = function (pComponentType, pComponentOwner) {
     "use strict";
     var that = {};
-    if (pComponentOwner.components !== undefined) {
-        /**
-         * Component's name.
-         */
-        that.name = pComponentType;
-        /**
-         * Component's owner.
-         */
-        that.owner = pComponentOwner;
+    if (pComponentOwner) {
+        if (pComponentOwner.components !== undefined) {
+            /**
+             * Component's name.
+             */
+            that.name = pComponentType;
+            /**
+             * Component's owner.
+             */
+            that.owner = pComponentOwner;
+        } else {
+            if (FM.parameters.debug) {
+                console.log("ERROR: the owner of the " + pComponentType
+                        + " component must be a gameObject.");
+            }
+        }
     } else {
         if (FM.parameters.debug) {
-            console.log("ERROR: the owner of the " + pComponentType
-                    + " component must be a gameObject.");
+            console.log("ERROR: a owner game object must be specified.");
         }
     }
 

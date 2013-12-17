@@ -33,6 +33,14 @@ FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
     * Draw the line.

@@ -80,7 +80,6 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             tile.addType(pTypes[n]);
                         }
                         spatial = FM.spatialComponent(j * tileWidth, i * tileHeight, tile);
-                        tile.addComponent(spatial);
                         renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
                         xOffset = gid * tileWidth;
@@ -90,7 +89,6 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             xOffset = (xOffset % tileSet.width);
                         }
                         renderer.setOffset(xOffset, yOffset);
-                        tile.addComponent(renderer);
                         //Add tile to the state
                         state.add(tile);
                         //Add the game object's ID

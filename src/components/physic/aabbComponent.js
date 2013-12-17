@@ -12,17 +12,30 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
     /**
      * aabbComponent is based on physicComponent.
      */
-    var that = Object.create(FM.physicComponent(pWidth, pHeight, pOwner)),
+    var that = FM.physicComponent(pWidth, pHeight, pOwner),
         /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    /**
+     * Check if the needed components are present.
+     */
+    if (FM.parameters.debug) {
+        if (!spatial) {
+            console.log("ERROR: No spatial component was added and you need one for physics.");
+        }
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
-    * Update the component.
-    */
-    that.update = function (dt) {
-        Object.getPrototypeOf(that).update(dt);
+     * Check if the current circle is overlapping with the specified type.
+     */
+    that.overlapsWithType = function (pType) {
+        //TODO
+        return null;
     };
 
     /**
@@ -54,9 +67,9 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
             yOverlap,
             collision = null;
         // Exit with no intersection if found separated along an axis
-        if (max.x < otherMin.x || min.x > otherMax.x) return null;
-        if (max.y < otherMin.y || min.y > otherMax.y) return null;
-        
+        if (max.x < otherMin.x || min.x > otherMax.x) { return null; }
+        if (max.y < otherMin.y || min.y > otherMax.y) { return null; }
+
         if (xOverlap > 0) {
             extent = (max.y - min.y) / 2;
             otherExtent = (otherMax.y - otherMin.y) / 2;
@@ -143,7 +156,6 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
-        Object.getPrototypeOf(that).drawDebug(bufferContext);
         bufferContext.strokeStyle = '#f4f';
         bufferContext.strokeRect(newPosition.x + that.offset.x - bufferContext.xOffset, newPosition.y + that.offset.y - bufferContext.yOffset, that.width,
                                 that.height);

@@ -17,6 +17,14 @@ FM.textRendererComponent = function (pTextToDisplay, pOwner) {
          * Height of the text container.
          */
         height = 50;
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     //Text to be displayed
     that.text = pTextToDisplay;

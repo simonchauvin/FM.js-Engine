@@ -11,6 +11,10 @@ FM.audioComponent = function (pOwner) {
          * The list of sound objects.
          */
         sounds = [];
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
      * Play the sound given a certain volume and whether the sound loop or not.
@@ -24,10 +28,12 @@ FM.audioComponent = function (pOwner) {
                 sound.volume = volume;
                 if (loop) {
                     sound.addEventListener('ended', function () {
+                        if (window.chrome) { this.load(); }
                         this.currentTime = 0;
                         this.play();
                     }, false);
                 }
+                if (window.chrome) { sound.load(); }
                 sound.play();
             }
         }

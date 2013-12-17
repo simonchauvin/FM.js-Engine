@@ -9,7 +9,7 @@
 FM.physicComponent = function (pWidth, pHeight, pOwner) {
     "use strict";
     /**
-     * physicComponent is based on component.
+     * FM.physicComponent is based on component.
      */
     var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
         /**
@@ -224,6 +224,10 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      * Elasticity is a factor between 0 and 1 used for bouncing purposes.
      */
     that.elasticity = 0;
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for physics.");
+    }
 
     /**
     * Update the component.
@@ -281,7 +285,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                     if (tileMap && tileMap.canCollide()) {
                         move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
                         canMove = false;
-                        tilesCollisions.push({a:that.owner,b:tileMap});
+                        tilesCollisions.push({a: that.owner, b: tileMap});
                     }
                 }
             }
@@ -419,13 +423,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
     };
 
     /**
-     * Draw debug information.
-     */
-    that.drawDebug = function (bufferContext, newPosition) {
-        
-    };
-
-    /**
      * Get the velocity.
      */
     that.getLinearVelocity = function () {
@@ -441,14 +438,14 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         for (i = 0; i < collisions.length; i = i + 1) {
             collision = collisions[i];
             if ((collision.b && collision.b.owner.hasType(pOtherType))
-                || (collision.a && collision.a.owner.hasType(pOtherType))) {
+                    || (collision.a && collision.a.owner.hasType(pOtherType))) {
                 return true;
             }
         }
         for (i = 0; i < tilesCollisions.length; i = i + 1) {
             collision = tilesCollisions[i];
             if ((collision.b && collision.b.hasType(pOtherType))
-                || (collision.a && collision.a.hasType(pOtherType))) {
+                    || (collision.a && collision.a.hasType(pOtherType))) {
                 return true;
             }
         }

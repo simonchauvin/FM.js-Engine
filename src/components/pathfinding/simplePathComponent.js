@@ -51,13 +51,24 @@ FM.simplePathComponent = function (pOwner) {
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL],
         /**
-         * Renderer component reference.
-         */
-        renderer = pOwner.components[FM.componentTypes.RENDERER],
-        /**
          * Physic component reference.
          */
         physic = pOwner.components[FM.componentTypes.PHYSIC];
+    /**
+     * Check if the needed components are present.
+     */
+    if (FM.parameters.debug) {
+        if (!spatial) {
+            console.log("ERROR: No spatial component was added and you need one for using the path component.");
+        }
+        if (!physic) {
+            console.log("ERROR: No physic component was added and you need one for using the path component.");
+        }
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
      * Follow the specified path.
@@ -222,9 +233,8 @@ FM.simplePathComponent = function (pOwner) {
                 } else {
                     active = false;
                     actualSpeed = FM.vector(0, 0);
-                    if (physic) {
-                        physic.velocity = FM.vector(0, 0);
-                    }
+                    desiredSpeed = 0;
+                    physic.velocity = FM.vector(0, 0);
                 }
             }
         }
@@ -306,7 +316,6 @@ FM.simplePathComponent = function (pOwner) {
     that.destroy = function () {
         waypoints = null;
         spatial = null;
-        renderer = null;
         physic = null;
         that.destroy();
         that = null;

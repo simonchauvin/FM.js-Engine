@@ -33,12 +33,20 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          * Spatial component.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
 
     /**
-    * Draw the sprite.
-    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
-    * drawing is done.
-    */
+     * Draw the sprite.
+     * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
+     * drawing is done.
+     */
     that.draw = function (bufferContext, newPosition) {
         var xPosition = newPosition.x, yPosition = newPosition.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
@@ -52,6 +60,7 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
             //Draw the image or its data if the image is bigger than the sprite
             //to display
             if (imageData) {
+                //TODO allow a sprite to be resized
                 bufferContext.putImageData(imageData, -width / 2, -height / 2);
             } else {
                 bufferContext.drawImage(image, -width / 2, -height / 2, width, height);

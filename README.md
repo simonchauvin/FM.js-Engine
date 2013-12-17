@@ -4,7 +4,16 @@
 Entirely written in JavaScript it allows you to build your games and prototypes quickly.
 It runs on every modern browser and does not rely on any external libraries such as jQuery or Prototype.
 
-Features:
+Getting Started
+=============
+
+- Just modify the "FMHelloWorld" project that you can find in my repositories here on GitHub and start your game.
+- The "index.html" file features the name of your game as well as the JS files that must be included. It is also the 
+starting point of your game, you can add assets and choose the screen resolution.
+
+
+Features
+=============
 
 - Input management (keyboard and mouse)
 - Game states management (creation, destroying, switching)
@@ -19,10 +28,3 @@ Features:
 - Assets preloading (possibility of a custom preloader)
 - Debug information (collisions, FPS, etc.) (home/start key to display)
 - Fully documented and readable code
-
-
-How to:
-
-- Just modify the "FMHelloWorld" project that you can find in my repositories here on GitHub and start your game.
-- The "index.html" file features the name of your game as well as the JS files that must be included. It is also the 
-starting point of your game, you can add assets and choose the screen resolution.

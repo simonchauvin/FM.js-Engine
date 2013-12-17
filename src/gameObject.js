@@ -130,6 +130,14 @@ FM.gameObject = function (pZIndex) {
     };
 
     /**
+     * Retrieve the types of the game object.
+     * @return {Array} types of the game object.
+     */
+    that.getTypes = function () {
+        return types;
+    };
+
+    /**
      * Retrieve the name of the game object.
      * @return {string} name of the game object.
      */

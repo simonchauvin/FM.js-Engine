@@ -130,18 +130,19 @@ FM.game = (function () {
             currentTime = newTime;
             //Update the accumulator
             accumulator += frameTime;
-
+            //Update if not on pause
             if (!pause) {
-                //Update the game a fixed number of times
+                //Update the physic a fixed number of times
                 while (accumulator >= fixedDt) {
                     accumulator -= fixedDt;
                     currentState.updatePhysics(fixedDt);
-                    currentState.update(fixedDt);
                 }
                 alpha = accumulator / fixedDt;
+                //Update the current state
+                currentState.update(frameTime);
             }
-            timeCounter += frameTime;
             //Compute the actual FPS at which the game is running
+            timeCounter += frameTime;
             framesCounter = framesCounter + 1;
             if (timeCounter >= 1) {
                 lastComputedFps = framesCounter / timeCounter;

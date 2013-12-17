@@ -136,7 +136,7 @@ FM.state = function () {
             if (gameObject.isAlive()) {
                 components = gameObject.components;
                 physic = gameObject.components[FM.componentTypes.PHYSIC];
-                //Update the physic component
+                //Add physic objects in the quad tree
                 if (physic) {
                     quad.insert(gameObject);
                 }
@@ -151,7 +151,7 @@ FM.state = function () {
                 physic = components[FM.componentTypes.PHYSIC];
                 //Update the physic component
                 if (physic) {
-                    spatial.previous = spatial.position;
+                    //spatial.previous.copy(spatial.position);
                     physic.update(fixedDt);
                 }
             }
@@ -160,7 +160,7 @@ FM.state = function () {
 
     /**
     * Update the game objects of the state.
-    * @param {float} fixed time in seconds since the last frame.
+    * @param {float} variable time in seconds since the last frame.
     */
     that.update = function (dt) {
         var i,
@@ -173,8 +173,6 @@ FM.state = function () {
             newOffset,
             frameWidth,
             frameHeight,
-            xVelocity,
-            yVelocity,
             xPosition,
             yPosition,
             farthestXPosition,
@@ -201,8 +199,6 @@ FM.state = function () {
                     if (scroller === gameObject) {
                         frameWidth = followFrame.width;
                         frameHeight = followFrame.height;
-                        xVelocity = physic.velocity.x;
-                        yVelocity = physic.velocity.y;
                         xPosition = spatial.position.x + physic.offset.x;
                         yPosition = spatial.position.y + physic.offset.y;
                         farthestXPosition = xPosition + physic.width;
@@ -279,6 +275,7 @@ FM.state = function () {
                 //If there is a spatial component then test if the game object is on the screen
                 if (spatial) {
                     renderer = gameObject.components[FM.componentTypes.RENDERER];
+                    spatial.previous.copy(spatial.position);
                     newPosition = FM.vector(spatial.position.x * dt + spatial.previous.x * (1.0 - dt),
                         spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
                     //Draw objects

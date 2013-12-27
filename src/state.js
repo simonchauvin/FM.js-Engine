@@ -32,6 +32,22 @@ FM.state = function () {
          */
         world = null,
         /**
+         * Whether the camera following is smooth or not.
+         */
+        smoothFollow = false,
+        /**
+         * Whether the camera movement is smooth or not.
+         */
+        smoothCamera = false,
+        /**
+         * Speed of the camera for following.
+         */
+        followSpeed = FM.vector(60, 60),
+        /**
+         * Speed of the camera for movement.
+         */
+        cameraSpeed = FM.vector(60, 60),
+        /**
          * Private method that sort game objects according to their z index.
          * @param {int} gameObjectA first game object to be sorted.
          * @param {int} gameObjectB second game object to be sorted.
@@ -127,7 +143,6 @@ FM.state = function () {
         var i,
             gameObject,
             components,
-            spatial,
             physic;
         //Clear and update the quadtree
         quad.clear();
@@ -147,11 +162,9 @@ FM.state = function () {
             gameObject = that.members[i];
             if (gameObject.isAlive()) {
                 components = gameObject.components;
-                spatial = components[FM.componentTypes.SPATIAL];
                 physic = components[FM.componentTypes.PHYSIC];
                 //Update the physic component
                 if (physic) {
-                    //spatial.previous.copy(spatial.position);
                     physic.update(fixedDt);
                 }
             }
@@ -160,7 +173,7 @@ FM.state = function () {
 
     /**
     * Update the game objects of the state.
-    * @param {float} variable time in seconds since the last frame.
+    * @param {float} fixed time in seconds since the last frame.
     */
     that.update = function (dt) {
         var i,
@@ -208,33 +221,58 @@ FM.state = function () {
                         if (xPosition <= followFrame.x) {
                             newOffset = that.camera.x - (followFrame.x - xPosition);
                             if (newOffset >= 0) {
-                                that.camera.x = newOffset;
-                                followFrame.x = xPosition;
+                                if (smoothFollow) {
+                                    that.camera.x -= followSpeed.x * dt;
+                                    followFrame.x -= followSpeed.x * dt;
+                                } else {
+                                    that.camera.x = newOffset;
+                                    followFrame.x = xPosition;
+                                }
                             }
                         }
                         // Going up
                         if (yPosition <= followFrame.y) {
                             newOffset = that.camera.y - (followFrame.y - yPosition);
                             if (newOffset >= 0) {
-                                that.camera.y = newOffset;
-                                followFrame.y = yPosition;
+                                if (smoothFollow) {
+                                    that.camera.y -= followSpeed.y * dt;
+                                    followFrame.y -= followSpeed.y * dt;
+                                } else {
+                                    that.camera.y = newOffset;
+                                    followFrame.y = yPosition;
+                                }
                             }
                         }
                         // Going right
                         if (farthestXPosition >= followFrame.x + frameWidth) {
                             newOffset = that.camera.x + (farthestXPosition - (followFrame.x + frameWidth));
                             if (newOffset + that.camera.width <= world.width) {
-                                that.camera.x = newOffset;
-                                followFrame.x = farthestXPosition - frameWidth;
+                                if (smoothFollow) {
+                                    that.camera.x += followSpeed.x * dt;
+                                    followFrame.x += followSpeed.x * dt;
+                                } else {
+                                    that.camera.x = newOffset;
+                                    followFrame.x = farthestXPosition - frameWidth;
+                                }
                             }
                         }
                         // Going down
                         if (farthestYPosition >= followFrame.y + frameHeight) {
                             newOffset = that.camera.y + (farthestYPosition - (followFrame.y + frameHeight));
                             if (newOffset + that.camera.height <= world.height) {
-                                that.camera.y = newOffset;
-                                followFrame.y = farthestYPosition - frameHeight;
+                                if (smoothFollow) {
+                                    that.camera.y += followSpeed.y * dt;
+                                    followFrame.y += followSpeed.y * dt;
+                                } else {
+                                    that.camera.y = newOffset;
+                                    followFrame.y = farthestYPosition - frameHeight;
+                                }
                             }
+                        }
+                        //Check if the scroller is in the follow frame and stop the smooth movement
+                        if (smoothFollow && xPosition >= followFrame.x && farthestXPosition <= followFrame.x + frameWidth
+                                && yPosition >= followFrame.y && farthestYPosition <= followFrame.y + frameHeight) {
+                            smoothFollow = false;
                         }
                     }
                 } else {
@@ -364,9 +402,11 @@ FM.state = function () {
     * @param {int} width the width of the camera.
     * @param {int} height the height of the camera.
     */
-    that.follow = function (gameObject, width, height) {
+    that.follow = function (gameObject, width, height, pSmooth, pFollowSpeed) {
         scroller = gameObject;
         followFrame = FM.rectangle((screenWidth - width) / 2 + that.camera.x, (screenHeight - height) / 2 + that.camera.y, width, height);
+        smoothFollow = pSmooth === undefined ? false : pSmooth;
+        followSpeed = pFollowSpeed === undefined ? FM.vector(60, 60) : pFollowSpeed;
     };
 
     /**

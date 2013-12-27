@@ -125,10 +125,7 @@ FM.parameters = {
     LEFT: "left",
     RIGHT: "right",
     UP: "up",
-    DOWN: "down",
-
-    //Background color
-    backgroundColor: 'rgb(0,0,0)'
+    DOWN: "down"
 };
 /**
  * List of possible component.
@@ -195,6 +192,11 @@ FM.game = (function () {
          * Height of the screen.
          */
         screenHeight = 0,
+        /**
+         * Color of the game's background.
+         * @type String|newColor
+         */
+        backgroundColor = 'rgb(0,0,0)',
         /**
         * Current state of the game.
         */
@@ -292,7 +294,7 @@ FM.game = (function () {
         gameLoop = function () {
             //Reset the screen
             context.clearRect(0, 0, screenWidth, screenHeight);
-            context.fillStyle = FM.parameters.backgroundColor;
+            context.fillStyle = backgroundColor;
             context.fillRect(0, 0, screenWidth, screenHeight);
 
             //Retrieve the current time
@@ -305,18 +307,20 @@ FM.game = (function () {
                 frameTime = 0.25;
             }
             currentTime = newTime;
-            //Update the accumulator
-            accumulator += frameTime;
             //Update if not on pause
             if (!pause) {
-                //Update the physic a fixed number of times
+                //Update the accumulator
+                accumulator += frameTime;
+                //Fixed update
                 while (accumulator >= fixedDt) {
                     accumulator -= fixedDt;
+                    //Update physics
                     currentState.updatePhysics(fixedDt);
+                    //Update the current state
+                    currentState.update(fixedDt);
                 }
+                //Determine the ratio of interpolation
                 alpha = accumulator / fixedDt;
-                //Update the current state
-                currentState.update(frameTime);
             }
             //Compute the actual FPS at which the game is running
             timeCounter += frameTime;
@@ -374,7 +378,7 @@ FM.game = (function () {
             currentReleasedKeys = [];
 
             //Main loop call
-            requestAnimationFrame(gameLoop);
+            window.requestAnimationFrame(gameLoop);
         },
         /**
         * Handle keys pressed.
@@ -498,7 +502,7 @@ FM.game = (function () {
             currentState.init(that);
 
             //Start the main loop
-            requestAnimationFrame(gameLoop);
+            window.requestAnimationFrame(gameLoop);
         }
     };
 
@@ -508,14 +512,14 @@ FM.game = (function () {
     (function () {
         var x, lastTime = 0, vendors = ['ms', 'moz', 'webkit', 'o'];
         for (x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-            window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+            window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+            window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
         }
         if (!window.requestAnimationFrame) {
-            window.requestAnimationFrame = function(callback, element) {
+            window.requestAnimationFrame = function (callback) {
                 var currTime = new Date().getTime(),
-                timeToCall = Math.max(0, 16 - (currTime - lastTime)),
-                id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
+                    timeToCall = Math.max(0, 16 - (currTime - lastTime)),
+                    id = window.setTimeout(function () { callback(currTime + timeToCall); }, timeToCall);
                 lastTime = currTime + timeToCall;
                 return id;
             };
@@ -534,6 +538,13 @@ FM.game = (function () {
         currentState.destroy();
         currentState = newState;
         currentState.init(that);
+    };
+
+    /**
+    * Change the game's background color.
+    */
+    that.setBackgroundColor = function (newColor) {
+        backgroundColor = newColor;
     };
 
     /**
@@ -1021,7 +1032,8 @@ FM.objectType = function (pName) {
             otherGameObject,
             physic,
             otherPhysic,
-            collision = null;
+            collision = null,
+            collisionTemp = null;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
@@ -1035,7 +1047,10 @@ FM.objectType = function (pName) {
                     if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
                             && ((hasType && otherGameObject.hasType(pType))
                             || (hasOtherType && otherGameObject.hasType(that)))) {
-                        collision = physic.overlapsWithObject(otherPhysic);
+                        collisionTemp = physic.overlapsWithObject(otherPhysic);
+                        if (collisionTemp) {
+                            collision = collisionTemp;
+                        }
                     }
                 }
             }
@@ -1056,13 +1071,17 @@ FM.objectType = function (pName) {
             otherGameObject,
             physic = pGameObject.components[FM.componentTypes.PHYSIC],
             otherPhysic,
-            collision = null;
+            collision = null,
+            collisionTemp = null;
         if (physic) {
             for (i = 0; i < gameObjects.length; i = i + 1) {
                 otherGameObject = gameObjects[i];
                 otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
                 if (otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(that)) {
-                    collision = physic.overlapsWithObject(otherPhysic);
+                    collisionTemp = physic.overlapsWithObject(otherPhysic);
+                    if (collisionTemp) {
+                        collision = collisionTemp;
+                    }
                 }
             }
         } else {
@@ -1275,6 +1294,22 @@ FM.state = function () {
          */
         world = null,
         /**
+         * Whether the camera following is smooth or not.
+         */
+        smoothFollow = false,
+        /**
+         * Whether the camera movement is smooth or not.
+         */
+        smoothCamera = false,
+        /**
+         * Speed of the camera for following.
+         */
+        followSpeed = FM.vector(60, 60),
+        /**
+         * Speed of the camera for movement.
+         */
+        cameraSpeed = FM.vector(60, 60),
+        /**
          * Private method that sort game objects according to their z index.
          * @param {int} gameObjectA first game object to be sorted.
          * @param {int} gameObjectB second game object to be sorted.
@@ -1370,7 +1405,6 @@ FM.state = function () {
         var i,
             gameObject,
             components,
-            spatial,
             physic;
         //Clear and update the quadtree
         quad.clear();
@@ -1390,11 +1424,9 @@ FM.state = function () {
             gameObject = that.members[i];
             if (gameObject.isAlive()) {
                 components = gameObject.components;
-                spatial = components[FM.componentTypes.SPATIAL];
                 physic = components[FM.componentTypes.PHYSIC];
                 //Update the physic component
                 if (physic) {
-                    //spatial.previous.copy(spatial.position);
                     physic.update(fixedDt);
                 }
             }
@@ -1403,7 +1435,7 @@ FM.state = function () {
 
     /**
     * Update the game objects of the state.
-    * @param {float} variable time in seconds since the last frame.
+    * @param {float} fixed time in seconds since the last frame.
     */
     that.update = function (dt) {
         var i,
@@ -1451,33 +1483,58 @@ FM.state = function () {
                         if (xPosition <= followFrame.x) {
                             newOffset = that.camera.x - (followFrame.x - xPosition);
                             if (newOffset >= 0) {
-                                that.camera.x = newOffset;
-                                followFrame.x = xPosition;
+                                if (smoothFollow) {
+                                    that.camera.x -= followSpeed.x * dt;
+                                    followFrame.x -= followSpeed.x * dt;
+                                } else {
+                                    that.camera.x = newOffset;
+                                    followFrame.x = xPosition;
+                                }
                             }
                         }
                         // Going up
                         if (yPosition <= followFrame.y) {
                             newOffset = that.camera.y - (followFrame.y - yPosition);
                             if (newOffset >= 0) {
-                                that.camera.y = newOffset;
-                                followFrame.y = yPosition;
+                                if (smoothFollow) {
+                                    that.camera.y -= followSpeed.y * dt;
+                                    followFrame.y -= followSpeed.y * dt;
+                                } else {
+                                    that.camera.y = newOffset;
+                                    followFrame.y = yPosition;
+                                }
                             }
                         }
                         // Going right
                         if (farthestXPosition >= followFrame.x + frameWidth) {
                             newOffset = that.camera.x + (farthestXPosition - (followFrame.x + frameWidth));
                             if (newOffset + that.camera.width <= world.width) {
-                                that.camera.x = newOffset;
-                                followFrame.x = farthestXPosition - frameWidth;
+                                if (smoothFollow) {
+                                    that.camera.x += followSpeed.x * dt;
+                                    followFrame.x += followSpeed.x * dt;
+                                } else {
+                                    that.camera.x = newOffset;
+                                    followFrame.x = farthestXPosition - frameWidth;
+                                }
                             }
                         }
                         // Going down
                         if (farthestYPosition >= followFrame.y + frameHeight) {
                             newOffset = that.camera.y + (farthestYPosition - (followFrame.y + frameHeight));
                             if (newOffset + that.camera.height <= world.height) {
-                                that.camera.y = newOffset;
-                                followFrame.y = farthestYPosition - frameHeight;
+                                if (smoothFollow) {
+                                    that.camera.y += followSpeed.y * dt;
+                                    followFrame.y += followSpeed.y * dt;
+                                } else {
+                                    that.camera.y = newOffset;
+                                    followFrame.y = farthestYPosition - frameHeight;
+                                }
                             }
+                        }
+                        //Check if the scroller is in the follow frame and stop the smooth movement
+                        if (smoothFollow && xPosition >= followFrame.x && farthestXPosition <= followFrame.x + frameWidth
+                                && yPosition >= followFrame.y && farthestYPosition <= followFrame.y + frameHeight) {
+                            smoothFollow = false;
                         }
                     }
                 } else {
@@ -1607,9 +1664,11 @@ FM.state = function () {
     * @param {int} width the width of the camera.
     * @param {int} height the height of the camera.
     */
-    that.follow = function (gameObject, width, height) {
+    that.follow = function (gameObject, width, height, pSmooth, pFollowSpeed) {
         scroller = gameObject;
         followFrame = FM.rectangle((screenWidth - width) / 2 + that.camera.x, (screenHeight - height) / 2 + that.camera.y, width, height);
+        smoothFollow = pSmooth === undefined ? false : pSmooth;
+        followSpeed = pFollowSpeed === undefined ? FM.vector(60, 60) : pFollowSpeed;
     };
 
     /**
@@ -1749,7 +1808,6 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
             gid = null,
             tile = null,
             state = FM.game.getCurrentState(),
-            spatial,
             renderer,
             xOffset,
             yOffset,
@@ -1768,7 +1826,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                         for (n = 0; n < pTypes.length; n = n + 1) {
                             tile.addType(pTypes[n]);
                         }
-                        spatial = FM.spatialComponent(j * tileWidth, i * tileHeight, tile);
+                        FM.spatialComponent(j * tileWidth, i * tileHeight, tile);
                         renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tile);
                         //Select the right tile in the tile set
                         xOffset = gid * tileWidth;
@@ -1777,7 +1835,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
                             yOffset = Math.floor(xOffset / tileSet.width) * tileHeight;
                             xOffset = (xOffset % tileSet.width);
                         }
-                        renderer.setOffset(xOffset, yOffset);
+                        renderer.offset.reset(xOffset, yOffset);
                         //Add tile to the state
                         state.add(tile);
                         //Add the game object's ID
@@ -1903,11 +1961,11 @@ FM.vector = function (pX, pY) {
     /**
      * x position.
      */
-    that.x = pX === 'undefined' ? 0 : pX;
+    that.x = pX === undefined ? 0 : pX;
     /**
      * y position.
      */
-    that.y = pY === 'undefined' ? 0 : pY;
+    that.y = pY === undefined ? 0 : pY;
 
     /**
      * Add the specified vector to the current one;
@@ -2179,10 +2237,17 @@ FM.audioAsset = function (pName, pPath) {
     /**
      * Load the audio file.
      */
-    that.load = function () {
+    that.load = function (pCallbackFunction) {
         that.src = path;
-
-        that.addEventListener("loadeddata", loadComplete, false);
+        loaded = false;
+        if (pCallbackFunction === undefined) {
+            that.addEventListener("loadeddata", loadComplete, false);
+        } else {
+            that.addEventListener("loadeddata", function () {
+                loadComplete(pCallbackFunction);
+                pCallbackFunction(that);
+            }, false);
+        }
     };
 
     /**
@@ -3469,10 +3534,6 @@ FM.simplePathComponent = function (pOwner) {
          */
         positionBeforeStopping = FM.vector(0, 0),
         /**
-         * Factor modifying speed so that the movement is linear.
-         */
-        factor = 1,
-        /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL],
@@ -3638,6 +3699,7 @@ FM.simplePathComponent = function (pOwner) {
             //Select the next waypoint if the current has been reached
             if (xReached && yReached) {
                 if (waypoints.length > currentIndex + 1) {
+                    //TODO call startfollowingpath ??
                     xReached = false;
                     yReached = false;
                     currentIndex = currentIndex + 1;
@@ -3907,9 +3969,17 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
+        var newCenter = FM.vector(newPosition.x + that.width / 2, newPosition.y + that.height / 2),
+            dir = FM.vector(Math.cos(spatial.angle), Math.sin(spatial.angle));
         bufferContext.strokeStyle = '#f4f';
         bufferContext.strokeRect(newPosition.x + that.offset.x - bufferContext.xOffset, newPosition.y + that.offset.y - bufferContext.yOffset, that.width,
                                 that.height);
+        bufferContext.beginPath();
+        bufferContext.strokeStyle = "Blue";
+        bufferContext.beginPath();
+        bufferContext.moveTo(newCenter.x + that.offset.x - bufferContext.xOffset, newCenter.y + that.offset.y - bufferContext.yOffset);
+        bufferContext.lineTo((newCenter.x + that.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + that.offset.y  + dir.y * 50) - bufferContext.yOffset);
+        bufferContext.stroke();
     };
 
     /**
@@ -4066,10 +4136,17 @@ FM.circleComponent = function (pRadius, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
-        var newCenter = FM.vector(newPosition.x + that.radius, newPosition.y + that.radius);
+        var newCenter = FM.vector(newPosition.x + that.radius, newPosition.y + that.radius),
+            dir = FM.vector(Math.cos(spatial.angle), Math.sin(spatial.angle));
         bufferContext.beginPath();
         bufferContext.strokeStyle = '#f4f';
         bufferContext.arc((newCenter.x + that.offset.x) - bufferContext.xOffset, (newCenter.y + that.offset.y) - bufferContext.yOffset, that.radius, 0, 2 * Math.PI, false);
+        bufferContext.stroke();
+        bufferContext.beginPath();
+        bufferContext.strokeStyle = "Blue";
+        bufferContext.beginPath();
+        bufferContext.moveTo(newCenter.x + that.offset.x - bufferContext.xOffset, newCenter.y + that.offset.y - bufferContext.yOffset);
+        bufferContext.lineTo((newCenter.x + that.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + that.offset.y  + dir.y * 50) - bufferContext.yOffset);
         bufferContext.stroke();
     };
 
@@ -4107,9 +4184,13 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
          */
         quad = FM.game.getCurrentState().getQuad(),
         /**
-         * The current direction of the object.
+         * Represent the mass of the physic game object, 0 means infinite mass.
          */
-        direction = 0,
+        mass = 1,
+        /**
+         * Represent the inverse mass.
+         */
+        invMass = 1 / mass,
         /**
          * Array storing the types of game objects that can collide with this one.
          */
@@ -4134,22 +4215,12 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             var correction = FM.vector(collision.penetration * collision.normal.x, collision.penetration * collision.normal.y),
                 aSpatial = collision.a.owner.components[FM.componentTypes.SPATIAL],
                 bSpatial = collision.b.owner.components[FM.componentTypes.SPATIAL],
-                aPhysic = collision.a.owner.components[FM.componentTypes.PHYSIC],
-                bPhysic = collision.b.owner.components[FM.componentTypes.PHYSIC],
+                //aPhysic = collision.a.owner.components[FM.componentTypes.PHYSIC],
+                //bPhysic = collision.b.owner.components[FM.componentTypes.PHYSIC],
                 massSum = 0,
-                invMass = 0,
-                otherInvMass = 0;
-            if (collision.a.mass === 0) {
-                invMass = 0;
-            } else {
-                invMass = 1 / collision.a.mass;
-            }
-            if (collision.b.mass === 0) {
-                otherInvMass = 0;
-            } else {
-                otherInvMass = 1 / collision.b.mass;
-            }
-            massSum = invMass + otherInvMass;
+                aInvMass = collision.a.getInvMass(),
+                bInvMass = collision.b.getInvMass();
+            massSum = aInvMass + bInvMass;
 
             //TODO make it work instead of the other below
             /*var percent = 0.2; // usually 20% to 80%
@@ -4162,10 +4233,13 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             bSpatial.position.y += otherInvMass * correction.y;*/
 
             //TODO this is here that it goes wrong, need to add offset ?
-            aSpatial.position.x -= correction.x * (invMass / massSum);
-            aSpatial.position.y -= correction.y * (invMass / massSum);
-            bSpatial.position.x += correction.x * (otherInvMass / massSum);
-            bSpatial.position.y += correction.y * (otherInvMass / massSum);
+            aSpatial.position.x -= correction.x * (aInvMass / massSum);
+            aSpatial.position.y -= correction.y * (aInvMass / massSum);
+            bSpatial.position.x += correction.x * (bInvMass / massSum);
+            bSpatial.position.y += correction.y * (bInvMass / massSum);
+            //TODO try with physic tiles with fixed integer position value
+            //aSpatial.position.reset(Math.floor(aSpatial.position.x), Math.floor(aSpatial.position.y));
+            //bSpatial.position.reset(Math.floor(bSpatial.position.x), Math.floor(bSpatial.position.y));
         },
         /**
          * Check collisions with a given array of tiles.
@@ -4208,7 +4282,8 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         move = function (tileMap, xVel, yVel) {
             var tiles = tileMap.getData(),
                 tileWidth = tileMap.getTileWidth(),
-                tileHeight = tileMap.getTileHeight();
+                tileHeight = tileMap.getTileHeight(),
+                hasCollided = false;
             if (Math.abs(xVel) >= tileWidth || Math.abs(yVel) >= tileHeight) {
                 move(tileMap, xVel / 2, yVel / 2);
                 move(tileMap, xVel - xVel / 2, yVel - yVel / 2);
@@ -4235,6 +4310,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                         vel = -1;
                     }
                     if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0)) {
+                        hasCollided = true;
                         break;
                     } else {
                         that.velocity.x += vel;
@@ -4253,12 +4329,14 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                         vel = -1;
                     }
                     if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel)) {
+                        hasCollided = true;
                         break;
                     } else {
                         that.velocity.y += vel;
                     }
                 }
             }
+            return hasCollided;
         };
     /**
      * Offset of the bounding box or circle.
@@ -4295,10 +4373,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      */
     that.angularDrag = FM.vector(0, 0);
     /**
-     * Represent the mass of the physic game object, 0 means infinite mass.
-     */
-    that.mass = 1;
-    /**
      * Represent the maximum absolute value of the velocity.
      */
     that.maxVelocity = FM.vector(1000, 1000);
@@ -4321,15 +4395,20 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
     that.update = function (dt) {
         collisions = [];
         tilesCollisions = [];
-        //Compute inverse mass
-        var invMass = 1 / that.mass, currentVelocity, maxVelocity;
-        if (that.mass === 0) {
-            invMass = 0;
-        }
 
         //Limit velocity to a max value
-        currentVelocity = that.velocity.x + (invMass * that.acceleration.x) * dt;
-        maxVelocity = that.maxVelocity.x + (invMass * that.acceleration.x) * dt;
+        //TODO maxvelocity should be in pixels per seconds
+        var currentVelocity = that.velocity.x + (invMass * that.acceleration.x) * dt,
+            maxVelocity = that.maxVelocity.x + (invMass * that.acceleration.x) * dt,
+            canMove = true,
+            hasCollided = false,
+            tileMap,
+            gameObjects,
+            i,
+            j,
+            otherGameObject,
+            otherPhysic,
+            collision = null;
         if (Math.abs(currentVelocity) <= maxVelocity) {
             that.velocity.x = currentVelocity;
         } else if (currentVelocity < 0) {
@@ -4351,27 +4430,40 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         if (that.acceleration.x === 0) {
             if (that.velocity.x > 0) {
                 that.velocity.x -= that.drag.x;
+                if (that.velocity.x < 0) {
+                    that.velocity.x = 0;
+                }
             } else if (that.velocity.x < 0) {
                 that.velocity.x += that.drag.x;
+                if (that.velocity.x > 0) {
+                    that.velocity.x = 0;
+                }
             }
         }
         if (that.acceleration.y === 0) {
             if (that.velocity.y > 0) {
                 that.velocity.y -= that.drag.y;
+                if (that.velocity.y < 0) {
+                    that.velocity.y = 0;
+                }
             } else if (that.velocity.y < 0) {
                 that.velocity.y += that.drag.y;
+                if (that.velocity.y > 0) {
+                    that.velocity.y = 0;
+                }
             }
         }
 
-        var canMove = true, quad, tileMap, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
         if (collidesWith.length > 0) {
             if (world.hasTileCollisions()) {
                 for (i = 0; i < collidesWith.length; i = i + 1) {
                     tileMap = world.getTileMapFromType(collidesWith[i]);
                     if (tileMap && tileMap.canCollide()) {
-                        move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
+                        hasCollided = move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
+                        if (hasCollided) {
+                            tilesCollisions.push({a: that.owner, b: tileMap});
+                        }
                         canMove = false;
-                        tilesCollisions.push({a: that.owner, b: tileMap});
                     }
                 }
             }
@@ -4408,43 +4500,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                 }
             }
         }
-
-        //TODO add direction debug
-        /*if (xVelocity_ != 0) {
-            direction = Math.atan(yVelocity_ / xVelocity_) / (Math.PI / 180);
-        } else {
-            direction = 0;
-        }*/
-    };
-
-    /**
-     * Check collisions with the tiles.
-     */
-    that.checkTileCollisions = function (tiles, xPos, yPos) {
-        var tileWidth,
-            tileHeight,
-            i1, j1,
-            i2, j2,
-            i, j;
-        //If there are collisions with tiles
-        if (tiles.length > 0) {
-            tileWidth = tiles.getTileWidth();
-            tileHeight = tiles.getTileHeight();
-            i1 = Math.floor(yPos / tileHeight);
-            j1 = Math.floor(xPos / tileWidth);
-            i2 = Math.floor((yPos + that.height) / tileHeight);
-            j2 = Math.floor((xPos + that.width) / tileWidth);
-            for (i = i1; i <= i2; i = i + 1) {
-                for (j = j1; j <= j2; j = j + 1) {
-                    if (tiles[i] && tiles[i][j] === 1) {
-                        if (j === j1 || j === j2 || i === i1 || i === i2) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     };
 
     /**
@@ -4456,23 +4511,11 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             //Compute restitution
             e = Math.min(that.elasticity, otherPhysic.elasticity),
             j = 0,
-            invMass = 0,
-            otherInvMass = 0,
+            otherInvMass = otherPhysic.getInvMass(),
             impulse = FM.vector(0, 0);
         //Do not resolve if velocities are separating.
         if (velocityAlongNormal > 0) {
             return;
-        }
-        //Compute inverse mass
-        if (that.mass === 0) {
-            invMass = 0;
-        } else {
-            invMass = 1 / that.mass;
-        }
-        if (otherPhysic.mass === 0) {
-            otherInvMass = 0;
-        } else {
-            otherInvMass = 1 / otherPhysic.mass;
         }
         //Compute impulse scalar
         j = -(1 + e) * velocityAlongNormal;
@@ -4552,6 +4595,32 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             }
         }
         return false;
+    };
+
+    /**
+     * Set the mass of the physic object.
+     */
+    that.setMass = function (newMass) {
+        mass = newMass;
+        if (mass === 0) {
+            invMass = 0;
+        } else {
+            invMass = 1 / mass;
+        }
+    };
+
+    /**
+     * Retrieve the mass of the physic object.
+     */
+    that.getMass = function () {
+        return mass;
+    };
+
+    /**
+     * Retrieve the inverse mass of the physic object.
+     */
+    that.getInvMass = function () {
+        return invMass;
     };
 
     return that;
@@ -4647,6 +4716,9 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     if (!spatial && FM.parameters.debug) {
         console.log("ERROR: No spatial component was added and you need one for rendering.");
     }
+    if (!image && FM.parameters.debug) {
+        console.log("ERROR: No image was provided and you need one for rendering an animated sprite.");
+    }
     /**
      * Add the component to the game object.
      */
@@ -4691,6 +4763,8 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
         if (xOffset >= imageWidth) {
             yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
             xOffset = (xOffset % imageWidth);
+            xOffset = Math.round(xOffset);
+            yOffset = Math.round(yOffset);
         }
     };
 
@@ -4711,16 +4785,18 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
             newTime = (new Date()).getTime() / 1000;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
+        xPosition = Math.round(xPosition);
+        yPosition = Math.round(yPosition);
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(frameWidth / 2, frameHeight / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(frameWidth / 2), Math.round(frameHeight / 2));
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, -changedWidth / 2, -changedHeight / 2, changedWidth, changedHeight);
+            bufferContext.drawImage(image, Math.round(xOffset), Math.round(yOffset), frameWidth, frameHeight, Math.round(-changedWidth / 2), Math.round(-changedHeight / 2), changedWidth, changedHeight);
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, changedWidth, changedHeight);
+            bufferContext.drawImage(image, Math.round(xOffset), Math.round(yOffset), frameWidth, frameHeight, Math.round(xPosition), Math.round(yPosition), changedWidth, changedHeight);
         }
         bufferContext.globalAlpha = 1;
         //If the anim is not finished playing
@@ -4746,6 +4822,8 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
                     if (xOffset >= imageWidth) {
                         yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
                         xOffset = (xOffset % imageWidth);
+                        xOffset = Math.round(xOffset);
+                        yOffset = Math.round(yOffset);
                     }
                 }
             } else {
@@ -4778,11 +4856,33 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
 
     /**
      * Change the size of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
      * @param {float} pFactor factor by which the size will be changed.
      */
     that.changeSize = function (pFactor) {
         changedWidth = pFactor * frameWidth;
         changedHeight = pFactor * frameHeight;
+    };
+
+    /**
+     * Set the width of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewWidth new width of the sprite.
+     */
+    that.setWidth = function (pNewWidth) {
+        changedWidth = pNewWidth;
+    };
+
+    /**
+     * Set the height of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewHeight new height of the sprite.
+     */
+    that.setHeight = function (pNewHeight) {
+        changedHeight = pNewHeight;
     };
 
     /**
@@ -4876,11 +4976,13 @@ FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
         var xPosition = newPosition.x, yPosition = newPosition.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
+        xPosition = Math.round(xPosition);
+        yPosition = Math.round(yPosition);
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
             bufferContext.beginPath();
             bufferContext.rect(xPosition, yPosition, width, height);
@@ -5009,20 +5111,20 @@ FM.circleRendererComponent = function (pRadius, pColor, pOwner) {
     */
     that.draw = function (bufferContext, newPosition) {
         var xPosition = newPosition.x - bufferContext.xOffset * pOwner.scrollFactor.x, 
-                yPosition = newPosition.y - bufferContext.yOffset * pOwner.scrollFactor.y,
+            yPosition = newPosition.y - bufferContext.yOffset * pOwner.scrollFactor.y,
             newCenter = FM.vector(xPosition + width / 2, yPosition + height / 2);
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
             bufferContext.beginPath();
-            bufferContext.arc(newCenter.x, newCenter.y, width / 2, 0, 2 * Math.PI);
+            bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(width / 2), 0, 2 * Math.PI);
             bufferContext.restore();
         } else {
             bufferContext.beginPath();
-            bufferContext.arc(newCenter.x, newCenter.y, width / 2, 0, 2 * Math.PI);
+            bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(width / 2), 0, 2 * Math.PI);
         }
         bufferContext.fillStyle = color;
         bufferContext.fill();
@@ -5175,25 +5277,25 @@ FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
             //TODO might not work since I freed the physics
             // Needs to interpolate the points
             if (points.length > 0) {
                 bufferContext.beginPath();
-                bufferContext.moveTo(points[0].x, points[0].y);
+                bufferContext.moveTo(Math.round(points[0].x), Math.round(points[0].y));
                 for (i = 1; i < points.length; i = i + 1) {
-                    bufferContext.lineTo(points[i].x, points[i].y);
+                    bufferContext.lineTo(Math.round(points[i].x), Math.round(points[i].y));
                 }
             }
             bufferContext.restore();
         } else {
             if (points.length > 0) {
                 bufferContext.beginPath();
-                bufferContext.moveTo(points[0].x, points[0].y);
+                bufferContext.moveTo(Math.round(points[0].x), Math.round(points[0].y));
                 for (i = 1; i < points.length; i = i + 1) {
-                    bufferContext.lineTo(points[i].x, points[i].y);
+                    bufferContext.lineTo(Math.round(points[i].x), Math.round(points[i].y));
                 }
             }
         }
@@ -5319,25 +5421,25 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         image = pImage,
         /**
-         * 
-         */
-        imageData = null,
-        /**
-         * Width of the sprite.
+         * Width of the sprite to display.
          */
         width = pWidth,
         /**
-         * Height of the sprite.
+         * Height of the sprite to display.
          */
         height = pHeight,
+        /**
+         * Width of the resized sprite.
+         */
+        changedWidth = pWidth,
+        /**
+         * Height of the resized sprite.
+         */
+        changedHeight = pHeight,
         /**
          * Transparency of the sprite.
          */
         alpha = 1,
-        /**
-         * Offset in case the image width is greater than the sprite.
-         */
-        offset = FM.vector(0, 0),
         /**
          * Spatial component.
          */
@@ -5346,10 +5448,17 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     if (!spatial && FM.parameters.debug) {
         console.log("ERROR: No spatial component was added and you need one for rendering.");
     }
+    if (!image && FM.parameters.debug) {
+        console.log("ERROR: No image was provided and you need one for rendering a sprite.");
+    }
     /**
      * Add the component to the game object.
      */
     pOwner.addComponent(that);
+    /**
+     * Offset in case the image width is greater than the sprite.
+     */
+    that.offset = FM.vector(0, 0);
 
     /**
      * Draw the sprite.
@@ -5357,65 +5466,67 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * drawing is done.
      */
     that.draw = function (bufferContext, newPosition) {
-        var xPosition = newPosition.x, yPosition = newPosition.y;
+        var xPosition = newPosition.x,
+            yPosition = newPosition.y,
+            offset = FM.vector(Math.round(that.offset.x), Math.round(that.offset.y));
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
-            //Draw the image or its data if the image is bigger than the sprite
-            //to display
-            if (imageData) {
-                //TODO allow a sprite to be resized
-                bufferContext.putImageData(imageData, -width / 2, -height / 2);
-            } else {
-                bufferContext.drawImage(image, -width / 2, -height / 2, width, height);
-            }
+            bufferContext.drawImage(image, offset.x, offset.y, width, height, Math.round(-changedWidth / 2), Math.round(-changedHeight / 2), changedWidth, changedHeight);
             bufferContext.restore();
         } else {
-            //Draw the image or its data if the image is bigger than the sprite
-            //to display
-            if (imageData) {
-                bufferContext.putImageData(imageData, xPosition, yPosition);
-            } else {
-                bufferContext.drawImage(image, xPosition, yPosition, width, height);
-            }
+            bufferContext.drawImage(image, offset.x, offset.y, width, height, Math.round(xPosition), Math.round(yPosition), changedWidth, changedHeight);
         }
         bufferContext.globalAlpha = 1;
-    };
-
-    /**
-     * Specifies the offset at which the part of the image to display is. Useful
-     * when using tilesets.
-     */
-    that.setOffset = function (pX, pY) {
-        offset.reset(pX, pY);
-        //Retrieve image data since the drawImage for slicing is not working properly
-        var tmpCanvas = document.createElement("canvas"),
-            tmpContext = tmpCanvas.getContext("2d");
-        tmpCanvas.width = image.width;
-        tmpCanvas.height = image.height;
-        tmpContext.drawImage(image, 0, 0, image.width, image.height);
-        imageData = tmpContext.getImageData(offset.x, offset.y, width, height);
-        delete this.tmpContext;
-        delete this.tmpCanvas;
     };
 
     /**
     * Destroy the component and its objects.
     */
     that.destroy = function () {
-        imageData = null;
-        offset.destroy();
-        offset = null;
+        that.offset.destroy();
+        that.offset = null;
         image.destroy();
         image = null;
         spatial = null;
         that.destroy();
         that = null;
+    };
+
+    /**
+     * Change the size of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pFactor factor by which the size will be changed.
+     */
+    that.changeSize = function (pFactor) {
+        changedWidth = pFactor * width;
+        changedHeight = pFactor * height;
+    };
+
+    /**
+     * Set the width of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewWidth new width of the sprite.
+     */
+    that.setWidth = function (pNewWidth) {
+        changedWidth = pNewWidth;
+    };
+
+    /**
+     * Set the height of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewHeight new height of the sprite.
+     */
+    that.setHeight = function (pNewHeight) {
+        changedHeight = pNewHeight;
     };
 
     /**
@@ -5425,22 +5536,6 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
         image = pImage;
         width = pWidth;
         height = pHeight;
-    };
-
-    /**
-     * Set the width of the  sprite.
-     * @param {int} newWidth new width desired.
-     */
-    that.setWidth = function (newWidth) {
-        width = newWidth;
-    };
-
-    /**
-     * Set the height of the sprite.
-     * @param {int} newHeight new height desired.
-     */
-    that.setHeight = function (newHeight) {
-        height = newHeight;
     };
 
     /**
@@ -5455,13 +5550,27 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * Retrieve the width of the sprite.
      */
     that.getWidth = function () {
-        return width;
+        return changedWidth;
     };
 
     /**
      * Retrieve the height of the sprite.
      */
     that.getHeight = function () {
+        return changedHeight;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalWidth = function () {
+        return width;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalHeight = function () {
         return height;
     };
 
@@ -5530,7 +5639,7 @@ FM.textRendererComponent = function (pTextToDisplay, pOwner) {
         bufferContext.fillStyle = that.fillStyle;
         bufferContext.font = that.font;
         bufferContext.textBaseline = that.textBaseline;
-        bufferContext.fillText(that.text, xPosition, yPosition);
+        bufferContext.fillText(that.text, Math.round(xPosition), Math.round(yPosition));
     };
 
     /**
@@ -5574,14 +5683,21 @@ FM.audioComponent = function (pOwner) {
         /**
          * The list of sound objects.
          */
-        sounds = [];
+        sounds = [],
+        /**
+         * 
+         */
+        replay = function (pSound) {
+            pSound.currentTime = 0;
+            pSound.play();
+        };
     /**
      * Add the component to the game object.
      */
     pOwner.addComponent(that);
 
     /**
-     * Play the sound given a certain volume and whether the sound loop or not.
+     * Play the sound given a certain volume and whether the sound loops or not.
      */
     that.play = function (pSoundName, volume, loop) {
         var i, sound, soundFound = false;
@@ -5592,13 +5708,19 @@ FM.audioComponent = function (pOwner) {
                 sound.volume = volume;
                 if (loop) {
                     sound.addEventListener('ended', function () {
-                        if (window.chrome) { this.load(); }
-                        this.currentTime = 0;
-                        this.play();
+                        if (window.chrome) {
+                            this.load(replay);
+                        } else {
+                            this.currentTime = 0;
+                            this.play();
+                        }
                     }, false);
                 }
-                if (window.chrome) { sound.load(); }
-                sound.play();
+                if (window.chrome) {
+                    sound.load(replay);
+                } else {
+                    sound.play();
+                }
             }
         }
         if (!soundFound) {
@@ -5639,6 +5761,19 @@ FM.audioComponent = function (pOwner) {
         sounds = null;
         that.destroy();
         that = null;
+    };
+
+    /**
+     * Check if a sound is currently playing.
+     */
+    that.isPlaying = function (pSoundName) {
+        var i, sound;
+        for (i = 0; i < sounds.length; i = i + 1) {
+            sound = sounds[i];
+            if (sound.getName() === pSoundName) {
+                return !sound.paused;
+            }
+        }
     };
 
     /**

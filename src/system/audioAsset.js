@@ -33,10 +33,17 @@ FM.audioAsset = function (pName, pPath) {
     /**
      * Load the audio file.
      */
-    that.load = function () {
+    that.load = function (pCallbackFunction) {
         that.src = path;
-
-        that.addEventListener("loadeddata", loadComplete, false);
+        loaded = false;
+        if (pCallbackFunction === undefined) {
+            that.addEventListener("loadeddata", loadComplete, false);
+        } else {
+            that.addEventListener("loadeddata", function () {
+                loadComplete(pCallbackFunction);
+                pCallbackFunction(that);
+            }, false);
+        }
     };
 
     /**

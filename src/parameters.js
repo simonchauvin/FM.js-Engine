@@ -32,8 +32,5 @@ FM.parameters = {
     LEFT: "left",
     RIGHT: "right",
     UP: "up",
-    DOWN: "down",
-
-    //Background color
-    backgroundColor: 'rgb(0,0,0)'
+    DOWN: "down"
 };

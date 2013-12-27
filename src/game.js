@@ -19,6 +19,11 @@ FM.game = (function () {
          */
         screenHeight = 0,
         /**
+         * Color of the game's background.
+         * @type String|newColor
+         */
+        backgroundColor = 'rgb(0,0,0)',
+        /**
         * Current state of the game.
         */
         currentState = null,
@@ -115,7 +120,7 @@ FM.game = (function () {
         gameLoop = function () {
             //Reset the screen
             context.clearRect(0, 0, screenWidth, screenHeight);
-            context.fillStyle = FM.parameters.backgroundColor;
+            context.fillStyle = backgroundColor;
             context.fillRect(0, 0, screenWidth, screenHeight);
 
             //Retrieve the current time
@@ -128,18 +133,20 @@ FM.game = (function () {
                 frameTime = 0.25;
             }
             currentTime = newTime;
-            //Update the accumulator
-            accumulator += frameTime;
             //Update if not on pause
             if (!pause) {
-                //Update the physic a fixed number of times
+                //Update the accumulator
+                accumulator += frameTime;
+                //Fixed update
                 while (accumulator >= fixedDt) {
                     accumulator -= fixedDt;
+                    //Update physics
                     currentState.updatePhysics(fixedDt);
+                    //Update the current state
+                    currentState.update(fixedDt);
                 }
+                //Determine the ratio of interpolation
                 alpha = accumulator / fixedDt;
-                //Update the current state
-                currentState.update(frameTime);
             }
             //Compute the actual FPS at which the game is running
             timeCounter += frameTime;
@@ -197,7 +204,7 @@ FM.game = (function () {
             currentReleasedKeys = [];
 
             //Main loop call
-            requestAnimationFrame(gameLoop);
+            window.requestAnimationFrame(gameLoop);
         },
         /**
         * Handle keys pressed.
@@ -321,7 +328,7 @@ FM.game = (function () {
             currentState.init(that);
 
             //Start the main loop
-            requestAnimationFrame(gameLoop);
+            window.requestAnimationFrame(gameLoop);
         }
     };
 
@@ -331,14 +338,14 @@ FM.game = (function () {
     (function () {
         var x, lastTime = 0, vendors = ['ms', 'moz', 'webkit', 'o'];
         for (x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-            window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+            window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+            window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
         }
         if (!window.requestAnimationFrame) {
-            window.requestAnimationFrame = function(callback, element) {
+            window.requestAnimationFrame = function (callback) {
                 var currTime = new Date().getTime(),
-                timeToCall = Math.max(0, 16 - (currTime - lastTime)),
-                id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
+                    timeToCall = Math.max(0, 16 - (currTime - lastTime)),
+                    id = window.setTimeout(function () { callback(currTime + timeToCall); }, timeToCall);
                 lastTime = currTime + timeToCall;
                 return id;
             };
@@ -357,6 +364,13 @@ FM.game = (function () {
         currentState.destroy();
         currentState = newState;
         currentState.init(that);
+    };
+
+    /**
+    * Change the game's background color.
+    */
+    that.setBackgroundColor = function (newColor) {
+        backgroundColor = newColor;
     };
 
     /**

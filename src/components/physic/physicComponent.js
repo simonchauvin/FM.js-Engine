@@ -21,9 +21,13 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
          */
         quad = FM.game.getCurrentState().getQuad(),
         /**
-         * The current direction of the object.
+         * Represent the mass of the physic game object, 0 means infinite mass.
          */
-        direction = 0,
+        mass = 1,
+        /**
+         * Represent the inverse mass.
+         */
+        invMass = 1 / mass,
         /**
          * Array storing the types of game objects that can collide with this one.
          */
@@ -48,22 +52,12 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             var correction = FM.vector(collision.penetration * collision.normal.x, collision.penetration * collision.normal.y),
                 aSpatial = collision.a.owner.components[FM.componentTypes.SPATIAL],
                 bSpatial = collision.b.owner.components[FM.componentTypes.SPATIAL],
-                aPhysic = collision.a.owner.components[FM.componentTypes.PHYSIC],
-                bPhysic = collision.b.owner.components[FM.componentTypes.PHYSIC],
+                //aPhysic = collision.a.owner.components[FM.componentTypes.PHYSIC],
+                //bPhysic = collision.b.owner.components[FM.componentTypes.PHYSIC],
                 massSum = 0,
-                invMass = 0,
-                otherInvMass = 0;
-            if (collision.a.mass === 0) {
-                invMass = 0;
-            } else {
-                invMass = 1 / collision.a.mass;
-            }
-            if (collision.b.mass === 0) {
-                otherInvMass = 0;
-            } else {
-                otherInvMass = 1 / collision.b.mass;
-            }
-            massSum = invMass + otherInvMass;
+                aInvMass = collision.a.getInvMass(),
+                bInvMass = collision.b.getInvMass();
+            massSum = aInvMass + bInvMass;
 
             //TODO make it work instead of the other below
             /*var percent = 0.2; // usually 20% to 80%
@@ -76,10 +70,13 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             bSpatial.position.y += otherInvMass * correction.y;*/
 
             //TODO this is here that it goes wrong, need to add offset ?
-            aSpatial.position.x -= correction.x * (invMass / massSum);
-            aSpatial.position.y -= correction.y * (invMass / massSum);
-            bSpatial.position.x += correction.x * (otherInvMass / massSum);
-            bSpatial.position.y += correction.y * (otherInvMass / massSum);
+            aSpatial.position.x -= correction.x * (aInvMass / massSum);
+            aSpatial.position.y -= correction.y * (aInvMass / massSum);
+            bSpatial.position.x += correction.x * (bInvMass / massSum);
+            bSpatial.position.y += correction.y * (bInvMass / massSum);
+            //TODO try with physic tiles with fixed integer position value
+            //aSpatial.position.reset(Math.floor(aSpatial.position.x), Math.floor(aSpatial.position.y));
+            //bSpatial.position.reset(Math.floor(bSpatial.position.x), Math.floor(bSpatial.position.y));
         },
         /**
          * Check collisions with a given array of tiles.
@@ -122,7 +119,8 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         move = function (tileMap, xVel, yVel) {
             var tiles = tileMap.getData(),
                 tileWidth = tileMap.getTileWidth(),
-                tileHeight = tileMap.getTileHeight();
+                tileHeight = tileMap.getTileHeight(),
+                hasCollided = false;
             if (Math.abs(xVel) >= tileWidth || Math.abs(yVel) >= tileHeight) {
                 move(tileMap, xVel / 2, yVel / 2);
                 move(tileMap, xVel - xVel / 2, yVel - yVel / 2);
@@ -149,6 +147,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                         vel = -1;
                     }
                     if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0)) {
+                        hasCollided = true;
                         break;
                     } else {
                         that.velocity.x += vel;
@@ -167,12 +166,14 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                         vel = -1;
                     }
                     if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel)) {
+                        hasCollided = true;
                         break;
                     } else {
                         that.velocity.y += vel;
                     }
                 }
             }
+            return hasCollided;
         };
     /**
      * Offset of the bounding box or circle.
@@ -209,10 +210,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
      */
     that.angularDrag = FM.vector(0, 0);
     /**
-     * Represent the mass of the physic game object, 0 means infinite mass.
-     */
-    that.mass = 1;
-    /**
      * Represent the maximum absolute value of the velocity.
      */
     that.maxVelocity = FM.vector(1000, 1000);
@@ -235,15 +232,20 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
     that.update = function (dt) {
         collisions = [];
         tilesCollisions = [];
-        //Compute inverse mass
-        var invMass = 1 / that.mass, currentVelocity, maxVelocity;
-        if (that.mass === 0) {
-            invMass = 0;
-        }
 
         //Limit velocity to a max value
-        currentVelocity = that.velocity.x + (invMass * that.acceleration.x) * dt;
-        maxVelocity = that.maxVelocity.x + (invMass * that.acceleration.x) * dt;
+        //TODO maxvelocity should be in pixels per seconds
+        var currentVelocity = that.velocity.x + (invMass * that.acceleration.x) * dt,
+            maxVelocity = that.maxVelocity.x + (invMass * that.acceleration.x) * dt,
+            canMove = true,
+            hasCollided = false,
+            tileMap,
+            gameObjects,
+            i,
+            j,
+            otherGameObject,
+            otherPhysic,
+            collision = null;
         if (Math.abs(currentVelocity) <= maxVelocity) {
             that.velocity.x = currentVelocity;
         } else if (currentVelocity < 0) {
@@ -265,27 +267,40 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         if (that.acceleration.x === 0) {
             if (that.velocity.x > 0) {
                 that.velocity.x -= that.drag.x;
+                if (that.velocity.x < 0) {
+                    that.velocity.x = 0;
+                }
             } else if (that.velocity.x < 0) {
                 that.velocity.x += that.drag.x;
+                if (that.velocity.x > 0) {
+                    that.velocity.x = 0;
+                }
             }
         }
         if (that.acceleration.y === 0) {
             if (that.velocity.y > 0) {
                 that.velocity.y -= that.drag.y;
+                if (that.velocity.y < 0) {
+                    that.velocity.y = 0;
+                }
             } else if (that.velocity.y < 0) {
                 that.velocity.y += that.drag.y;
+                if (that.velocity.y > 0) {
+                    that.velocity.y = 0;
+                }
             }
         }
 
-        var canMove = true, quad, tileMap, gameObjects, i, j, otherGameObject, otherPhysic, collision = null;
         if (collidesWith.length > 0) {
             if (world.hasTileCollisions()) {
                 for (i = 0; i < collidesWith.length; i = i + 1) {
                     tileMap = world.getTileMapFromType(collidesWith[i]);
                     if (tileMap && tileMap.canCollide()) {
-                        move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
+                        hasCollided = move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
+                        if (hasCollided) {
+                            tilesCollisions.push({a: that.owner, b: tileMap});
+                        }
                         canMove = false;
-                        tilesCollisions.push({a: that.owner, b: tileMap});
                     }
                 }
             }
@@ -322,43 +337,6 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
                 }
             }
         }
-
-        //TODO add direction debug
-        /*if (xVelocity_ != 0) {
-            direction = Math.atan(yVelocity_ / xVelocity_) / (Math.PI / 180);
-        } else {
-            direction = 0;
-        }*/
-    };
-
-    /**
-     * Check collisions with the tiles.
-     */
-    that.checkTileCollisions = function (tiles, xPos, yPos) {
-        var tileWidth,
-            tileHeight,
-            i1, j1,
-            i2, j2,
-            i, j;
-        //If there are collisions with tiles
-        if (tiles.length > 0) {
-            tileWidth = tiles.getTileWidth();
-            tileHeight = tiles.getTileHeight();
-            i1 = Math.floor(yPos / tileHeight);
-            j1 = Math.floor(xPos / tileWidth);
-            i2 = Math.floor((yPos + that.height) / tileHeight);
-            j2 = Math.floor((xPos + that.width) / tileWidth);
-            for (i = i1; i <= i2; i = i + 1) {
-                for (j = j1; j <= j2; j = j + 1) {
-                    if (tiles[i] && tiles[i][j] === 1) {
-                        if (j === j1 || j === j2 || i === i1 || i === i2) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     };
 
     /**
@@ -370,23 +348,11 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             //Compute restitution
             e = Math.min(that.elasticity, otherPhysic.elasticity),
             j = 0,
-            invMass = 0,
-            otherInvMass = 0,
+            otherInvMass = otherPhysic.getInvMass(),
             impulse = FM.vector(0, 0);
         //Do not resolve if velocities are separating.
         if (velocityAlongNormal > 0) {
             return;
-        }
-        //Compute inverse mass
-        if (that.mass === 0) {
-            invMass = 0;
-        } else {
-            invMass = 1 / that.mass;
-        }
-        if (otherPhysic.mass === 0) {
-            otherInvMass = 0;
-        } else {
-            otherInvMass = 1 / otherPhysic.mass;
         }
         //Compute impulse scalar
         j = -(1 + e) * velocityAlongNormal;
@@ -466,6 +432,32 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             }
         }
         return false;
+    };
+
+    /**
+     * Set the mass of the physic object.
+     */
+    that.setMass = function (newMass) {
+        mass = newMass;
+        if (mass === 0) {
+            invMass = 0;
+        } else {
+            invMass = 1 / mass;
+        }
+    };
+
+    /**
+     * Retrieve the mass of the physic object.
+     */
+    that.getMass = function () {
+        return mass;
+    };
+
+    /**
+     * Retrieve the inverse mass of the physic object.
+     */
+    that.getInvMass = function () {
+        return invMass;
     };
 
     return that;

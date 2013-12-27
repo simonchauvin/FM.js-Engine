@@ -43,10 +43,6 @@ FM.simplePathComponent = function (pOwner) {
          */
         positionBeforeStopping = FM.vector(0, 0),
         /**
-         * Factor modifying speed so that the movement is linear.
-         */
-        factor = 1,
-        /**
          * Spatial component reference.
          */
         spatial = pOwner.components[FM.componentTypes.SPATIAL],
@@ -212,6 +208,7 @@ FM.simplePathComponent = function (pOwner) {
             //Select the next waypoint if the current has been reached
             if (xReached && yReached) {
                 if (waypoints.length > currentIndex + 1) {
+                    //TODO call startfollowingpath ??
                     xReached = false;
                     yReached = false;
                     currentIndex = currentIndex + 1;

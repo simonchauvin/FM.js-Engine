@@ -50,7 +50,8 @@ FM.objectType = function (pName) {
             otherGameObject,
             physic,
             otherPhysic,
-            collision = null;
+            collision = null,
+            collisionTemp = null;
         for (i = 0; i < gameObjects.length; i = i + 1) {
             gameObject = gameObjects[i];
             physic = gameObject.components[FM.componentTypes.PHYSIC];
@@ -64,7 +65,10 @@ FM.objectType = function (pName) {
                     if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
                             && ((hasType && otherGameObject.hasType(pType))
                             || (hasOtherType && otherGameObject.hasType(that)))) {
-                        collision = physic.overlapsWithObject(otherPhysic);
+                        collisionTemp = physic.overlapsWithObject(otherPhysic);
+                        if (collisionTemp) {
+                            collision = collisionTemp;
+                        }
                     }
                 }
             }
@@ -85,13 +89,17 @@ FM.objectType = function (pName) {
             otherGameObject,
             physic = pGameObject.components[FM.componentTypes.PHYSIC],
             otherPhysic,
-            collision = null;
+            collision = null,
+            collisionTemp = null;
         if (physic) {
             for (i = 0; i < gameObjects.length; i = i + 1) {
                 otherGameObject = gameObjects[i];
                 otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
                 if (otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(that)) {
-                    collision = physic.overlapsWithObject(otherPhysic);
+                    collisionTemp = physic.overlapsWithObject(otherPhysic);
+                    if (collisionTemp) {
+                        collision = collisionTemp;
+                    }
                 }
             }
         } else {

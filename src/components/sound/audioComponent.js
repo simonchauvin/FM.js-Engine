@@ -10,14 +10,21 @@ FM.audioComponent = function (pOwner) {
         /**
          * The list of sound objects.
          */
-        sounds = [];
+        sounds = [],
+        /**
+         * 
+         */
+        replay = function (pSound) {
+            pSound.currentTime = 0;
+            pSound.play();
+        };
     /**
      * Add the component to the game object.
      */
     pOwner.addComponent(that);
 
     /**
-     * Play the sound given a certain volume and whether the sound loop or not.
+     * Play the sound given a certain volume and whether the sound loops or not.
      */
     that.play = function (pSoundName, volume, loop) {
         var i, sound, soundFound = false;
@@ -28,13 +35,19 @@ FM.audioComponent = function (pOwner) {
                 sound.volume = volume;
                 if (loop) {
                     sound.addEventListener('ended', function () {
-                        if (window.chrome) { this.load(); }
-                        this.currentTime = 0;
-                        this.play();
+                        if (window.chrome) {
+                            this.load(replay);
+                        } else {
+                            this.currentTime = 0;
+                            this.play();
+                        }
                     }, false);
                 }
-                if (window.chrome) { sound.load(); }
-                sound.play();
+                if (window.chrome) {
+                    sound.load(replay);
+                } else {
+                    sound.play();
+                }
             }
         }
         if (!soundFound) {
@@ -75,6 +88,19 @@ FM.audioComponent = function (pOwner) {
         sounds = null;
         that.destroy();
         that = null;
+    };
+
+    /**
+     * Check if a sound is currently playing.
+     */
+    that.isPlaying = function (pSoundName) {
+        var i, sound;
+        for (i = 0; i < sounds.length; i = i + 1) {
+            sound = sounds[i];
+            if (sound.getName() === pSoundName) {
+                return !sound.paused;
+            }
+        }
     };
 
     /**

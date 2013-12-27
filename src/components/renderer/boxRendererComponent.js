@@ -43,11 +43,13 @@ FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
         var xPosition = newPosition.x, yPosition = newPosition.y;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
+        xPosition = Math.round(xPosition);
+        yPosition = Math.round(yPosition);
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
             bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
             bufferContext.beginPath();
             bufferContext.rect(xPosition, yPosition, width, height);

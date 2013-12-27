@@ -54,25 +54,25 @@ FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
             //TODO might not work since I freed the physics
             // Needs to interpolate the points
             if (points.length > 0) {
                 bufferContext.beginPath();
-                bufferContext.moveTo(points[0].x, points[0].y);
+                bufferContext.moveTo(Math.round(points[0].x), Math.round(points[0].y));
                 for (i = 1; i < points.length; i = i + 1) {
-                    bufferContext.lineTo(points[i].x, points[i].y);
+                    bufferContext.lineTo(Math.round(points[i].x), Math.round(points[i].y));
                 }
             }
             bufferContext.restore();
         } else {
             if (points.length > 0) {
                 bufferContext.beginPath();
-                bufferContext.moveTo(points[0].x, points[0].y);
+                bufferContext.moveTo(Math.round(points[0].x), Math.round(points[0].y));
                 for (i = 1; i < points.length; i = i + 1) {
-                    bufferContext.lineTo(points[i].x, points[i].y);
+                    bufferContext.lineTo(Math.round(points[i].x), Math.round(points[i].y));
                 }
             }
         }

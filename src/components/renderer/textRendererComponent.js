@@ -53,7 +53,7 @@ FM.textRendererComponent = function (pTextToDisplay, pOwner) {
         bufferContext.fillStyle = that.fillStyle;
         bufferContext.font = that.font;
         bufferContext.textBaseline = that.textBaseline;
-        bufferContext.fillText(that.text, xPosition, yPosition);
+        bufferContext.fillText(that.text, Math.round(xPosition), Math.round(yPosition));
     };
 
     /**

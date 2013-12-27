@@ -10,25 +10,25 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
          */
         image = pImage,
         /**
-         * 
-         */
-        imageData = null,
-        /**
-         * Width of the sprite.
+         * Width of the sprite to display.
          */
         width = pWidth,
         /**
-         * Height of the sprite.
+         * Height of the sprite to display.
          */
         height = pHeight,
+        /**
+         * Width of the resized sprite.
+         */
+        changedWidth = pWidth,
+        /**
+         * Height of the resized sprite.
+         */
+        changedHeight = pHeight,
         /**
          * Transparency of the sprite.
          */
         alpha = 1,
-        /**
-         * Offset in case the image width is greater than the sprite.
-         */
-        offset = FM.vector(0, 0),
         /**
          * Spatial component.
          */
@@ -37,10 +37,17 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     if (!spatial && FM.parameters.debug) {
         console.log("ERROR: No spatial component was added and you need one for rendering.");
     }
+    if (!image && FM.parameters.debug) {
+        console.log("ERROR: No image was provided and you need one for rendering a sprite.");
+    }
     /**
      * Add the component to the game object.
      */
     pOwner.addComponent(that);
+    /**
+     * Offset in case the image width is greater than the sprite.
+     */
+    that.offset = FM.vector(0, 0);
 
     /**
      * Draw the sprite.
@@ -48,65 +55,67 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * drawing is done.
      */
     that.draw = function (bufferContext, newPosition) {
-        var xPosition = newPosition.x, yPosition = newPosition.y;
+        var xPosition = newPosition.x,
+            yPosition = newPosition.y,
+            offset = FM.vector(Math.round(that.offset.x), Math.round(that.offset.y));
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
-            //Draw the image or its data if the image is bigger than the sprite
-            //to display
-            if (imageData) {
-                //TODO allow a sprite to be resized
-                bufferContext.putImageData(imageData, -width / 2, -height / 2);
-            } else {
-                bufferContext.drawImage(image, -width / 2, -height / 2, width, height);
-            }
+            bufferContext.drawImage(image, offset.x, offset.y, width, height, Math.round(-changedWidth / 2), Math.round(-changedHeight / 2), changedWidth, changedHeight);
             bufferContext.restore();
         } else {
-            //Draw the image or its data if the image is bigger than the sprite
-            //to display
-            if (imageData) {
-                bufferContext.putImageData(imageData, xPosition, yPosition);
-            } else {
-                bufferContext.drawImage(image, xPosition, yPosition, width, height);
-            }
+            bufferContext.drawImage(image, offset.x, offset.y, width, height, Math.round(xPosition), Math.round(yPosition), changedWidth, changedHeight);
         }
         bufferContext.globalAlpha = 1;
-    };
-
-    /**
-     * Specifies the offset at which the part of the image to display is. Useful
-     * when using tilesets.
-     */
-    that.setOffset = function (pX, pY) {
-        offset.reset(pX, pY);
-        //Retrieve image data since the drawImage for slicing is not working properly
-        var tmpCanvas = document.createElement("canvas"),
-            tmpContext = tmpCanvas.getContext("2d");
-        tmpCanvas.width = image.width;
-        tmpCanvas.height = image.height;
-        tmpContext.drawImage(image, 0, 0, image.width, image.height);
-        imageData = tmpContext.getImageData(offset.x, offset.y, width, height);
-        delete this.tmpContext;
-        delete this.tmpCanvas;
     };
 
     /**
     * Destroy the component and its objects.
     */
     that.destroy = function () {
-        imageData = null;
-        offset.destroy();
-        offset = null;
+        that.offset.destroy();
+        that.offset = null;
         image.destroy();
         image = null;
         spatial = null;
         that.destroy();
         that = null;
+    };
+
+    /**
+     * Change the size of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pFactor factor by which the size will be changed.
+     */
+    that.changeSize = function (pFactor) {
+        changedWidth = pFactor * width;
+        changedHeight = pFactor * height;
+    };
+
+    /**
+     * Set the width of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewWidth new width of the sprite.
+     */
+    that.setWidth = function (pNewWidth) {
+        changedWidth = pNewWidth;
+    };
+
+    /**
+     * Set the height of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewHeight new height of the sprite.
+     */
+    that.setHeight = function (pNewHeight) {
+        changedHeight = pNewHeight;
     };
 
     /**
@@ -116,22 +125,6 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
         image = pImage;
         width = pWidth;
         height = pHeight;
-    };
-
-    /**
-     * Set the width of the  sprite.
-     * @param {int} newWidth new width desired.
-     */
-    that.setWidth = function (newWidth) {
-        width = newWidth;
-    };
-
-    /**
-     * Set the height of the sprite.
-     * @param {int} newHeight new height desired.
-     */
-    that.setHeight = function (newHeight) {
-        height = newHeight;
     };
 
     /**
@@ -146,13 +139,27 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * Retrieve the width of the sprite.
      */
     that.getWidth = function () {
-        return width;
+        return changedWidth;
     };
 
     /**
      * Retrieve the height of the sprite.
      */
     that.getHeight = function () {
+        return changedHeight;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalWidth = function () {
+        return width;
+    };
+
+    /**
+     * Retrieve the height of a frame before it was resized.
+     */
+    that.getOriginalHeight = function () {
         return height;
     };
 

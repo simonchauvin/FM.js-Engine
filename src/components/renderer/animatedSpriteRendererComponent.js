@@ -89,6 +89,9 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     if (!spatial && FM.parameters.debug) {
         console.log("ERROR: No spatial component was added and you need one for rendering.");
     }
+    if (!image && FM.parameters.debug) {
+        console.log("ERROR: No image was provided and you need one for rendering an animated sprite.");
+    }
     /**
      * Add the component to the game object.
      */
@@ -133,6 +136,8 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
         if (xOffset >= imageWidth) {
             yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
             xOffset = (xOffset % imageWidth);
+            xOffset = Math.round(xOffset);
+            yOffset = Math.round(yOffset);
         }
     };
 
@@ -153,16 +158,18 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
             newTime = (new Date()).getTime() / 1000;
         xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
         yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
+        xPosition = Math.round(xPosition);
+        yPosition = Math.round(yPosition);
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(frameWidth / 2, frameHeight / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(frameWidth / 2), Math.round(frameHeight / 2));
             bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, -changedWidth / 2, -changedHeight / 2, changedWidth, changedHeight);
+            bufferContext.drawImage(image, Math.round(xOffset), Math.round(yOffset), frameWidth, frameHeight, Math.round(-changedWidth / 2), Math.round(-changedHeight / 2), changedWidth, changedHeight);
             bufferContext.restore();
         } else {
-            bufferContext.drawImage(image, xOffset, yOffset, frameWidth, frameHeight, xPosition, yPosition, changedWidth, changedHeight);
+            bufferContext.drawImage(image, Math.round(xOffset), Math.round(yOffset), frameWidth, frameHeight, Math.round(xPosition), Math.round(yPosition), changedWidth, changedHeight);
         }
         bufferContext.globalAlpha = 1;
         //If the anim is not finished playing
@@ -188,6 +195,8 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
                     if (xOffset >= imageWidth) {
                         yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
                         xOffset = (xOffset % imageWidth);
+                        xOffset = Math.round(xOffset);
+                        yOffset = Math.round(yOffset);
                     }
                 }
             } else {
@@ -220,11 +229,33 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
 
     /**
      * Change the size of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
      * @param {float} pFactor factor by which the size will be changed.
      */
     that.changeSize = function (pFactor) {
         changedWidth = pFactor * frameWidth;
         changedHeight = pFactor * frameHeight;
+    };
+
+    /**
+     * Set the width of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewWidth new width of the sprite.
+     */
+    that.setWidth = function (pNewWidth) {
+        changedWidth = pNewWidth;
+    };
+
+    /**
+     * Set the height of the sprite.
+     * You will need to change the position of the spatial component of this
+     * game object if you need a resize from the center.
+     * @param {float} pNewHeight new height of the sprite.
+     */
+    that.setHeight = function (pNewHeight) {
+        changedHeight = pNewHeight;
     };
 
     /**

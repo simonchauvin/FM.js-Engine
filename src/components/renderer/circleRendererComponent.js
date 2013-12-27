@@ -41,20 +41,20 @@ FM.circleRendererComponent = function (pRadius, pColor, pOwner) {
     */
     that.draw = function (bufferContext, newPosition) {
         var xPosition = newPosition.x - bufferContext.xOffset * pOwner.scrollFactor.x, 
-                yPosition = newPosition.y - bufferContext.yOffset * pOwner.scrollFactor.y,
+            yPosition = newPosition.y - bufferContext.yOffset * pOwner.scrollFactor.y,
             newCenter = FM.vector(xPosition + width / 2, yPosition + height / 2);
         bufferContext.globalAlpha = alpha;
         if (spatial.angle !== 0) {
             bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(width / 2, height / 2);
+            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
             bufferContext.rotate(spatial.angle);
             bufferContext.beginPath();
-            bufferContext.arc(newCenter.x, newCenter.y, width / 2, 0, 2 * Math.PI);
+            bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(width / 2), 0, 2 * Math.PI);
             bufferContext.restore();
         } else {
             bufferContext.beginPath();
-            bufferContext.arc(newCenter.x, newCenter.y, width / 2, 0, 2 * Math.PI);
+            bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(width / 2), 0, 2 * Math.PI);
         }
         bufferContext.fillStyle = color;
         bufferContext.fill();

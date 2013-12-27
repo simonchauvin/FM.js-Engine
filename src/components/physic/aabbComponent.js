@@ -156,9 +156,17 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
+        var newCenter = FM.vector(newPosition.x + that.width / 2, newPosition.y + that.height / 2),
+            dir = FM.vector(Math.cos(spatial.angle), Math.sin(spatial.angle));
         bufferContext.strokeStyle = '#f4f';
         bufferContext.strokeRect(newPosition.x + that.offset.x - bufferContext.xOffset, newPosition.y + that.offset.y - bufferContext.yOffset, that.width,
                                 that.height);
+        bufferContext.beginPath();
+        bufferContext.strokeStyle = "Blue";
+        bufferContext.beginPath();
+        bufferContext.moveTo(newCenter.x + that.offset.x - bufferContext.xOffset, newCenter.y + that.offset.y - bufferContext.yOffset);
+        bufferContext.lineTo((newCenter.x + that.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + that.offset.y  + dir.y * 50) - bufferContext.yOffset);
+        bufferContext.stroke();
     };
 
     /**

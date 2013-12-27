@@ -141,10 +141,17 @@ FM.circleComponent = function (pRadius, pOwner) {
      * Draw debug information.
      */
     that.drawDebug = function (bufferContext, newPosition) {
-        var newCenter = FM.vector(newPosition.x + that.radius, newPosition.y + that.radius);
+        var newCenter = FM.vector(newPosition.x + that.radius, newPosition.y + that.radius),
+            dir = FM.vector(Math.cos(spatial.angle), Math.sin(spatial.angle));
         bufferContext.beginPath();
         bufferContext.strokeStyle = '#f4f';
         bufferContext.arc((newCenter.x + that.offset.x) - bufferContext.xOffset, (newCenter.y + that.offset.y) - bufferContext.yOffset, that.radius, 0, 2 * Math.PI, false);
+        bufferContext.stroke();
+        bufferContext.beginPath();
+        bufferContext.strokeStyle = "Blue";
+        bufferContext.beginPath();
+        bufferContext.moveTo(newCenter.x + that.offset.x - bufferContext.xOffset, newCenter.y + that.offset.y - bufferContext.yOffset);
+        bufferContext.lineTo((newCenter.x + that.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + that.offset.y  + dir.y * 50) - bufferContext.yOffset);
         bufferContext.stroke();
     };
 

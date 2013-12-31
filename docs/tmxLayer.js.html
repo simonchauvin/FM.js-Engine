@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: system/tmx_loader/tmxLayer.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: system/tmx_loader/tmxLayer.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Object representing a layer of the tile map.
+ * @class tmxLayer
+ */
+FM.tmxLayer = function () {
+    "use strict";
+    var that = {};
+    that.map;
+    that.name;
+    that.x;
+    that.y;
+    that.width;
+    that.height;
+    that.opacity;
+    that.visible;
+    that.tileGids = [];
+    that.properties = null;
+
+    /**
+     * Load the layer.
+     */
+    that.load = function (layerNode, parent) {
+        that.map = parent;
+        that.name = layerNode.getAttribute("name");
+        that.x = parseInt(layerNode.getAttribute("x"));
+        that.y = parseInt(layerNode.getAttribute("y"));
+        that.width = parseInt(layerNode.getAttribute("width"));
+        that.height = parseInt(layerNode.getAttribute("height"));
+        that.visible = !layerNode.getAttribute("visible")
+                        || (layerNode.getAttribute("visible") !== 0);
+        that.opacity = parseInt(layerNode.getAttribute("opacity"));
+
+        var properties = layerNode.getElementsByTagName("properties")[0],
+            data = layerNode.getElementsByTagName("data")[0],
+            tiles = data.getElementsByTagName("tile"),
+            property,
+            tile,
+            i;
+        //Load properties
+        if (properties) {
+            for (i = 0; i &lt; properties.childNodes.length; i++) {
+                if (properties.hasChildNodes() === true) {
+                    property = properties.childNodes[i];
+                    if (property.nodeType === 1) {
+                        if (that.properties) {
+                            that.properties.add(property);
+                        } else {
+                            that.properties = FM.tmxPropertySet();
+                            that.properties.add(property);
+                        }
+                    }
+                }
+            }
+        }
+        //Load tile GIDs
+        if (data) {
+            var chunk = "",
+                lineWidth = that.width,
+                rowIdx = -1,
+                gid;
+            if (!data.getAttribute("encoding") || (data.getAttribute("encoding") && data.getAttribute("encoding").length === 0)) {
+                //Create a 2dimensional array
+                for (i = 0; i &lt; tiles.length; i = i + 1) {
+                    tile = tiles[i];
+                    //new line?
+                    if (++lineWidth >= that.width) {
+                        that.tileGids[++rowIdx] = [];
+                        lineWidth = 0;
+                    }
+                    gid = tile.getAttribute("gid");
+                    that.tileGids[rowIdx].push(gid);
+                }
+            } else if (data.getAttribute("encoding") === "csv") {
+                chunk = data.childNodes[0].nodeValue;
+                that.tileGids = that.csvToArray(chunk, that.width);
+            } else if (data.getAttribute("encoding") === "base64") {
+                console.log("ERROR: TmxLoader, use XML or CSV export.");
+            }
+        }
+    };
+
+    /**
+     * Convert the layer into a csv string.
+     */
+    that.toCsv = function (tileSet) {
+        var max = 0xFFFFFF,
+            offset = 0,
+            result = "",
+            row = null,
+            chunk = "",
+            id = 0,
+            i,
+            j;
+        if (tileSet) {
+            offset = tileSet.firstGID;
+            max = tileSet.numTiles - 1;
+        }
+        for (i = 0; i &lt; that.tileGids.length; i = i + 1) {
+            row = that.tileGids[i];
+            chunk = "";
+            id = 0;
+            for (j = 0; j &lt; row.length; j = j + 1) {
+                id = row[j];
+                id -= offset;
+                if(id &lt; 0 || id > max) {
+                    id = 0;
+                }
+                result += chunk;
+                chunk = id + ",";
+            }
+            result += id + "\n";
+        }
+        return result;
+    };
+
+    /**
+     * Convert a CSV string into an array.
+     */
+    that.csvToArray = function (input, lineWidth) {
+        var result = [],
+            rows = input.split("\n"),
+            row = null,
+            resultRow = null,
+            entries = null,
+            i,
+            j;
+        for (i = 0; i &lt; rows.length; i = i + 1) {
+            row = rows[i];
+            if (row) {
+                resultRow = [];
+                entries = row.split(",", lineWidth);
+                for (j = 0; j &lt; entries.length; j = j + 1) {
+                    resultRow.push(entries[j]);
+                }
+                result.push(resultRow);
+            }
+        }
+        return result;
+    };
+
+    return that;
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Dec 31 2013 15:42:01 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

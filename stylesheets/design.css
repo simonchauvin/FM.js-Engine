@@ -1,6 +1,5 @@
 body
 {
-	background: url(../images/bkg.png) repeat;
 	font-family: arial Sans;
 	color: rgb(255,255,255);
 	font-size: 1.1em;
@@ -8,20 +7,34 @@ body
 
 a
 {
-	color: rgb(244,203,137);
+	color: rgb(217,4,43);
 	text-decoration: underline;
 }
 
 a:visited
 {
-	color: rgb(88,140,140);
+	color: rgb(255,144,153);
 	text-decoration: underline;
+}
+
+.normal
+{
+    color: rgb(0,0,0);
+}
+
+.green
+{
+    color: rgb(88,140,140);
+}
+
+.red
+{
+    color: rgb(217,4,43);
 }
 
 #background
 {
 	width: 800px;
-	height: 800px;
 	margin: auto;
 }
 
@@ -32,38 +45,27 @@ a:visited
 	text-align: center;
 }
 
-#menu
-{
-	float: left;
-	margin-top: 22px;
-	margin-left: 55px;
-	width: 800px;
-	height: 132px;
-}
-
 #background_content
 {
 	float: left;
 	margin-left: 40px;
-	margin-top: -70px;
-	background: url(../images/content.png) no-repeat;
 	width: 720px;
-	height: 700px;
 }
 
 #background_content .title
 {
 	float: left;
-	width: 800px;
+	width: 720px;
 	height: 30px;
-	margin-left: 210px;
-        margin-top: 6px;
+        margin-top: 40px;
+        margin-left: 210px;
 }
 
 .content
 {
 	float: left;
-        margin-top: 60px;
+        color: rgb(0,0,0);
+        margin-top: 20px;
 	margin-left: 40px;
         margin-right: 40px;
 }
@@ -74,147 +76,19 @@ a:visited
         list-style-type: square;
 }
 
-#home_content
+.content li
 {
-    display: block;
-}
-
-#features_content
-{
-    display: none;
-}
-
-#gallery_content
-{
-    display: none;
-}
-
-#download_content
-{
-    display: none;
-}
-
-#community_content
-{
-    display: none;
-}
-
-#help_content
-{
-    display: none;
-}
-
-a.home
-{
-	float: left;
-	background-image:url(../images/home_button.png);
-	background-position: 0px 0px;
-	display: inline-block;
-	height: 40px;
-	width: 100px;
-}
-
-a.home:hover
-{
-	background-position: -100px 0px;
-	height: 62px;
-}
-
-a.features
-{
-	float: left;
-	margin-left: 7px;
-	background-image:url(../images/features_button.png);
-	background-position: 0px 0px;
-	display: inline-block;
-	height: 40px;
-	width: 100px;
-}
-
-a.features:hover
-{
-	background-position: -100px 0px;
-	height: 62px;
-}
-
-a.gallery
-{
-	float: left;
-	margin-left: 7px;
-	margin-right: 55px;
-	background-image:url(../images/gallery_button.png);
-	background-position: 0px 0px;
-	display: inline-block;
-	height: 40px;
-	width: 100px;
-}
-
-a.gallery:hover
-{
-	background-position: -100px 0px;
-	height: 62px;
-}
-
-a.download
-{
-	float: left;
-	margin-left: 7px;
-	background-image:url(../images/download_button.png);
-	background-position: 0px 0px;
-	display: inline-block;
-	height: 40px;
-	width: 100px;
-}
-
-a.download:hover
-{
-	background-position: -100px 0px;
-	height: 62px;
-}
-
-a.community
-{
-	float: left;
-	margin-left: 7px;
-	background-image: url(../images/community_button.png);
-	background-position: 0px 0px;
-	display: inline-block;
-	height: 40px;
-	width: 100px;
-}
-
-a.community:hover
-{
-	background-position: -100px 0px;
-	height: 62px;
-}
-
-a.help
-{
-	float: left;
-	margin-left: 7px;
-	background-image:url(../images/help_button.png);
-	background-position: 0px 0px;
-	display: inline-block;
-	height: 40px;
-	width: 100px;
-}
-
-a.help:hover
-{
-	background-position: -100px 0px;
-	height: 62px;
+	color: rgb(80,140,140);
 }
 
 #footer
 {
 	float: left;
-	background: url(../images/footer.png) no-repeat;
 	text-align: center;
 	width: 800px;
 	height: 60px;
-	color: rgb(66,67,71);
-	font-size: 0.8em;
+	color: rgb(0,0,0);
+	font-size: 1.2em;
 }
 
 #footer p
@@ -224,5 +98,5 @@ a.help:hover
 
 #footer a
 {
-	color: rgb(66,67,71);
+	color: rgb(0,0,0);
 }

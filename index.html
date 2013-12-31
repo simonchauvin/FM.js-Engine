@@ -23,98 +23,96 @@
               <div id="header">
                   <a href="index.html#home"><span class="logo"><img alt="{FM.js(engine);}" title="{FM.js(engine);}" src="images/logo.png" width="550px" border="0"/></span></a>
               </div>
-              <div id="menu">
-                  <a href="index.html#home" class="home" onclick="menuClick('home_content', 'home')"></a>
-                <a href="index.html#features" class="features" onclick="menuClick('features_content', 'features')"></a>
-                <a href="index.html#gallery" class="gallery" onclick="menuClick('gallery_content', 'gallery')"></a>
-                <a href="index.html#download" class="download" onclick="menuClick('download_content', 'download')"></a>
-                <a href="index.html#community" class="community" onclick="menuClick('community_content', 'community')"></a>
-                <a href="index.html#help" class="help" onclick="menuClick('help_content', 'help')"></a>
-              </div>
             <div id="background_content">
                 <div id="home_content">
                     <span class="title"><img alt="Home" title="Home" src="images/home_title.png" width="300px" border="0"/></span>
-                    <br>
                     <div class="content">
-                        <ul>
-                            <li>FM JS Engine is a 2D game engine entirely written in JavaScript that'll empower you to build your games quickly.</li>
-                            <li>It's an easy to learn 2D game engine that should fit your every need while being customizable at the same time.</li>
-                            <li>Games for everyone and for everywhere.</li>
-                            <li>You don't need consoles, plugins or specific platforms.</li>
-                            <li>You just make a game that'll run on every modern browsers.</li>
-                        </ul>
                         <p>
-                              If you want to check what you can do with it make sure to visit <a href="index.php?page=features">this</a> page. <br>
-                              In case you are looking for information about the engine please go <a href="index.php?page=help">here</a>. <br>
-                              You can also check the various games and experiments made with FM JS Engine <a href="index.php?page=gallery">here</a>. <br>
-                              Do not hesitate to use the <a href="index.php?page=community">community forum</a> for any questions and requests.
-                              And finally don't forget to <a href="index.php?page=download">download</a> the engine ! <br>
+                        <h3>Welcome!</h3>
+                              If you want to check what you can do with the {FM.js(engine);} make sure to check the <a href="#features">features</a>.
+                              In case you are looking for help about the engine please see the <a href="#help">documentation</a> or <a href="http://simonchauvin.com/contacts/">contact me</a>.
+                              You can also check the various games and experiments made with the {FM.js(engine);} <a href="#gallery">there</a>.
+                              And finally don't forget to <a href="#download">download</a> the engine! <br>
                         </p>
+                        <ul>
+                            <li><span class="normal">The {FM.js(engine);} is a 2D game engine entirely written in JavaScript that'll empower you to build your games quickly.</span></li>
+                            <li><span class="normal">It's an easy to learn 2D game engine that should fit your every need while being customizable at the same time.</span></li>
+                            <li><span class="normal">Games for everyone and for everywhere.</span></li>
+                            <li><span class="normal">You don't need consoles, plugins or specific platforms.</span></li>
+                            <li><span class="normal">You just make a game that'll run on every modern browsers.</span></li>
+                        </ul>
                     </div>
                   </div>
                     <div id="features_content">
+                        <a name="features"></a>
                         <span class="title"><img alt="Features" title="Features" src="images/features_title.png" width="300px" border="0"/></span>
                         <br>
                         <div class="content">
+                            <ul>
+                                <li><span class="normal">Input management (keyboard and mouse).</span></li>
+                                <li><span class="normal">Game states management (creation, destroying, switching).</li>
+                                <li><span class="normal">Camera management (viewport, scrolling, culling).</li>
+                                <li><span class="normal">Group management.</li>
+                                <li><span class="normal">Physics with AABB and circles (QuadTree for optimization).</li>
+                                <li><span class="normal">Orthogonal tiles management.</li>
+                                <li><span class="normal">TMX files importer (Tiled Map Editor).</li>
+                                <li><span class="normal">Texts, simple shapes, sprites and animated sprites management.</li>
+                                <li><span class="normal">Particles!.</li>
+                                <li><span class="normal">Simple pathfinding system.</li>
+                                <li><span class="normal">Assets preloading (possibility of a custom preloader).</li>
+                                <li><span class="normal">Debug information (collisions, FPS, etc.) (home/start key to display).</li>
+                                <li><span class="normal">Fully documented and readable code.</li>
+                            </ul>
                             <p>
                                 Demos coming soon.
                             </p>
                         </div>
                     </div>
                 <div id="gallery_content">
+                    <a name="gallery"></a>
                     <span class="title"><img alt="Gallery" title="Gallery" src="images/gallery_title.png" width="300px" border="0"/></span>
                     <br>
                     <div class="content">
-                        <p>
-                            Games are coming someday eventually !
-                        </p>
+                        <table>
+                            <tr>
+                                <td><a href="http://simonchauvin.com/a-thing/"><img alt="A Thing" title="A Thing" src="images/a-thing.png" width="300px" border="0"/></a></td>
+                                <td><a href="http://simonchauvin.com/down-the-line/"><img alt="Down the Line" title="Down the Line" src="images/down-the-line.png" width="300px" border="0"/></a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="http://simonchauvin.com/the-core-of-life/"><img alt="The Core of Life" title="The Core of Life" src="images/the-core-of-life.jpg" width="300px" border="0"/></a></td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
                 <div id="download_content">
+                    <a name="download"></a>
                     <span class="title"><img alt="Download" title="Download" src="images/download_title.png" width="300px" border="0"/></span>
                     <br>
                     <div class="content">
                         <p>
-                            The FM JS Engine comes in three flavors :
+                            The {FM.js(engine);} comes in three flavors :
                         </p>
                         <ul>
-                            <li>Full : if you need to change parts of the code for whatever good reasons.</li>
-                            <li>One file : if you just need to be able to see parts of the code from time to time.</li>
-                            <li>Minified : once you finished your game this is the best way to keep the file very small.</li>
+                            <li><span class="normal"><a href="https://github.com/simonchauvin/FMJSEngine" class="btn btn-github"><span class="icon"></span>Full</a>: if you need the full source code in separated files (<a href="https://github.com/simonchauvin/FMJSEngine/archive/1.0.zip" class="btn">.zip</a> or <a href="https://github.com/simonchauvin/FMJSEngine/archive/1.0.tar.gz" class="btn">.tar.gz</a>)</span></li>
+                            <li><span class="normal"><a href="https://github.com/simonchauvin/FMJSEngine/blob/master/builds/concat/fmjsengine-concat.js" class="btn btn-github"><span class="icon"></span>One file</a>: if you just need a readable source code all in one file.</span></li>
+                            <li><span class="normal"><a href="https://github.com/simonchauvin/FMJSEngine/blob/master/builds/min/fmjsengine-min.js" class="btn btn-github"><span class="icon"></span>Minified</a>: fully minified code for distribution when your game is finished.</span></li>
                         </ul>
-                    </div>
-                    <a href="https://github.com/simonchauvin/FMJSEngine/zipball/master" class="btn">Download as .zip</a>
-                    <a href="https://github.com/simonchauvin/FMJSEngine/tarball/master" class="btn">Download as .tar.gz</a>
-                    <a href="https://github.com/simonchauvin/FMJSEngine" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
-                </div>
-                <div id="community_content">
-                    <span class="title"><img alt="Community" title="Community" src="images/community_title.png" width="300px" border="0"/></span>
-                    <br>
-                    <div class="content">
-                        <p>
-                            Forum coming soon.
-                        </p>
                     </div>
                 </div>
                 <div id="help_content">
+                    <a name="help"></a>
                     <span class="title"><img alt="Help" title="Help" src="images/help_title.png" width="300px" border="0"/></span>
                     <br>
                     <div class="content">
                         <p>
-                            Here you can check the API reference and consult the documentation.
+                            <a href="docs/index.html" class="btn">Access the documentation.</a>
                         </p>
-
-                            <pre class="brush: js">
-                                    function foo()
-                                    {
-                                    }
-                            </pre>
                     </div>
                 </div>
             </div>
             <div id="footer">
                 <p>
-                    <a href="http://www.simonchauvin.com">Simon Chauvin</a>
+                    {<span class="green">Copyright</span> (c) (<a href="http://www.simonchauvin.com"><span class="red">Simon Chauvin</span></a>;)}
                 </p>
             </div>
          </div>

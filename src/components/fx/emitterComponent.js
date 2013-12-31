@@ -1,6 +1,7 @@
 /**
  * The emitter component is used for the emission of particles. 
  * object.
+ * @class emitterComponent
  * @author Simon Chauvin
  */
 FM.emitterComponent = function (pOffset, pOwner) {

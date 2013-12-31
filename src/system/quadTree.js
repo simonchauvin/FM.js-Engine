@@ -1,31 +1,31 @@
 /**
- * 
+ * @class quadTree
  */
 FM.quadTree = function (pLevel, pBounds) {
     "use strict";
     var that = {},
         /**
-         * 
+         * Maximum number of objects per quad tree.
          */
         MAX_OBJECTS = 10,
         /**
-         * 
+         * Maximum depth of the quad tree.
          */
         MAX_LEVELS = 5,
         /**
-         * 
+         * Current depth level of the quad tree.
          */
         level = pLevel,
         /**
-         * 
+         * Objects present in the quad tree.
          */
         objects = [],
         /**
-         * 
+         * Bounds delimiting the quad tree in the screen space.
          */
         bounds = pBounds,
         /**
-         * 
+         * The four nodes created when a quad tree is split.
          */
         nodes = [],
         /**
@@ -55,20 +55,20 @@ FM.quadTree = function (pLevel, pBounds) {
                 }
             }
             return index;
-         },
-         /*
-          * Splits the node into 4 subnodes.
-          */
-         split = function () {
-             var subWidth = bounds.width / 2,
-                 subHeight = bounds.height / 2,
-                 x = bounds.x,
-                 y = bounds.y;
+        },
+        /*
+         * Splits the node into 4 subnodes.
+         */
+        split = function () {
+            var subWidth = bounds.width / 2,
+                subHeight = bounds.height / 2,
+                x = bounds.x,
+                y = bounds.y;
             nodes.push(FM.quadTree(level + 1, FM.rectangle(x + subWidth, y, subWidth, subHeight)));
             nodes.push(FM.quadTree(level + 1, FM.rectangle(x, y, subWidth, subHeight)));
             nodes.push(FM.quadTree(level + 1, FM.rectangle(x, y + subHeight, subWidth, subHeight)));
             nodes.push(FM.quadTree(level + 1, FM.rectangle(x + subWidth, y + subHeight, subWidth, subHeight)));
-         };
+        };
 
     /*
      * Insert the object into the quadtree. If the node

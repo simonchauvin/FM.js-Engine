@@ -1,6 +1,6 @@
 /**
- * @class objectType
  * Class that represents a type of game object.
+ * @class objectType
  * @author Simon Chauvin.
  */
 FM.objectType = function (pName) {

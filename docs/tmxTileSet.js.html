@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: system/tmx_loader/tmxTileSet.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: system/tmx_loader/tmxTileSet.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Object representing a tile set from a tile map.
+ * @class tmxTileSet
+ */
+FM.tmxTileSet = function () {
+    "use strict";
+    var that = {},
+        /**
+         * The custom properties of the tile set.
+         */
+        tileProperties = [],
+        /**
+         * The image associated to this tile set.
+         */
+        image = null;
+
+    that.firstGID = 0;
+    that.map;
+    that.name;
+    that.tileWidth;
+    that.tileHeight;
+    that.spacing;
+    that.margin;
+    that.imageSource;
+
+    //available only after immage has been assigned:
+    that.numTiles = 0xFFFFFF;
+    that.numRows = 1;
+    that.numCols = 1;
+
+    /**
+     * Load the tile set.
+     * @param {string} tileSetNode the xml node containing the data to load.
+     * @param {tmxMap} parent the tile map containing this tile set.
+     */
+    that.load = function (tileSetNode, parent) {
+        that.map = parent;
+        that.firstGID = parseInt(tileSetNode.getAttribute("firstgid"));
+        that.imageSource = tileSetNode.getElementsByTagName("image")[0].getAttribute("source");
+        that.name = tileSetNode.getAttribute("name");
+        that.tileWidth = parseInt(tileSetNode.getAttribute("tilewidth"));
+        that.tileHeight = parseInt(tileSetNode.getAttribute("tileheight"));
+        that.spacing = parseInt(tileSetNode.getAttribute("spacing"));
+        that.margin = parseInt(tileSetNode.getAttribute("margin"));
+
+        //Load properties
+        var tiles = tileSetNode.getElementsByTagName("tile"),
+            tile,
+            properties,
+            property,
+            i,
+            j;
+        if (tiles) {
+            for (i = 0; i &lt; tiles.length; i++) {
+                tile = tiles[i];
+                properties = tile.getElementsByTagName("properties")[0];
+                if (properties) {
+                    for (j = 0; j &lt; properties.childNodes.length; j++) {
+                        if (properties.hasChildNodes() === true) {
+                            property = properties.childNodes[j];
+                            if (property.nodeType === 1) {
+                                tileProperties[tile.getAttribute("id")] = FM.tmxPropertySet();
+                                tileProperties[tile.getAttribute("id")].add(property);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    /**
+     * Retrieve the image associated to this tile set.
+     * @returns {imageAsset} the image associated to the tile set.
+     */
+    that.getImage = function () {
+        return image;
+    };
+
+    /**
+     * Provide the image of the tile set.
+     * @param {imageAsset} pImage the image to serve as tile set.
+     */
+    that.setImage = function (pImage) {
+        image = pImage;
+        //TODO: consider spacing & margin
+        that.numCols = Math.floor(image.width / that.tileWidth);
+        that.numRows = Math.floor(image.height / that.tileHeight);
+        that.numTiles = that.numRows * that.numCols;
+    };
+
+    /**
+     * Check if this tile set contains a given id of tile.
+     * @param {int} gid the id of the tile to check the presence of in this tile set.
+     */
+    that.hasGid = function (gid) {
+        return (gid >= that.firstGID) && (gid &lt; that.firstGID + that.numTiles);
+    };
+
+    that.fromGid = function (gid) {
+        return gid - that.firstGID;
+    };
+
+    that.toGid = function (id) {
+        return that.firstGID + id;
+    };
+
+    that.getPropertiesByGid = function (gid) {
+        return tileProperties[gid - that.firstGID];
+    };
+
+    that.getProperties = function (id) {
+        return tileProperties[id];
+    };
+
+    that.getRect = function (id) {
+        //TODO: consider spacing & margin
+        return new FM.rectangle(0, 0, (id % that.numCols) * that.tileWidth, (id / that.numCols) * that.tileHeight);
+    };
+
+    return that;
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Dec 31 2013 14:57:53 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

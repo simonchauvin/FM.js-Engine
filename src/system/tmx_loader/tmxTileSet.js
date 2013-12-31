@@ -1,10 +1,17 @@
 /**
- * 
+ * Object representing a tile set from a tile map.
+ * @class tmxTileSet
  */
 FM.tmxTileSet = function () {
     "use strict";
     var that = {},
+        /**
+         * The custom properties of the tile set.
+         */
         tileProperties = [],
+        /**
+         * The image associated to this tile set.
+         */
         image = null;
 
     that.firstGID = 0;
@@ -22,9 +29,9 @@ FM.tmxTileSet = function () {
     that.numCols = 1;
 
     /**
-     * 
-     * @param {type} tileSetNode
-     * @param {type} parent
+     * Load the tile set.
+     * @param {string} tileSetNode the xml node containing the data to load.
+     * @param {tmxMap} parent the tile map containing this tile set.
      */
     that.load = function (tileSetNode, parent) {
         that.map = parent;
@@ -62,10 +69,18 @@ FM.tmxTileSet = function () {
         }
     };
 
+    /**
+     * Retrieve the image associated to this tile set.
+     * @returns {imageAsset} the image associated to the tile set.
+     */
     that.getImage = function () {
         return image;
     };
 
+    /**
+     * Provide the image of the tile set.
+     * @param {imageAsset} pImage the image to serve as tile set.
+     */
     that.setImage = function (pImage) {
         image = pImage;
         //TODO: consider spacing & margin
@@ -74,6 +89,10 @@ FM.tmxTileSet = function () {
         that.numTiles = that.numRows * that.numCols;
     };
 
+    /**
+     * Check if this tile set contains a given id of tile.
+     * @param {int} gid the id of the tile to check the presence of in this tile set.
+     */
     that.hasGid = function (gid) {
         return (gid >= that.firstGID) && (gid < that.firstGID + that.numTiles);
     };

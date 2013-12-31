@@ -1,5 +1,5 @@
 /**
- * Under Creative Commons Licence
+ * @class math
  * @author Simon Chauvin
  */
 FM.math = {

@@ -1,6 +1,6 @@
 /**
- * Under Creative Commons Licence.
- *
+ * 
+ * @class circleComponent
  * @author Simon Chauvin.
  * @param {gameObject} The game object to which the component belongs.
  * @returns {circleComponent} The circle component itself.

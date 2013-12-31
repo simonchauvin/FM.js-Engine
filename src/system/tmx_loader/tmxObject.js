@@ -1,11 +1,11 @@
 /**
- * 
+ * @class tmxObject
  */
 FM.tmxObject = function (objectNode, parent) {
     "use strict";
     var that = {};
     /**
-     * 
+     * The group this object belongs to.
      */
     that.group = parent;
     that.name = objectNode.getAttribute("name");

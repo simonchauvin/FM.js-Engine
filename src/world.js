@@ -1,5 +1,6 @@
 /**
  * World represent the concrete space of the game.
+ * @class world
  * @author Simon Chauvin
  */
 FM.world = function (pWidth, pHeight) {

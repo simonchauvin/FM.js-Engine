@@ -1,5 +1,6 @@
 /**
  * Object representing a vector.
+ * @class vector
  * @author Simon Chauvin
  * @param {int} pX x position.
  * @param {int} pY y position.

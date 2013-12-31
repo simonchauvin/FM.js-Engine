@@ -1,5 +1,6 @@
 /**
  * Object representing a game object.
+ * @class gameObject
  * @author Simon Chauvin
  * @param {int} pZIndex specifies the z position of the game object.
  */

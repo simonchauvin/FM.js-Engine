@@ -1,5 +1,5 @@
 /**
- * 
+ * @class spriteRendererComponent
  * @author Simon Chauvin
  */
 FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {

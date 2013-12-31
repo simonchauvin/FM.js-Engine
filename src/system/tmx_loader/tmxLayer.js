@@ -1,5 +1,6 @@
 /**
- * 
+ * Object representing a layer of the tile map.
+ * @class tmxLayer
  */
 FM.tmxLayer = function () {
     "use strict";
@@ -16,16 +17,16 @@ FM.tmxLayer = function () {
     that.properties = null;
 
     /**
-     * 
+     * Load the layer.
      */
     that.load = function (layerNode, parent) {
         that.map = parent;
         that.name = layerNode.getAttribute("name");
-        that.x = parseInt(layerNode.getAttribute("x")); 
-        that.y = parseInt(layerNode.getAttribute("y")); 
-        that.width = parseInt(layerNode.getAttribute("width")); 
-        that.height = parseInt(layerNode.getAttribute("height")); 
-        that.visible = !layerNode.getAttribute("visible") 
+        that.x = parseInt(layerNode.getAttribute("x"));
+        that.y = parseInt(layerNode.getAttribute("y"));
+        that.width = parseInt(layerNode.getAttribute("width"));
+        that.height = parseInt(layerNode.getAttribute("height"));
+        that.visible = !layerNode.getAttribute("visible")
                         || (layerNode.getAttribute("visible") !== 0);
         that.opacity = parseInt(layerNode.getAttribute("opacity"));
 
@@ -79,7 +80,7 @@ FM.tmxLayer = function () {
     };
 
     /**
-     * 
+     * Convert the layer into a csv string.
      */
     that.toCsv = function (tileSet) {
         var max = 0xFFFFFF,
@@ -113,7 +114,7 @@ FM.tmxLayer = function () {
     };
 
     /**
-     * 
+     * Convert a CSV string into an array.
      */
     that.csvToArray = function (input, lineWidth) {
         var result = [],

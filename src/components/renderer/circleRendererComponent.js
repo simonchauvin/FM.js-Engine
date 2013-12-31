@@ -1,5 +1,5 @@
 /**
- * 
+ * @class circleRendererComponent
  * @author Simon Chauvin
  */
 FM.circleRendererComponent = function (pRadius, pColor, pOwner) {

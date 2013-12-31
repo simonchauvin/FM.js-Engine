@@ -1,5 +1,6 @@
 /**
  * Object representing a collision between two objects.
+ * @class collision
  * @author Simon Chauvin
  */
 FM.collision = function (pObjectA, pObjectB) {

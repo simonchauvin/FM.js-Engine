@@ -1,5 +1,5 @@
 /**
- * Under Creative Commons Licence
+ * @class keyboard
  * @author Simon Chauvin
  */
 FM.keyboard = {

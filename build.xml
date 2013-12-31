@@ -3,6 +3,7 @@
     <property name="concat" location="builds/concat" />
     <property name="min" location="builds/min" />
     <property name="src" location="src" />
+    <property name="docs" location="docs" />
     <property name="system" location="${src}/system" />
     <property name="components" location="${src}/components" />
     <property name="fx" location="${components}/fx" />
@@ -12,14 +13,19 @@
     <property name="sound" location="${components}/sound" />
     <property name="spatial" location="${components}/spatial" />
     <property name="tmx" location="${system}/tmx_loader" />
-    <property name="compressor"  location="builds/yui_compressor/yuicompressor-2.4.7.jar"/>
+    <property name="compressor" location="builds/yui_compressor/yuicompressor-2.4.7.jar" />
+    <property name="jsdoc.home" location="builds/jsdoc" />
+    <property name="jsdoc3-task" location="builds/jsdoc3-ant-task/build/jar/jsdoc3-ant-task-1.0.jar" />
+    <property name="rhino-jar" location="${jsdoc.home}/rhino/js.jar" />
     <target name="clean">
         <delete dir="${concat}"/>
         <delete dir="${min}"/>
+        <delete dir="${docs}"/>
     </target>
     <target name="init">
         <mkdir dir="${concat}"/>
         <mkdir dir="${min}"/>
+        <mkdir dir="${docs}"/>
     </target>
     <target name="concat">
         <concat destfile="${concat}/fmjsengine-concat.js" encoding="UTF-8" >
@@ -70,7 +76,11 @@
             <arg line="-o"></arg>
             <mapper type="glob" from="*-concat.js" to="*-min.js"></mapper>
             <targetfile/>
-       </apply>       
+       </apply>
+    </target>
+    <taskdef name="jsdoc" classname="net.jannon.ant.tasks.JsDoc3" classpath="${jsdoc3-task}:${rhino-jar}"/>
+    <target name="jsdoc-build">
+        <jsdoc jsdochome="${jsdoc.home}" to="${docs}" dir="${src}" />
     </target>
     <target name="build" depends="clean, init, concat, min">   
     </target>

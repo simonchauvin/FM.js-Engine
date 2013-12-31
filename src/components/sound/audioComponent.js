@@ -1,5 +1,6 @@
 /**
- * Under Creative Commons Licence
+ * 
+ * @class audioComponent
  * @author Simon Chauvin
  * @param owner
  * @returns {audioComponent}
@@ -12,7 +13,7 @@ FM.audioComponent = function (pOwner) {
          */
         sounds = [],
         /**
-         * 
+         * Replay a sound from the beginning.
          */
         replay = function (pSound) {
             pSound.currentTime = 0;

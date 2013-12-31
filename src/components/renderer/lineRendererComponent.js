@@ -1,5 +1,5 @@
 /**
- * 
+ * @class lineRendererComponent
  * @author Simon Chauvin
  */
 FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {

@@ -1,5 +1,5 @@
 /**
- * Under Creative Commons Licence
+ * @class textRendererComponent
  * @author Simon Chauvin
  */
 FM.textRendererComponent = function (pTextToDisplay, pOwner) {

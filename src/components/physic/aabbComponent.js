@@ -1,6 +1,6 @@
 /**
- * Under Creative Commons Licence.
- *
+ * 
+ * @class aabbComponent
  * @author Simon Chauvin.
  * @param {int} pWidth width of the aabb.
  * @param {int} pHeight height of the aabb.

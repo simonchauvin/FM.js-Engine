@@ -1,6 +1,6 @@
 var FM = FM || {};
 /**
- * Under Creative Commons Licence
+ * @class assetManager
  * @author Simon Chauvin
  */
 FM.assetManager = {
@@ -93,7 +93,7 @@ FM.assetManager = {
 };
 /**
  * Under Creative Commons Licence
- * 
+ * @class parameters
  * @author Simon Chauvin
  */
 FM.parameters = {
@@ -129,6 +129,7 @@ FM.parameters = {
 };
 /**
  * List of possible component.
+ * @class componentTypes
  * @author Simon Chauvin
  */
 FM.componentTypes = {
@@ -141,6 +142,7 @@ FM.componentTypes = {
 };
 /**
  * Under Creative Commons Licence
+ * @class circle
  * @author Simon Chauvin
  * @param radius
  * @returns {circle}
@@ -175,6 +177,7 @@ FM.circle = function (pX, pY, pRadius) {
 /**
  * game is a singleton that represents the game application and
  * contains all the necessary information and methods to handle its execution.
+ * @class game
  * @author Simon Chauvin
  */
 FM.game = (function () {
@@ -643,16 +646,16 @@ FM.game = (function () {
     };
 
     /**
-    * Retrieve the chosen width of the game screen
-    * @returns
+    * Retrieve the chosen width of the game screen.
+    * @returns {int} the width of the screen.
     */
     that.getScreenWidth = function () {
         return screenWidth;
     };
 
     /**
-    * Retrieve the chosen height of the game screen
-    * @returns
+    * Retrieve the chosen height of the game screen.
+    * @returns {int] the height of the screen.
     */
     that.getScreenHeight = function () {
         return screenHeight;
@@ -660,7 +663,7 @@ FM.game = (function () {
 
     /**
     * Retrieve the current state of the game
-    * @returns
+    * @returns {state] the current state of the game.
     */
     that.getCurrentState = function () {
         return currentState;
@@ -670,6 +673,7 @@ FM.game = (function () {
 }());
 /**
  * Object representing a game object.
+ * @class gameObject
  * @author Simon Chauvin
  * @param {int} pZIndex specifies the z position of the game object.
  */
@@ -858,7 +862,7 @@ FM.gameObject = function (pZIndex) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * @class keyboard
  * @author Simon Chauvin
  */
 FM.keyboard = {
@@ -963,7 +967,7 @@ FM.keyboard = {
         SINGLE_QUOTE : 222
 };
 /**
- * Under Creative Commons Licence
+ * @class math
  * @author Simon Chauvin
  */
 FM.math = {
@@ -981,8 +985,8 @@ FM.math = {
     },
 };
 /**
- * @class objectType
  * Class that represents a type of game object.
+ * @class objectType
  * @author Simon Chauvin.
  */
 FM.objectType = function (pName) {
@@ -1226,6 +1230,7 @@ FM.objectType = function (pName) {
 };
 /**
  * Under Creative Commons Licence
+ * @class rectangle
  * @author Simon Chauvin
  * @param width
  * @param height
@@ -1263,6 +1268,7 @@ FM.rectangle = function (pX, pY, pWidth, pHeight) {
 /**
  * Object acting as a container of game objects. It helps structure the game in 
  * states.
+ * @class state
  * @author Simon Chauvin
  */
 FM.state = function () {
@@ -1747,10 +1753,11 @@ FM.state = function () {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * 
  * No need to add the tilemap to the state, it's done when the tilemap is 
  * loaded.
  * By default a tilemap does not collide to anything.
+ * @class tileMap
  * @param {imageAsset} tileSet  Image of the tile set in the order of 
  * the data given
  * @author Simon Chauvin
@@ -1950,6 +1957,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
 };
 /**
  * Object representing a vector.
+ * @class vector
  * @author Simon Chauvin
  * @param {int} pX x position.
  * @param {int} pY y position.
@@ -2065,6 +2073,7 @@ FM.vector = function (pX, pY) {
 };
 /**
  * World represent the concrete space of the game.
+ * @class world
  * @author Simon Chauvin
  */
 FM.world = function (pWidth, pHeight) {
@@ -2125,6 +2134,7 @@ FM.world = function (pWidth, pHeight) {
 };
 /**
  * Object representing a collision between two objects.
+ * @class collision
  * @author Simon Chauvin
  */
 FM.collision = function (pObjectA, pObjectB) {
@@ -2162,6 +2172,7 @@ FM.collision = function (pObjectA, pObjectB) {
 /**
  * Top level object shared by every components.
  * The component is automatically added to the game object specified as owner.
+ * @class component
  * @author Simon Chauvin
  * @param {String} pComponentType type of the component to add.
  * @param {gameObject} pComponentOwner game object that owns the component.
@@ -2203,7 +2214,7 @@ FM.component = function (pComponentType, pComponentOwner) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * @class audioAsset
  * @author Simon Chauvin
  */
 FM.audioAsset = function (pName, pPath) {
@@ -2300,7 +2311,7 @@ FM.audioAsset = function (pName, pPath) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * @class fileAsset
  * @author Simon Chauvin
  */
 FM.fileAsset = function (pName, pPath) {
@@ -2381,7 +2392,7 @@ FM.fileAsset = function (pName, pPath) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * @class imageAsset
  * @author Simon Chauvin
  */
 FM.imageAsset = function (pName, pPath) {
@@ -2450,7 +2461,7 @@ FM.imageAsset = function (pName, pPath) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * @class preloader
  * @author Simon Chauvin
  * preloader is used to set the preload page
  * You can create a custom preloader extending this one and providing it to 
@@ -2512,7 +2523,7 @@ FM.preloader = function (pFirstState) {
     return that;
 };
 /**
- * 
+ * @class quadTree
  */
 FM.quadTree = function (pLevel, pBounds) {
     "use strict";
@@ -2647,7 +2658,7 @@ FM.quadTree = function (pLevel, pBounds) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * 
  * @author Simon Chauvin
  */
 
@@ -2686,7 +2697,7 @@ FM.includeJsFile = function (filename) {
     head.appendChild(script);
 }
 /**
- * 
+ * @class tmxLayer
  */
 FM.tmxLayer = function () {
     "use strict";
@@ -2826,7 +2837,7 @@ FM.tmxLayer = function () {
 
     return that;
 };/**
- * 
+ * @class tmxMap
  */
 FM.tmxMap = function () {
     "use strict";
@@ -2985,7 +2996,7 @@ FM.tmxMap = function () {
 
     return that;
 };/**
- * 
+ * @class tmxObject
  */
 FM.tmxObject = function (objectNode, parent) {
     "use strict";
@@ -3041,7 +3052,7 @@ FM.tmxObject = function (objectNode, parent) {
 
     return that;
 };/**
- * 
+ * @class tmxObjectGroup
  */
 FM.tmxObjectGroup = function () {
     "use strict";
@@ -3103,7 +3114,7 @@ FM.tmxObjectGroup = function () {
 
     return that;
 };/**
- * 
+ * @class tmxPropertySet
  */
 FM.tmxPropertySet = function () {
     "use strict";
@@ -3120,7 +3131,7 @@ FM.tmxPropertySet = function () {
 
     return that;
 };/**
- * 
+ * @class tmxTileSet
  */
 FM.tmxTileSet = function () {
     "use strict";
@@ -3224,6 +3235,7 @@ FM.tmxTileSet = function () {
 };/**
  * The emitter component is used for the emission of particles. 
  * object.
+ * @class emitterComponent
  * @author Simon Chauvin
  */
 FM.emitterComponent = function (pOffset, pOwner) {
@@ -3492,6 +3504,7 @@ FM.emitterComponent = function (pOffset, pOwner) {
 /**
  * The simple path component allows to affect a path to follow to any game 
  * object.
+ * @class simplePathComponent
  * @author Simon Chauvin
  */
 FM.simplePathComponent = function (pOwner) {
@@ -3812,8 +3825,8 @@ FM.simplePathComponent = function (pOwner) {
     return that;
 };
 /**
- * Under Creative Commons Licence.
- *
+ * 
+ * @class aabbComponent
  * @author Simon Chauvin.
  * @param {int} pWidth width of the aabb.
  * @param {int} pHeight height of the aabb.
@@ -3994,8 +4007,8 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
     return that;
 };
 /**
- * Under Creative Commons Licence.
- *
+ * 
+ * @class circleComponent
  * @author Simon Chauvin.
  * @param {gameObject} The game object to which the component belongs.
  * @returns {circleComponent} The circle component itself.
@@ -4162,8 +4175,8 @@ FM.circleComponent = function (pRadius, pOwner) {
     return that;
 };
 /**
- * Under Creative Commons Licence
  * Component of basic physics.
+ * @class physicComponent
  * @param {int} pWidth width of the collider.
  * @param {int} pHeight height of the collider.
  * @param {fmObject} The object that owns this component.
@@ -4626,7 +4639,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
     return that;
 };
 /**
- *
+ * @class animatedSpriteRendererComponent
  * @author Simon Chauvin
  * @param {imageAsset} pImage image of the sprite sheet.
  * @param {int} pWidth width of a frame of the spritesheet.
@@ -4932,7 +4945,7 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
     return that;
 };
 /**
- * 
+ * @class boxRendererComponent
  * @author Simon Chauvin
  */
 FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
@@ -5069,7 +5082,7 @@ FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
     return that;
 };
 /**
- * 
+ * @class circleRendererComponent
  * @author Simon Chauvin
  */
 FM.circleRendererComponent = function (pRadius, pColor, pOwner) {
@@ -5222,7 +5235,7 @@ FM.circleRendererComponent = function (pRadius, pColor, pOwner) {
     return that;
 };
 /**
- * 
+ * @class lineRendererComponent
  * @author Simon Chauvin
  */
 FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
@@ -5410,7 +5423,7 @@ FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
     return that;
 };
 /**
- * 
+ * @class spriteRendererComponent
  * @author Simon Chauvin
  */
 FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
@@ -5585,7 +5598,7 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * @class textRendererComponent
  * @author Simon Chauvin
  */
 FM.textRendererComponent = function (pTextToDisplay, pOwner) {
@@ -5672,7 +5685,8 @@ FM.textRendererComponent = function (pTextToDisplay, pOwner) {
     return that;
 };
 /**
- * Under Creative Commons Licence
+ * 
+ * @class audioComponent
  * @author Simon Chauvin
  * @param owner
  * @returns {audioComponent}

@@ -1,6 +1,7 @@
 /**
  * Top level object shared by every components.
  * The component is automatically added to the game object specified as owner.
+ * @class component
  * @author Simon Chauvin
  * @param {String} pComponentType type of the component to add.
  * @param {gameObject} pComponentOwner game object that owns the component.

@@ -1,8 +1,9 @@
 /**
- * Under Creative Commons Licence
+ * 
  * No need to add the tilemap to the state, it's done when the tilemap is 
  * loaded.
  * By default a tilemap does not collide to anything.
+ * @class tileMap
  * @param {imageAsset} tileSet  Image of the tile set in the order of 
  * the data given
  * @author Simon Chauvin

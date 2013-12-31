@@ -1,6 +1,6 @@
 /**
  * Under Creative Commons Licence
- * 
+ * @class parameters
  * @author Simon Chauvin
  */
 FM.parameters = {

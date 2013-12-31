@@ -1,6 +1,7 @@
 /**
  * The simple path component allows to affect a path to follow to any game 
  * object.
+ * @class simplePathComponent
  * @author Simon Chauvin
  */
 FM.simplePathComponent = function (pOwner) {

@@ -1,5 +1,5 @@
 /**
- *
+ * @class animatedSpriteRendererComponent
  * @author Simon Chauvin
  * @param {imageAsset} pImage image of the sprite sheet.
  * @param {int} pWidth width of a frame of the spritesheet.

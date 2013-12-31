@@ -1,5 +1,5 @@
 /**
- * Under Creative Commons Licence
+ * @class preloader
  * @author Simon Chauvin
  * preloader is used to set the preload page
  * You can create a custom preloader extending this one and providing it to 

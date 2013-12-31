@@ -1,11 +1,12 @@
 /**
- * 
+ * Object representing a group of objects of the tile map.
+ * @class tmxObjectGroup
  */
 FM.tmxObjectGroup = function () {
     "use strict";
     var that = {};
     /**
-     * 
+     * The map that this group belongs to.
      */
     that.map;
     that.name;
@@ -18,6 +19,9 @@ FM.tmxObjectGroup = function () {
     that.properties = null;
     that.objects = [];
 
+    /**
+     * Load the group of objects.
+     */
     that.load = function (objectGroupNode, parent) {
         that.map = parent;
         that.name = objectGroupNode.getAttribute("name");

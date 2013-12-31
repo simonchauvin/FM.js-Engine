@@ -1,5 +1,6 @@
 /**
  * Under Creative Commons Licence
+ * @class rectangle
  * @author Simon Chauvin
  * @param width
  * @param height

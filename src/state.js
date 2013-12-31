@@ -1,6 +1,7 @@
 /**
  * Object acting as a container of game objects. It helps structure the game in 
  * states.
+ * @class state
  * @author Simon Chauvin
  */
 FM.state = function () {

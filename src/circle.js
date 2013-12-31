@@ -1,5 +1,6 @@
 /**
  * Under Creative Commons Licence
+ * @class circle
  * @author Simon Chauvin
  * @param radius
  * @returns {circle}

@@ -1,6 +1,6 @@
 /**
- * Under Creative Commons Licence
  * Component of basic physics.
+ * @class physicComponent
  * @param {int} pWidth width of the collider.
  * @param {int} pHeight height of the collider.
  * @param {fmObject} The object that owns this component.
@@ -101,7 +101,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             return false;
         },
         /**
-         * 
+         * Try to move the physic object and rollback if it collides with a tile.
          */
         tryToMove = function (tiles, tileWidth, tileHeight, xVel, yVel) {
             var spX = spatial.position.x + xVel,
@@ -114,7 +114,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
             return false;
         },
         /**
-         * 
+         * Move the physic object one pixel at a time.
          */
         move = function (tileMap, xVel, yVel) {
             var tiles = tileMap.getData(),

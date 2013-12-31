@@ -1,5 +1,5 @@
 /**
- * Under Creative Commons Licence
+ * @class audioAsset
  * @author Simon Chauvin
  */
 FM.audioAsset = function (pName, pPath) {

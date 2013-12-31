@@ -1,6 +1,6 @@
 var FM = FM || {};
 /**
- * Under Creative Commons Licence
+ * @class assetManager
  * @author Simon Chauvin
  */
 FM.assetManager = {

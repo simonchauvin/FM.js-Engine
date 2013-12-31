@@ -1,5 +1,5 @@
 /**
- * Under Creative Commons Licence
+ * @class fileAsset
  * @author Simon Chauvin
  */
 FM.fileAsset = function (pName, pPath) {

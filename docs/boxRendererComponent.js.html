@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/renderer/boxRendererComponent.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: components/renderer/boxRendererComponent.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * @class boxRendererComponent
+ * @author Simon Chauvin
+ */
+FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
+    "use strict";
+    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
+        /**
+         * Width of the box.
+         */
+        width = pWidth,
+        /**
+         * Height of the box.
+         */
+        height = pHeight,
+        /**
+         * Color of the box.
+         */
+        color = pColor,
+        /**
+         * Transparency of the box.
+         */
+        alpha = 1,
+        /**
+         * Spatial component.
+         */
+        spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Check if a spatial component is present
+    if (!spatial && FM.parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    /**
+     * Add the component to the game object.
+     */
+    pOwner.addComponent(that);
+
+    /**
+    * Draw the box.
+    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on which 
+    * drawing is done.
+    */
+    that.draw = function (bufferContext, newPosition) {
+        var xPosition = newPosition.x, yPosition = newPosition.y;
+        xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
+        yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
+        xPosition = Math.round(xPosition);
+        yPosition = Math.round(yPosition);
+        bufferContext.globalAlpha = alpha;
+        if (spatial.angle !== 0) {
+            bufferContext.save();
+            bufferContext.translate(xPosition, yPosition);
+            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
+            bufferContext.rotate(spatial.angle);
+            bufferContext.beginPath();
+            bufferContext.rect(xPosition, yPosition, width, height);
+            bufferContext.restore();
+        } else {
+            bufferContext.beginPath();
+            bufferContext.rect(xPosition, yPosition, width, height);
+        }
+        bufferContext.fillStyle = color;
+        bufferContext.fill();
+        bufferContext.globalAlpha = 1;
+    };
+
+    /**
+    * Destroy the component and its objects.
+    */
+    that.destroy = function () {
+        spatial = null;
+        that.destroy();
+        that = null;
+    };
+
+    /**
+     * Set the width of the box.
+     * @param {int} newWidth new width desired.
+     */
+    that.setWidth = function (newWidth) {
+        width = newWidth;
+    };
+
+    /**
+     * Set the height of the box.
+     * @param {int} newHeight new height desired.
+     */
+    that.setHeight = function (newHeight) {
+        height = newHeight;
+    };
+
+    /**
+     * Set the color of the  box.
+     * @param {string} newColor new color desired.
+     */
+    that.setColor = function (newColor) {
+        color = newColor;
+    };
+
+    /**
+     * Set the transparency of the box.
+     * @param {float} newAlpha new transparency value desired.
+     */
+    that.setAlpha = function (newAlpha) {
+        alpha = newAlpha;
+    };
+
+    /**
+     * Retrieve the width of the box.
+     */
+    that.getWidth = function () {
+        return width;
+    };
+
+    /**
+     * Retrieve the height of the box.
+     */
+    that.getHeight = function () {
+        return height;
+    };
+
+    /**
+     * Retrieve the color of the box.
+     */
+    that.getColor = function () {
+        return color;
+    };
+
+    /**
+     * Retrieve the transparency value of the box.
+     * @return {float} current transparency value.
+     */
+    that.getAlpha = function () {
+        return alpha;
+    };
+
+    return that;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Dec 31 2013 14:57:53 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

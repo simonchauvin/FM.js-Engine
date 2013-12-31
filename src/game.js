@@ -1,6 +1,7 @@
 /**
  * game is a singleton that represents the game application and
  * contains all the necessary information and methods to handle its execution.
+ * @class game
  * @author Simon Chauvin
  */
 FM.game = (function () {
@@ -469,16 +470,16 @@ FM.game = (function () {
     };
 
     /**
-    * Retrieve the chosen width of the game screen
-    * @returns
+    * Retrieve the chosen width of the game screen.
+    * @returns {int} the width of the screen.
     */
     that.getScreenWidth = function () {
         return screenWidth;
     };
 
     /**
-    * Retrieve the chosen height of the game screen
-    * @returns
+    * Retrieve the chosen height of the game screen.
+    * @returns {int] the height of the screen.
     */
     that.getScreenHeight = function () {
         return screenHeight;
@@ -486,7 +487,7 @@ FM.game = (function () {
 
     /**
     * Retrieve the current state of the game
-    * @returns
+    * @returns {state] the current state of the game.
     */
     that.getCurrentState = function () {
         return currentState;

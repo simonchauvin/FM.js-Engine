@@ -1,5 +1,5 @@
 /**
- * 
+ * @class boxRendererComponent
  * @author Simon Chauvin
  */
 FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {

@@ -1,5 +1,6 @@
 /**
  * List of possible component.
+ * @class componentTypes
  * @author Simon Chauvin
  */
 FM.componentTypes = {

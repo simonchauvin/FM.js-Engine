@@ -1,5 +1,5 @@
 /**
- * Under Creative Commons Licence
+ * 
  * @author Simon Chauvin
  */
 

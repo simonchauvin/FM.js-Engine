@@ -3,7 +3,6 @@
     <property name="concat" location="builds/concat" />
     <property name="min" location="builds/min" />
     <property name="src" location="src" />
-    <property name="docs" location="docs" />
     <property name="system" location="${src}/system" />
     <property name="components" location="${src}/components" />
     <property name="fx" location="${components}/fx" />
@@ -14,21 +13,26 @@
     <property name="spatial" location="${components}/spatial" />
     <property name="tmx" location="${system}/tmx_loader" />
     <property name="compressor" location="builds/yui_compressor/yuicompressor-2.4.7.jar" />
-    <property name="jsdoc.home" location="builds/jsdoc" />
-    <property name="jsdoc3-task" location="builds/jsdoc3-ant-task/build/jar/jsdoc3-ant-task-1.0.jar" />
-    <property name="rhino-jar" location="${jsdoc.home}/rhino/js.jar" />
     <target name="clean">
         <delete dir="${concat}"/>
         <delete dir="${min}"/>
-        <delete dir="${docs}"/>
     </target>
     <target name="init">
         <mkdir dir="${concat}"/>
         <mkdir dir="${min}"/>
-        <mkdir dir="${docs}"/>
     </target>
     <target name="concat">
-        <concat destfile="${concat}/fmjsengine-concat.js" encoding="UTF-8" >
+        <echo file="${concat}/fmjsengine-concat.js">
+/**
+ * {FM.js(engine);} v1.0
+ * http://simonchauvin.github.io/FMJSEngine/
+ *
+ * Copyright (c) 2013 Simon Chauvin.
+ * Licenced under the MIT License.
+ */
+
+</echo>
+        <concat destfile="${concat}/fmjsengine-concat.js" append="true" encoding="UTF-8" >
             <filelist dir="${src}" files= "assetManager.js,
                 parameters.js, componentTypes.js,
                 circle.js,  game.js, 
@@ -62,7 +66,7 @@
         </concat>
     </target>
     <target name="min">
-        <apply executable="java" parallel="false" dest="${min}" taskname="yui">
+        <apply executable="java" parallel="false" dest="${min}" append="true" taskname="yui">
             <fileset dir="${concat}">
                 <patternset>
                     <include name="fmjsengine-concat.js"/>
@@ -77,10 +81,16 @@
             <mapper type="glob" from="*-concat.js" to="*-min.js"></mapper>
             <targetfile/>
        </apply>
-    </target>
-    <taskdef name="jsdoc" classname="net.jannon.ant.tasks.JsDoc3" classpath="${jsdoc3-task}:${rhino-jar}"/>
-    <target name="jsdoc-build">
-        <jsdoc jsdochome="${jsdoc.home}" to="${docs}" dir="${src}" />
+       <echo file="${min}/fmjsengine-min.js" append="true">
+/**
+ * {FM.js(engine);} v1.0
+ * http://simonchauvin.github.io/FMJSEngine/
+ *
+ * Copyright (c) 2013 Simon Chauvin.
+ * Licenced under the MIT License.
+ */
+
+</echo>
     </target>
     <target name="build" depends="clean, init, concat, min">   
     </target>

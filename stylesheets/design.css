@@ -2,7 +2,7 @@ body
 {
 	font-family: Sans-Serif;
 	color: rgb(66,67,71);
-	font-size: 1.1em;
+	font-size: 0.9em;
 }
 
 a
@@ -13,7 +13,7 @@ a
 
 a:visited
 {
-	color: rgb(66,67,71);
+	color: rgb(170,4,43);
 	text-decoration: underline;
 }
 

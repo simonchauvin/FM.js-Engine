@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class audioAsset
  * @author Simon Chauvin

@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class textRendererComponent
  * @author Simon Chauvin

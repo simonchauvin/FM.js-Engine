@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object representing a tile set from a tile map.
  * @class tmxTileSet

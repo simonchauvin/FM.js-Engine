@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * 
  * @author Simon Chauvin
@@ -5,9 +6,8 @@
 
 if (typeof Object.create !== 'function') {
     Object.create = function (o) {
-        function F() {
-            "use strict";
-        };
+        "use strict";
+        function F() {}
         F.prototype = o;
         return new F();
     };
@@ -36,4 +36,4 @@ FM.includeJsFile = function (filename) {
     script.type = "text/javascript";
 
     head.appendChild(script);
-}
+};

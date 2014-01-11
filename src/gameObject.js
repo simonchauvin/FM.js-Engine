@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object representing a game object.
  * @class gameObject
@@ -71,9 +72,9 @@ FM.gameObject = function (pZIndex) {
      * @param {component} component the component to be added.
      */
     that.addComponent = function (component) {
-        var name = component.name;
-        if (!that.components[name]) {
-            that.components[name] = component;
+        var componentName = component.name;
+        if (!that.components[componentName]) {
+            that.components[componentName] = component;
         }
     };
 

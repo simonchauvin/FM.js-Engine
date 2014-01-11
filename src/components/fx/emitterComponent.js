@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * The emitter component is used for the emission of particles. 
  * object.

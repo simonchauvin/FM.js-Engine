@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * List of possible component.
  * @class componentTypes

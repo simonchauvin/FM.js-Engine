@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class circleRendererComponent
  * @author Simon Chauvin

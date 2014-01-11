@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class fileAsset
  * @author Simon Chauvin

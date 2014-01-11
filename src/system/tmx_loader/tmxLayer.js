@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object representing a layer of the tile map.
  * @class tmxLayer

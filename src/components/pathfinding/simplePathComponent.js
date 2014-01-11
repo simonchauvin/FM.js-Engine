@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * The simple path component allows to affect a path to follow to any game 
  * object.

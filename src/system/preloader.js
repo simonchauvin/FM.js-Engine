@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class preloader
  * @author Simon Chauvin
@@ -9,14 +10,14 @@
 FM.preloader = function (pFirstState) {
     "use strict";
     var that = Object.create(FM.state()),
-    /**
-     * Screen width
-     */
-    screenWidth,
-    /**
-     * Screen height
-     */
-    screenHeight;
+        /**
+         * Screen width
+         */
+        screenWidth,
+        /**
+         * Screen height
+         */
+        screenHeight;
 
     /**
      * Init the preloader.

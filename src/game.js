@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * game is a singleton that represents the game application and
  * contains all the necessary information and methods to handle its execution.

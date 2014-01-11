@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object acting as a container of game objects. It helps structure the game in 
  * states.

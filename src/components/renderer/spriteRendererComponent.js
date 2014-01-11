@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class spriteRendererComponent
  * @author Simon Chauvin

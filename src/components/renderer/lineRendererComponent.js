@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class lineRendererComponent
  * @author Simon Chauvin

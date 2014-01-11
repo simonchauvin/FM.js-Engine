@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object representing a vector.
  * @class vector
@@ -55,7 +56,7 @@ FM.vector = function (pX, pY) {
     */
     that.crossProd = function(vector) {
         return that.x * vector.y - that.y * vector.x;
-    }
+    };
     /**
      * Reset the vector the specified values.
      */
@@ -95,7 +96,7 @@ FM.vector = function (pX, pY) {
     /**
      * Clone the current vector.
      */
-    that.clone = function() {
+    that.clone = function () {
         return new FM.vector(that.x, that.y);
     };
     /**

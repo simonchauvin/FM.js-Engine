@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object representing a collision between two objects.
  * @class collision

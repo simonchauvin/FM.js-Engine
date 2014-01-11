@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object representing a group of objects of the tile map.
  * @class tmxObjectGroup

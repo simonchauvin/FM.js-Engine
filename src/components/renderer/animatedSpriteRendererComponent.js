@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class animatedSpriteRendererComponent
  * @author Simon Chauvin

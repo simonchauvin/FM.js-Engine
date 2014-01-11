@@ -1,13 +1,13 @@
 
 /**
  * {FM.js(engine);} v1.0
- * http://simonchauvin.github.io/FMJSEngine/
+ * http://simonchauvin.github.io/FM.js-Engine/
  *
  * Copyright (c) 2013 Simon Chauvin.
  * Licenced under the MIT License.
  */
 
-var FM = FM || {};
+var FM = {};
 /**
  * @class assetManager
  * @author Simon Chauvin
@@ -100,6 +100,7 @@ FM.assetManager = {
         return asset;
     }
 };
+/*global FM*/
 /**
  * Under Creative Commons Licence
  * @class parameters
@@ -108,25 +109,19 @@ FM.assetManager = {
 FM.parameters = {
     //FPS at which the game is running
     FPS: 60.0,
-
     //The name of the library directory
     libFolder: "lib",
-
     //Debug mode
     debug: false,
-
     //Minimum width and height of a collider, must be equal to the minimum
     //width a tile can have
     COLLIDER_MINIMUM_SIZE: 16,
-
     //Box2D body types
     STATIC: "static",
     KINEMATIC: "kinematic",
     DYNAMIC: "dynamic",
-
     //Used for Box2D conversion
     PIXELS_TO_METERS: 30,
-
     //System constants
     IMAGE: "image",
     AUDIO: "audio",
@@ -136,6 +131,7 @@ FM.parameters = {
     UP: "up",
     DOWN: "down"
 };
+/*global FM*/
 /**
  * List of possible component.
  * @class componentTypes
@@ -149,6 +145,7 @@ FM.componentTypes = {
     SOUND: "sound",
     FX: "fx"
 };
+/*global FM*/
 /**
  * Under Creative Commons Licence
  * @class circle
@@ -183,6 +180,7 @@ FM.circle = function (pX, pY, pRadius) {
 
     return that;
 };
+/*global FM*/
 /**
  * game is a singleton that represents the game application and
  * contains all the necessary information and methods to handle its execution.
@@ -680,6 +678,7 @@ FM.game = (function () {
 
     return that;
 }());
+/*global FM*/
 /**
  * Object representing a game object.
  * @class gameObject
@@ -753,9 +752,9 @@ FM.gameObject = function (pZIndex) {
      * @param {component} component the component to be added.
      */
     that.addComponent = function (component) {
-        var name = component.name;
-        if (!that.components[name]) {
-            that.components[name] = component;
+        var componentName = component.name;
+        if (!that.components[componentName]) {
+            that.components[componentName] = component;
         }
     };
 
@@ -870,129 +869,136 @@ FM.gameObject = function (pZIndex) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class keyboard
  * @author Simon Chauvin
  */
 FM.keyboard = {
-	BACKSPACE : 8,
-	TAB : 9,
-	ENTER : 13,
-	SHIFT : 16,
-	CTRL : 17,
-	ALT : 18,
-	PAUSE : 19,
-	CAPS : 20,
-	ESCAPE : 27,
-	SPACE : 32,
-	PAGE_UP : 33,
-	PAGE_DOWN : 34,
-	END : 35,
-	HOME : 36,
-	LEFT : 37,
-	UP : 38,
-	RIGHT : 39,
-	DOWN : 40,
-	INSERT : 45,
-	DEL : 46,
-	ZERO : 48,
-	ONE : 49,
-	TWO : 50,
-	THREE : 51,
-	FOUR : 52,
-	FIVE : 53,
-	SIX : 54,
-	SEVEN : 55,
-	EIGHT : 56,
-	NINE : 57,
-	A : 65,
-	B : 66,
-	C : 67,
-	D : 68,
-	E : 69,
-	F : 70,
-	G : 71,
-	H : 72,
-	I : 73,
-	J : 74,
-	K : 75,
-	L : 76,
-	M : 77,
-	N: 78,
-	O : 79,
-	P : 80,
-	Q : 81,
-	R : 82,
-	S : 83,
-	T : 84,
-	U : 85,
-	V : 86,
-	W : 87,
-	X : 88,
-	Y : 89,
-	Z : 90,
-        lLEFT_SPECIAL : 91,
-        RIGHT_SPECIAL : 92,
-        SELECT : 93,
-        NUM_ZERO : 96,
-        NUM_ONE : 97,
-        NUM_TWO : 98,
-        NUM_THREE : 99,
-        NUM_FOUR : 100,
-        NUM_FIVE : 101,
-        NUM_SIX : 102,
-        NUM_SEVEN : 103,
-        NUM_EIGHT : 104,
-        NUM_NINE : 105,
-        MULTIPLY : 106,
-        ADD : 107,
-        SUBSTRACT : 109,
-        DECIMAL_POINT : 110,
-        DIVIDE : 111,
-        F1 : 112,
-        F2 : 113,
-        F3 : 114,
-        F4 : 115,
-        F5 : 116,
-        F6 : 117,
-        F7 : 118,
-        F8 : 119,
-        F9 : 120,
-        F10 : 121,
-        F11 : 122,
-        F12 : 123,
-        NUM_LOCK : 144,
-        SCROLL_LOCK : 145,
-        SEMICOLON : 186,
-        EQUAL_SIGN : 187,
-        COMMA : 188,
-        DASH : 189,
-        PERIOD : 190,
-        FORWARD_SLASH : 191,
-        GRAVE_ACCENT : 192,
-        OPEN_BRACKET : 219,
-        BACK_SLASH : 220,
-        CLOSE_BRACKET : 221,
-        SINGLE_QUOTE : 222
+    BACKSPACE: 8,
+    TAB: 9,
+    ENTER: 13,
+    SHIFT: 16,
+    CTRL: 17,
+    ALT: 18,
+    PAUSE: 19,
+    CAPS: 20,
+    ESCAPE: 27,
+    SPACE: 32,
+    PAGE_UP: 33,
+    PAGE_DOWN: 34,
+    END: 35,
+    HOME: 36,
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
+    INSERT: 45,
+    DEL: 46,
+    ZERO: 48,
+    ONE: 49,
+    TWO: 50,
+    THREE: 51,
+    FOUR: 52,
+    FIVE: 53,
+    SIX: 54,
+    SEVEN: 55,
+    EIGHT: 56,
+    NINE: 57,
+    A: 65,
+    B: 66,
+    C: 67,
+    D: 68,
+    E: 69,
+    F: 70,
+    G: 71,
+    H: 72,
+    I: 73,
+    J: 74,
+    K: 75,
+    L: 76,
+    M: 77,
+    N: 78,
+    O: 79,
+    P: 80,
+    Q: 81,
+    R: 82,
+    S: 83,
+    T: 84,
+    U: 85,
+    V: 86,
+    W: 87,
+    X: 88,
+    Y: 89,
+    Z: 90,
+    lLEFT_SPECIAL: 91,
+    RIGHT_SPECIAL: 92,
+    SELECT: 93,
+    NUM_ZERO: 96,
+    NUM_ONE: 97,
+    NUM_TWO: 98,
+    NUM_THREE: 99,
+    NUM_FOUR: 100,
+    NUM_FIVE: 101,
+    NUM_SIX: 102,
+    NUM_SEVEN: 103,
+    NUM_EIGHT: 104,
+    NUM_NINE: 105,
+    MULTIPLY: 106,
+    ADD: 107,
+    SUBSTRACT: 109,
+    DECIMAL_POINT: 110,
+    DIVIDE: 111,
+    F1: 112,
+    F2: 113,
+    F3: 114,
+    F4: 115,
+    F5: 116,
+    F6: 117,
+    F7: 118,
+    F8: 119,
+    F9: 120,
+    F10: 121,
+    F11: 122,
+    F12: 123,
+    NUM_LOCK: 144,
+    SCROLL_LOCK: 145,
+    SEMICOLON: 186,
+    EQUAL_SIGN: 187,
+    COMMA: 188,
+    DASH: 189,
+    PERIOD: 190,
+    FORWARD_SLASH: 191,
+    GRAVE_ACCENT: 192,
+    OPEN_BRACKET: 219,
+    BACK_SLASH: 220,
+    CLOSE_BRACKET: 221,
+    SINGLE_QUOTE: 222
 };
+/*global FM*/
 /**
  * @class math
  * @author Simon Chauvin
  */
 FM.math = {
     addVectors: function (vec1, vec2) {
+        "use strict";
         return FM.vector(vec1.x + vec2.x, vec1.y + vec2.y);
     },
     substractVectors: function (vec1, vec2) {
+        "use strict";
         return FM.vector(vec1.x - vec2.x, vec1.y - vec2.y);
     },
     multiplyVectors: function (vec1, vec2) {
+        "use strict";
         return FM.vector(vec1.x * vec2.x, vec1.y * vec2.y);
     },
-    clamp: function(val, min, max) {
+    clamp: function (val, min, max) {
+        "use strict";
         return Math.min(max, Math.max(min, val));
     },
 };
+/*global FM*/
 /**
  * Class that represents a type of game object.
  * @class objectType
@@ -1237,6 +1243,7 @@ FM.objectType = function (pName) {
 
     return that;
 };
+/*global FM*/
 /**
  * Under Creative Commons Licence
  * @class rectangle
@@ -1274,6 +1281,7 @@ FM.rectangle = function (pX, pY, pWidth, pHeight) {
 
     return that;
 };
+/*global FM*/
 /**
  * Object acting as a container of game objects. It helps structure the game in 
  * states.
@@ -1761,6 +1769,7 @@ FM.state = function () {
 
     return that;
 };
+/*global FM*/
 /**
  * 
  * No need to add the tilemap to the state, it's done when the tilemap is 
@@ -1964,6 +1973,7 @@ FM.tileMap = function (pTileSet, pWidth, pHeight, pTileWidth, pTileHeight, pType
 
     return that;
 };
+/*global FM*/
 /**
  * Object representing a vector.
  * @class vector
@@ -2021,7 +2031,7 @@ FM.vector = function (pX, pY) {
     */
     that.crossProd = function(vector) {
         return that.x * vector.y - that.y * vector.x;
-    }
+    };
     /**
      * Reset the vector the specified values.
      */
@@ -2061,7 +2071,7 @@ FM.vector = function (pX, pY) {
     /**
      * Clone the current vector.
      */
-    that.clone = function() {
+    that.clone = function () {
         return new FM.vector(that.x, that.y);
     };
     /**
@@ -2080,9 +2090,12 @@ FM.vector = function (pX, pY) {
 
     return that;
 };
+/*global FM*/
 /**
  * World represent the concrete space of the game.
  * @class world
+ * @param {int} pWidth width of the tile map in pixels
+ * @param {int} pHeight height of the tile map in pixels
  * @author Simon Chauvin
  */
 FM.world = function (pWidth, pHeight) {
@@ -2090,12 +2103,22 @@ FM.world = function (pWidth, pHeight) {
     var that = FM.rectangle(0, 0, pWidth, pHeight),
         /**
          * Tile maps of the world.
+         * @private
+         * @type Array
+         * @name world#tileMaps
+         * @field
          */
         tileMaps = [];
 
     /**
      * Add a tile map to the current world.
+     * @public
+     * @name world#loadTileMap
+     * @function
      * @param {tileMap} pTileMap tile map to add.
+     * @param {tmxMap} pMap tmxMap containing the tile map data.
+     * @param {string} pLayerName name of the layer of the tile map.
+     * @param {string} pTileSetName name of the tile set to use.
      */
     that.loadTileMap = function (pTileMap, pMap, pLayerName, pTileSetName) {
         pTileMap.load(pMap.getLayer(pLayerName).toCsv(pMap.getTileSet(pTileSetName)));
@@ -2104,8 +2127,11 @@ FM.world = function (pWidth, pHeight) {
 
     /**
      * Retrieve the tile map from the given type.
+     * @public
+     * @name world#getTileMapFromType
+     * @function
      * @param {objectType} pType the type of the tile map to retrieve.
-     * @return {tileMap} the tile map corresponding to the given type.
+     * @return {tileMap} the tile map corresponding to the given type or null if none is found.
      */
     that.getTileMapFromType = function (pType) {
         var i, tileMap;
@@ -2120,7 +2146,10 @@ FM.world = function (pWidth, pHeight) {
 
     /**
      * Check if a tile map allow collisions.
-     * @return {Boolean} Whether there is a tile map with potential collisions.
+     * @public
+     * @name world#hasTileCollisions
+     * @function
+     * @return {Boolean} Whether there is a tile map with potential collisions or not.
      */
     that.hasTileCollisions = function () {
         var i;
@@ -2133,7 +2162,10 @@ FM.world = function (pWidth, pHeight) {
     };
 
     /**
-    * Destroy the world and its objects
+    * Destroy the world and its objects.
+    * @public
+    * @name world#destroy
+    * @function
     */
     that.destroy = function () {
         that = null;
@@ -2141,6 +2173,7 @@ FM.world = function (pWidth, pHeight) {
 
     return that;
 };
+/*global FM*/
 /**
  * Object representing a collision between two objects.
  * @class collision
@@ -2178,6 +2211,7 @@ FM.collision = function (pObjectA, pObjectB) {
 
     return that;
 };
+/*global FM*/
 /**
  * Top level object shared by every components.
  * The component is automatically added to the game object specified as owner.
@@ -2222,6 +2256,7 @@ FM.component = function (pComponentType, pComponentOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class audioAsset
  * @author Simon Chauvin
@@ -2319,6 +2354,7 @@ FM.audioAsset = function (pName, pPath) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class fileAsset
  * @author Simon Chauvin
@@ -2400,6 +2436,7 @@ FM.fileAsset = function (pName, pPath) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class imageAsset
  * @author Simon Chauvin
@@ -2469,6 +2506,7 @@ FM.imageAsset = function (pName, pPath) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class preloader
  * @author Simon Chauvin
@@ -2480,14 +2518,14 @@ FM.imageAsset = function (pName, pPath) {
 FM.preloader = function (pFirstState) {
     "use strict";
     var that = Object.create(FM.state()),
-    /**
-     * Screen width
-     */
-    screenWidth,
-    /**
-     * Screen height
-     */
-    screenHeight;
+        /**
+         * Screen width
+         */
+        screenWidth,
+        /**
+         * Screen height
+         */
+        screenHeight;
 
     /**
      * Init the preloader.
@@ -2531,6 +2569,7 @@ FM.preloader = function (pFirstState) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class quadTree
  */
@@ -2637,8 +2676,8 @@ FM.quadTree = function (pLevel, pBounds) {
      * Return all objects that could collide with the given object.
      */
     that.retrieve = function (gameObject) {
-        var returnObjects = [];
-        var index = getIndex(gameObject);
+        var returnObjects = [],
+            index = getIndex(gameObject);
         if (index !== -1 && nodes.length > 0) {
             returnObjects = nodes[index].retrieve(gameObject);
         }
@@ -2666,6 +2705,7 @@ FM.quadTree = function (pLevel, pBounds) {
 
     return that;
 };
+/*global FM*/
 /**
  * 
  * @author Simon Chauvin
@@ -2673,9 +2713,8 @@ FM.quadTree = function (pLevel, pBounds) {
 
 if (typeof Object.create !== 'function') {
     Object.create = function (o) {
-        function F() {
-            "use strict";
-        };
+        "use strict";
+        function F() {}
         F.prototype = o;
         return new F();
     };
@@ -2704,7 +2743,7 @@ FM.includeJsFile = function (filename) {
     script.type = "text/javascript";
 
     head.appendChild(script);
-}
+};/*global FM*/
 /**
  * Object representing a layer of the tile map.
  * @class tmxLayer
@@ -2846,7 +2885,8 @@ FM.tmxLayer = function () {
     };
 
     return that;
-};/**
+};/*global FM*/
+/**
  * Object representing a tile map generated by Tiled Map Editor.
  * Parses the .tmx file content and facilitates the access to its data.
  * @class tmxMap
@@ -3007,17 +3047,18 @@ FM.tmxMap = function () {
      * @returns {tmxTileSet} the tile set matching the gid provided, or null if none is found.
      */
     that.getGidOwner = function (gid) {
-        var last = null;
-        for (var tileSet in that.tileSets)
-        {
-            if(tileSet.hasGid(gid))
+        var tileSet = null;
+        for (tileSet in that.tileSets) {
+            if (tileSet.hasGid(gid)) {
                 return tileSet;
+            }
         }
         return null;
     };
 
     return that;
-};/**
+};/*global FM*/
+/**
  * @class tmxObject
  */
 FM.tmxObject = function (objectNode, parent) {
@@ -3073,7 +3114,8 @@ FM.tmxObject = function (objectNode, parent) {
     }
 
     return that;
-};/**
+};/*global FM*/
+/**
  * Object representing a group of objects of the tile map.
  * @class tmxObjectGroup
  */
@@ -3139,7 +3181,8 @@ FM.tmxObjectGroup = function () {
     };
 
     return that;
-};/**
+};/*global FM*/
+/**
  * Object representing a set of properties.
  * @class tmxPropertySet
  */
@@ -3157,7 +3200,8 @@ FM.tmxPropertySet = function () {
     };
 
     return that;
-};/**
+};/*global FM*/
+/**
  * Object representing a tile set from a tile map.
  * @class tmxTileSet
  */
@@ -3278,7 +3322,8 @@ FM.tmxTileSet = function () {
     };
 
     return that;
-};/**
+};/*global FM*/
+/**
  * The emitter component is used for the emission of particles. 
  * object.
  * @class emitterComponent
@@ -3547,6 +3592,7 @@ FM.emitterComponent = function (pOffset, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * The simple path component allows to affect a path to follow to any game 
  * object.
@@ -3870,6 +3916,7 @@ FM.simplePathComponent = function (pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * 
  * @class aabbComponent
@@ -4052,6 +4099,7 @@ FM.aabbComponent = function (pWidth, pHeight, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * 
  * @class circleComponent
@@ -4220,6 +4268,7 @@ FM.circleComponent = function (pRadius, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * Component of basic physics.
  * @class physicComponent
@@ -4649,7 +4698,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         for (i = 0; i < collisions.length; i = i + 1) {
             collision = collisions[i];
             if ((collision.b && collision.b.owner.getId() === pOtherGameObject.getId())
-                || (collision.a && collision.a.owner.getId() === pOtherGameObject.getId())) {
+                    || (collision.a && collision.a.owner.getId() === pOtherGameObject.getId())) {
                 return true;
             }
         }
@@ -4684,6 +4733,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class animatedSpriteRendererComponent
  * @author Simon Chauvin
@@ -4990,6 +5040,7 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
 
     return that;
 };
+/*global FM*/
 /**
  * @class boxRendererComponent
  * @author Simon Chauvin
@@ -5127,6 +5178,7 @@ FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class circleRendererComponent
  * @author Simon Chauvin
@@ -5280,6 +5332,7 @@ FM.circleRendererComponent = function (pRadius, pColor, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class lineRendererComponent
  * @author Simon Chauvin
@@ -5468,6 +5521,7 @@ FM.lineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class spriteRendererComponent
  * @author Simon Chauvin
@@ -5643,6 +5697,7 @@ FM.spriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * @class textRendererComponent
  * @author Simon Chauvin
@@ -5730,6 +5785,7 @@ FM.textRendererComponent = function (pTextToDisplay, pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * 
  * @class audioComponent
@@ -5852,6 +5908,7 @@ FM.audioComponent = function (pOwner) {
 
     return that;
 };
+/*global FM*/
 /**
  * The spatial component allows positionning of the game object in the 2d space.
  * @author Simon Chauvin

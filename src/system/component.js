@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Top level object shared by every components.
  * The component is automatically added to the game object specified as owner.

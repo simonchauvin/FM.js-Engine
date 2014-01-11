@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Class that represents a type of game object.
  * @class objectType

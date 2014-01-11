@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class boxRendererComponent
  * @author Simon Chauvin

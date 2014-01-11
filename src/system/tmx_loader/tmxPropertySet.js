@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Object representing a set of properties.
  * @class tmxPropertySet

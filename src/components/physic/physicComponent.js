@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Component of basic physics.
  * @class physicComponent
@@ -427,7 +428,7 @@ FM.physicComponent = function (pWidth, pHeight, pOwner) {
         for (i = 0; i < collisions.length; i = i + 1) {
             collision = collisions[i];
             if ((collision.b && collision.b.owner.getId() === pOtherGameObject.getId())
-                || (collision.a && collision.a.owner.getId() === pOtherGameObject.getId())) {
+                    || (collision.a && collision.a.owner.getId() === pOtherGameObject.getId())) {
                 return true;
             }
         }

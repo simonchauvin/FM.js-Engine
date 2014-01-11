@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * Under Creative Commons Licence
  * @class circle

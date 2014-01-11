@@ -1,4 +1,4 @@
-var FM = FM || {};
+var FM = {};
 /**
  * @class assetManager
  * @author Simon Chauvin

@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * 
  * No need to add the tilemap to the state, it's done when the tilemap is 

@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * The spatial component allows positionning of the game object in the 2d space.
  * @author Simon Chauvin

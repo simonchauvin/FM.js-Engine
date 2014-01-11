@@ -1,3 +1,4 @@
+/*global FM*/
 /**
  * @class quadTree
  */
@@ -104,8 +105,8 @@ FM.quadTree = function (pLevel, pBounds) {
      * Return all objects that could collide with the given object.
      */
     that.retrieve = function (gameObject) {
-        var returnObjects = [];
-        var index = getIndex(gameObject);
+        var returnObjects = [],
+            index = getIndex(gameObject);
         if (index !== -1 && nodes.length > 0) {
             returnObjects = nodes[index].retrieve(gameObject);
         }

@@ -2,6 +2,7 @@
     <property name="root" location="" />
     <property name="concat" location="builds/concat" />
     <property name="min" location="builds/min" />
+    <property name="docs" location="docs" />
     <property name="src" location="src" />
     <property name="system" location="${src}/system" />
     <property name="components" location="${src}/components" />
@@ -13,18 +14,26 @@
     <property name="spatial" location="${components}/spatial" />
     <property name="tmx" location="${system}/tmx_loader" />
     <property name="compressor" location="builds/yui_compressor/yuicompressor-2.4.7.jar" />
+    <property name="jsdoc" location="builds/jsdoc" />
     <target name="clean">
+        <delete dir="${docs}"/>
         <delete dir="${concat}"/>
         <delete dir="${min}"/>
     </target>
     <target name="init">
+        <mkdir dir="${docs}"/>
         <mkdir dir="${concat}"/>
         <mkdir dir="${min}"/>
+    </target>
+    <target name="docs">
+        <exec dir="${jsdoc}" executable="cmd">
+            <arg line="/c jsdoc.cmd -d ${docs} -r ${src}"/>
+        </exec>
     </target>
     <target name="concat">
         <echo file="${concat}/fmjsengine-concat.js">
 /**
- * {FM.js(engine);} v1.0
+ * {FM.js(engine);} v1.1
  * http://simonchauvin.github.io/FM.js-Engine/
  *
  * Copyright (c) 2013 Simon Chauvin.
@@ -33,35 +42,35 @@
 
 </echo>
         <concat destfile="${concat}/fmjsengine-concat.js" append="true" encoding="UTF-8" >
-            <filelist dir="${src}" files= "assetManager.js,
-                parameters.js, componentTypes.js,
-                circle.js,  game.js, 
-                gameObject.js, keyboard.js, math.js, 
-                objectType.js, rectangle.js, state.js, tileMap.js,
-                vector.js, world.js">
+            <filelist dir="${src}" files= "AssetManager.js,
+                Parameters.js, ComponentTypes.js,
+                Circle.js,  Game.js, 
+                GameObject.js, Keyboard.js, Math.js, 
+                ObjectType.js, Rectangle.js, State.js, TileMap.js,
+                Vector.js, World.js">
             </filelist>
-            <filelist dir="${system}" files= "collision.js, component.js, 
-                audioAsset.js, fileAsset.js, imageAsset.js,
-                preloader.js, quadTree.js, utils.js">
+            <filelist dir="${system}" files= "Collision.js, Component.js, 
+                AudioAsset.js, FileAsset.js, ImageAsset.js,
+                Preloader.js, QuadTree.js, Utils.js">
             </filelist>
-            <filelist dir="${tmx}" files= "tmxLayer.js, tmxMap.js, 
-                tmxObject.js, tmxObjectGroup.js, tmxPropertySet.js,
-                tmxTileSet.js">
+            <filelist dir="${tmx}" files= "TmxLayer.js, TmxMap.js, 
+                TmxObject.js, TmxObjectGroup.js, TmxPropertySet.js,
+                TmxTileSet.js">
             </filelist>
-            <filelist dir="${fx}" files= "emitterComponent.js">
+            <filelist dir="${fx}" files= "EmitterComponent.js">
             </filelist>
-            <filelist dir="${pathfinding}" files= "simplePathComponent.js">
+            <filelist dir="${pathfinding}" files= "SimplePathComponent.js">
             </filelist>
-            <filelist dir="${physic}" files= "aabbComponent.js, 
-                circleComponent.js, physicComponent.js">
+            <filelist dir="${physic}" files= "PhysicComponent.js, 
+                AabbComponent.js, CircleComponent.js">
             </filelist>
-            <filelist dir="${renderer}" files= "animatedSpriteRendererComponent.js, 
-                boxRendererComponent.js, circleRendererComponent.js, lineRendererComponent.js, 
-                spriteRendererComponent.js, textRendererComponent.js">
+            <filelist dir="${renderer}" files= "AnimatedSpriteRendererComponent.js, 
+                BoxRendererComponent.js, CircleRendererComponent.js, LineRendererComponent.js, 
+                SpriteRendererComponent.js, TextRendererComponent.js">
             </filelist>
-            <filelist dir="${sound}" files= "audioComponent.js">
+            <filelist dir="${sound}" files= "AudioComponent.js">
             </filelist>
-            <filelist dir="${spatial}" files= "spatialComponent.js">
+            <filelist dir="${spatial}" files= "SpatialComponent.js">
             </filelist>
         </concat>
     </target>
@@ -83,8 +92,8 @@
        </apply>
        <echo file="${min}/fmjsengine-min.js" append="true">
 /**
- * {FM.js(engine);} v1.0
- * http://simonchauvin.github.io/FMJSEngine/
+ * {FM.js(engine);} v1.1
+ * http://simonchauvin.github.io/FM.js-Engine/
  *
  * Copyright (c) 2013 Simon Chauvin.
  * Licenced under the MIT License.

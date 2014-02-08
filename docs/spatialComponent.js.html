@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: components/spatial/spatialComponent.js</title>
+    <title>JSDoc: Source: components/spatial/SpatialComponent.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: components/spatial/spatialComponent.js</h1>
+    <h1 class="page-title">Source: components/spatial/SpatialComponent.js</h1>
     
     
 
@@ -28,36 +28,53 @@
             <pre class="prettyprint source"><code>/*global FM*/
 /**
  * The spatial component allows positionning of the game object in the 2d space.
+ * @class FM.SpatialComponent
+ * @extends FM.Component
+ * @param {int} pX X position of the game object.
+ * @param {int} pY Y position of the game object.
+ * @param {FM.GameObject} pOwner The game object that own this component.
+ * @constructor
  * @author Simon Chauvin
  */
-FM.spatialComponent = function (pX, pY, pOwner) {
+FM.SpatialComponent = function (pX, pY, pOwner) {
     "use strict";
-    var that = FM.component(FM.componentTypes.SPATIAL, pOwner);
+    //Calling the constructor of FM.Component
+    FM.Component.call(this, FM.ComponentTypes.SPATIAL, pOwner);
     /**
-     * Current position.
+     * Current position of the game object.
+     * @type FM.Vector
+     * @public
      */
-    that.position = FM.vector(pX, pY);
-    that.previous = FM.vector(pX, pY);
+    this.position = new FM.Vector(pX, pY);
+    /**
+     * Position of the game object at last frame.
+     * @type FM.Vector
+     * @public
+     */
+    this.previous = new FM.Vector(pX, pY);
     /**
      * Angle of the object defined in radians.
+     * @type float
+     * @public
      */
-    that.angle = 0;
-    /**
-     * Add the component to the game object.
-     */
-    pOwner.addComponent(that);
-
-    /**
-    * Destroy the component and its objects.
-    */
-    that.destroy = function () {
-        that.position = null;
-        that.previous = null;
-        that.destroy();
-        that = null;
-    };
-
-    return that;
+    this.angle = 0;
+};
+/**
+ * FM.SpatialComponent inherits from FM.Component.
+ */
+FM.SpatialComponent.prototype = Object.create(FM.Component.prototype);
+FM.SpatialComponent.prototype.constructor = FM.SpatialComponent;
+/**
+ * Destroy the component and its objects.
+ * @method FM.SpatialComponent#destroy
+ * @memberOf FM.SpatialComponent
+ */
+FM.SpatialComponent.prototype.destroy = function () {
+    "use strict";
+    this.position = null;
+    this.previous = null;
+    this.angle = null;
+    FM.Component.prototype.destroy.call(this);
 };
 </code></pre>
         </article>
@@ -69,13 +86,13 @@ FM.spatialComponent = function (pX, pY, pOwner) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jan 11 2014 14:41:51 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

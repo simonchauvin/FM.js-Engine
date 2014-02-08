@@ -39,7 +39,7 @@ FM.fmBox2DWorld = function (pState, pWidth, pHeight) {
     that.init = function (gravity, sleep) {
         var b2World = Box2D.Dynamics.b2World,
         b2Vec2 = Box2D.Common.Math.b2Vec2;
-        new b2World(new b2Vec2(gravity.x / FM.parameters.PIXELS_TO_METERS, gravity.y / FM.parameters.PIXELS_TO_METERS), sleep);
+        new b2World(new b2Vec2(gravity.x / FM.Parameters.PIXELS_TO_METERS, gravity.y / FM.Parameters.PIXELS_TO_METERS), sleep);
     };
 
     /**
@@ -54,10 +54,10 @@ FM.fmBox2DWorld = function (pState, pWidth, pHeight) {
                 var tile = tileMap[i][j], tileSetWidth = tileSet.width, tileSetHeight = tileSet.height, xOffset, yOffset;
                 if (tile > 0) {
                     //Create Box2D tile
-                    tileMap[i][j] = FM.gameObject(tileMap.getZIndex());
-                    spatial = FM.spatialComponent(j * tileWidth, i * tileHeight, tileMap[i][j]);
+                    tileMap[i][j] = new FM.GameObject(tileMap.getZIndex());
+                    spatial = new FM.SpatialComponent(j * tileWidth, i * tileHeight, tileMap[i][j]);
                     tileMap[i][j].addComponent(spatial);
-                    renderer = FM.spriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
+                    renderer = new FM.SpriteRendererComponent(tileSet, tileWidth, tileHeight, tileMap[i][j]);
                     //Select the right tile in the tile set
                     xOffset = (tile - 1) * tileWidth;
                     yOffset = Math.floor(xOffset / tileSetWidth) * tileHeight;
@@ -70,7 +70,7 @@ FM.fmBox2DWorld = function (pState, pWidth, pHeight) {
                     tileMap[i][j].addComponent(renderer);
 
                     physic = FM.fmB2BoxComponent(tileWidth, tileHeight, that, tileMap[i][j]);
-                    physic.init(FM.parameters.STATIC, 1, 0, 0);
+                    physic.init(FM.Parameters.STATIC, 1, 0, 0);
                     tileMap[i][j].addComponent(physic);
                     //TODO Remove tiles from the game objects list
                     //It shoult have its own list
@@ -99,13 +99,13 @@ FM.fmBox2DWorld = function (pState, pWidth, pHeight) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jan 11 2014 14:41:50 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: components/renderer/animatedSpriteRendererComponent.js</title>
+    <title>JSDoc: Source: components/renderer/AnimatedSpriteRendererComponent.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: components/renderer/animatedSpriteRendererComponent.js</h1>
+    <h1 class="page-title">Source: components/renderer/AnimatedSpriteRendererComponent.js</h1>
     
     
 
@@ -27,310 +27,403 @@
         <article>
             <pre class="prettyprint source"><code>/*global FM*/
 /**
- * @class animatedSpriteRendererComponent
+ * The animated sprite renderer component is used for drawing sprites with
+ * animations, it requires a spritesheet.
+ * @class FM.AnimatedSpriteRendererComponent
+ * @extends FM.Component
+ * @param {FM.ImageAsset} pImage Image of the spritesheet.
+ * @param {int} pWidth Width of a frame of the spritesheet.
+ * @param {int} pHeight Height of a frame of the spritesheet.
+ * @param {FM.GameObject} pOwner Game object owner of the component.
+ * @constructor
  * @author Simon Chauvin
- * @param {imageAsset} pImage image of the sprite sheet.
- * @param {int} pWidth width of a frame of the spritesheet.
- * @param {int} pHeight height of a frame of the spritesheet.
- * @param {gameObject} pOwner game object owner of the component.
  */
-FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
+FM.AnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
     "use strict";
-    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
-        /**
-         * Image of the sprite.
-         */
-        image = pImage,
-        /**
-         * Width of the spritesheet.
-         */
-        imageWidth = image.width,
-        /**
-         * Height of the spritesheet.
-         */
-        imageHeight = image.height,
-        /**
-         * Width of a frame of the spritesheet.
-         */
-        frameWidth = pWidth,
-        /**
-         * Height of a frame of the spritesheet.
-         */
-        frameHeight = pHeight,
-        /**
-         * Width of a resized frame of the spritesheet.
-         */
-        changedWidth = pWidth,
-        /**
-         * Height of a resized frame of the spritesheet.
-         */
-        changedHeight = pHeight,
-        /**
-         * Transparency of the sprite.
-         */
-        alpha = 1,
-        /**
-         * Current animation being played.
-         */
-        currentAnim = "",
-        /**
-         * Whether there is a flipped version of the animation frames or not.
-         */
-        flipped = false,
-        /**
-         * Current horizontal offset of position on the spritesheet.
-         */
-        xOffset = 0,
-        /**
-         * Current vertical offset of position on the spritesheet.
-         */
-        yOffset = 0,
-        /**
-         * Frames constituing the animation.
-         */
-        frames = [],
-        /**
-         * Current frame being displayed.
-         */
-        currentFrame = 0,
-        /**
-         * Current time in seconds.
-         */
-        currentTime = 0,
-        /**
-         * Maximum delay between each frames.
-         */
-        delay = 0.1,
-        /**
-         * Current delay between frames.
-         */
-        currentDelay = 0.1,
-        /**
-         * Whether a specific animation should loop or not.
-         */
-        loop = [],
-        /**
-         * Spatial component.
-         */
-        spatial = pOwner.components[FM.componentTypes.SPATIAL];
-    //Check if a spatial component is present
-    if (!spatial && FM.parameters.debug) {
-        console.log("ERROR: No spatial component was added and you need one for rendering.");
-    }
-    if (!image && FM.parameters.debug) {
-        console.log("ERROR: No image was provided and you need one for rendering an animated sprite.");
-    }
-    /**
-     * Add the component to the game object.
-     */
-    pOwner.addComponent(that);
+    //Calling the constructor of FM.Component
+    FM.Component.call(this, FM.ComponentTypes.RENDERER, pOwner);
     /**
      * Read-only attributes that specifies whether the current animation has
      * finished playing or not.
+     * @type boolean
+     * @public
      */
-    that.finished = false;
-
+    this.finished = false;
     /**
-    * Add an animation.
-    * @param {String} name name of the animation.
-    * @param {Array} pFrames frames of the animation.
-    * @param {int} frameRate speed of the animation.
-    * @param {boolean} isLooped whether the animation should loop or not.
-    */
-    that.addAnimation = function (name, pFrames, frameRate, isLooped) {
-        currentFrame = 0;
-        currentAnim = name;
-        frames[name] = pFrames;
-        delay = 1 / frameRate;
-        //TODO generate flipped version
-        //flipped = isReversed;
-        currentDelay = delay;
-        loop[name] = isLooped;
-    };
-
-    /**
-     * Play the given animation.
-     * @param {String} animName name of the animation to be played.
+     * Image of the sprite.
+     * @type FM.ImageAsset
+     * @private
      */
-    that.play = function (animName) {
-        //In case the width of the sprite have been modified
-        //imageWidth = image.width;
-        //imageHeight = image.height;
-        currentAnim = animName;
-        that.finished = false;
-        currentFrame = 0;
-        xOffset = frames[currentAnim][currentFrame] * frameWidth;
-        yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
-        if (xOffset >= imageWidth) {
-            yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
-            xOffset = (xOffset % imageWidth);
-            xOffset = Math.round(xOffset);
-            yOffset = Math.round(yOffset);
-        }
-    };
-
+    this.image = pImage.getImage();
     /**
-     * Stop the animation.
+     * Width of the spritesheet.
+     * @type int
+     * @private
      */
-    that.stop = function () {
-        that.finished = true;
-    };
-
+    this.imageWidth = this.image.width;
     /**
-    * Draw the sprite.
-    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on wich 
-    * drawing is done.
-    */
-    that.draw = function (bufferContext, newPosition) {
-        var xPosition = newPosition.x, yPosition = newPosition.y,
-            newTime = (new Date()).getTime() / 1000;
-        xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
-        yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
-        xPosition = Math.round(xPosition);
-        yPosition = Math.round(yPosition);
-        bufferContext.globalAlpha = alpha;
-        if (spatial.angle !== 0) {
-            bufferContext.save();
-            bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
-            bufferContext.translate(Math.round(frameWidth / 2), Math.round(frameHeight / 2));
-            bufferContext.rotate(spatial.angle);
-            bufferContext.drawImage(image, Math.round(xOffset), Math.round(yOffset), frameWidth, frameHeight, Math.round(-changedWidth / 2), Math.round(-changedHeight / 2), changedWidth, changedHeight);
-            bufferContext.restore();
-        } else {
-            bufferContext.drawImage(image, Math.round(xOffset), Math.round(yOffset), frameWidth, frameHeight, Math.round(xPosition), Math.round(yPosition), changedWidth, changedHeight);
-        }
-        bufferContext.globalAlpha = 1;
-        //If the anim is not finished playing
-        if (!that.finished) {
-            if (currentDelay &lt;= 0) {
-                currentDelay = delay;
-                if (frames[currentAnim]) {
-                    if (frames[currentAnim].length > 1) {
-                        currentFrame = currentFrame + 1;
-                        //If the current anim exists and that the current frame is the last one
-                        if (frames[currentAnim] && (currentFrame === frames[currentAnim].length - 1)) {
-                            if (loop[currentAnim]) {
-                                currentFrame = 0;
-                            } else {
-                                that.finished = true;
-                            }
+     * Height of the spritesheet.
+     * @type int
+     * @private
+     */
+    this.imageHeight = this.image.height;
+    /**
+     * Width of a frame of the spritesheet.
+     * @type int
+     * @private
+     */
+    this.frameWidth = pWidth;
+    /**
+     * Height of a frame of the spritesheet.
+     * @type int
+     * @private
+     */
+    this.frameHeight = pHeight;
+    /**
+     * Width of a resized frame of the spritesheet.
+     * @type int
+     * @private
+     */
+    this.changedWidth = pWidth;
+    /**
+     * Height of a resized frame of the spritesheet.
+     * @type int
+     * @private
+     */
+    this.changedHeight = pHeight;
+    /**
+     * Transparency of the sprite.
+     * @type float
+     * @private
+     */
+    this.alpha = 1;
+    /**
+     * Current animation being played.
+     * @type string
+     * @private
+     */
+    this.currentAnim = "";
+    /**
+     * Whether there is a flipped version of the animation frames or not.
+     * @type boolean
+     * @private
+     */
+    this.flipped = false;
+    /**
+     * Current horizontal offset of position on the spritesheet.
+     * @type int
+     * @private
+     */
+    this.xOffset = 0;
+    /**
+     * Current vertical offset of position on the spritesheet.
+     * @type int
+     * @private
+     */
+    this.yOffset = 0;
+    /**
+     * Frames constituing the animation.
+     * @type Array
+     * @private
+     */
+    this.frames = [];
+    /**
+     * Current frame being displayed.
+     * @type int
+     * @private
+     */
+    this.currentFrame = 0;
+    /**
+     * Current time in seconds.
+     * @type float
+     * @private
+     */
+    this.currentTime = 0;
+    /**
+     * Maximum delay between each frames.
+     * @type float
+     * @private
+     */
+    this.delay = 0.1;
+    /**
+     * Current delay between frames.
+     * @type float
+     * @private
+     */
+    this.currentDelay = 0.1;
+    /**
+     * Whether a specific animation should loop or not.
+     * @type Array
+     * @private
+     */
+    this.loop = [];
+    /**
+     * Spatial component.
+     * @type FM.SpatialComponent
+     * @private
+     */
+    this.spatial = pOwner.components[FM.ComponentTypes.SPATIAL];
+
+    //Check if a spatial component is present
+    if (!this.spatial && FM.Parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+    if (!this.image && FM.Parameters.debug) {
+        console.log("ERROR: No image was provided and you need one for rendering an animated sprite.");
+    }
+};
+/**
+ * FM.AnimatedSpriteRendererComponent inherits from FM.Component.
+ */
+FM.AnimatedSpriteRendererComponent.prototype = Object.create(FM.Component.prototype);
+FM.AnimatedSpriteRendererComponent.prototype.constructor = FM.AnimatedSpriteRendererComponent;
+/**
+ * Add an animation.
+ * @method FM.AnimatedSpriteRendererComponent#addAnimation
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @param {string} pName Name of the animation.
+ * @param {Array} pFrames Frames of the animation.
+ * @param {int} pFrameRate Speed of the animation.
+ * @param {boolean} pIsLooped Whether the animation should loop or not.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.addAnimation = function (pName, pFrames, pFrameRate, pIsLooped) {
+    "use strict";
+    this.currentFrame = 0;
+    this.currentAnim = pName;
+    this.frames[pName] = pFrames;
+    this.delay = 1 / pFrameRate;
+    //TODO generate flipped version
+    //flipped = isReversed;
+    this.currentDelay = this.delay;
+    this.loop[pName] = pIsLooped;
+};
+/**
+ * Play the given animation.
+ * @method FM.AnimatedSpriteRendererComponent#play
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @param {string} pAnimName Name of the animation to be played.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.play = function (pAnimName) {
+    "use strict";
+    //In case the width of the sprite have been modified
+    //imageWidth = image.width;
+    //imageHeight = image.height;
+    this.currentAnim = pAnimName;
+    this.finished = false;
+    this.currentFrame = 0;
+    this.xOffset = this.frames[this.currentAnim][this.currentFrame] * this.frameWidth;
+    this.yOffset = Math.floor(this.xOffset / this.imageWidth) * this.frameHeight;
+    if (this.xOffset >= this.imageWidth) {
+        this.yOffset = Math.floor(this.xOffset / this.imageWidth) * this.frameHeight;
+        this.xOffset = (this.xOffset % this.imageWidth);
+        this.xOffset = Math.round(this.xOffset);
+        this.yOffset = Math.round(this.yOffset);
+    }
+};
+/**
+ * Stop the animation.
+ * @method FM.AnimatedSpriteRendererComponent#stop
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ */
+FM.AnimatedSpriteRendererComponent.prototype.stop = function () {
+    "use strict";
+    this.finished = true;
+};
+/**
+ * Draw the sprite.
+ * @method FM.AnimatedSpriteRendererComponent#draw
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @param {CanvasRenderingContext2D} bufferContext Context on which drawing is 
+ * done.
+ * @param {FM.Vector} newPosition The position of the object to draw.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.draw = function (bufferContext, newPosition) {
+    "use strict";
+    var xPosition = newPosition.x, yPosition = newPosition.y,
+        newTime = (new Date()).getTime() / 1000;
+    xPosition -= bufferContext.xOffset * this.owner.scrollFactor.x;
+    yPosition -= bufferContext.yOffset * this.owner.scrollFactor.y;
+    xPosition = Math.round(xPosition);
+    yPosition = Math.round(yPosition);
+    bufferContext.globalAlpha = this.alpha;
+    if (this.spatial.angle !== 0) {
+        bufferContext.save();
+        bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+        bufferContext.translate(Math.round(this.frameWidth / 2), Math.round(this.frameHeight / 2));
+        bufferContext.rotate(this.spatial.angle);
+        bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round(-this.changedWidth / 2), Math.round(-this.changedHeight / 2), this.changedWidth, this.changedHeight);
+        bufferContext.restore();
+    } else {
+        bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round(xPosition), Math.round(yPosition), this.changedWidth, this.changedHeight);
+    }
+    bufferContext.globalAlpha = 1;
+    //If the anim is not finished playing
+    if (!this.finished) {
+        if (this.currentDelay &lt;= 0) {
+            this.currentDelay = this.delay;
+            if (this.frames[this.currentAnim]) {
+                if (this.frames[this.currentAnim].length > 1) {
+                    this.currentFrame = this.currentFrame + 1;
+                    //If the current anim exists and that the current frame is the last one
+                    if (this.frames[this.currentAnim] && (this.currentFrame === this.frames[this.currentAnim].length - 1)) {
+                        if (this.loop[this.currentAnim]) {
+                            this.currentFrame = 0;
+                        } else {
+                            this.finished = true;
                         }
-                    } else {
-                        that.finished = true;
                     }
-                    xOffset = frames[currentAnim][currentFrame] * frameWidth;
-                    yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
-                    if (xOffset >= imageWidth) {
-                        yOffset = Math.floor(xOffset / imageWidth) * frameHeight;
-                        xOffset = (xOffset % imageWidth);
-                        xOffset = Math.round(xOffset);
-                        yOffset = Math.round(yOffset);
-                    }
+                } else {
+                    this.finished = true;
                 }
-            } else {
-                currentDelay -= newTime - currentTime;
+                this.xOffset = this.frames[this.currentAnim][this.currentFrame] * this.frameWidth;
+                this.yOffset = Math.floor(this.xOffset / this.imageWidth) * this.frameHeight;
+                if (this.xOffset >= this.imageWidth) {
+                    this.yOffset = Math.floor(this.xOffset / this.imageWidth) * this.frameHeight;
+                    this.xOffset = (this.xOffset % this.imageWidth);
+                    this.xOffset = Math.round(this.xOffset);
+                    this.yOffset = Math.round(this.yOffset);
+                }
             }
+        } else {
+            this.currentDelay -= newTime - this.currentTime;
         }
-        currentTime = newTime;
-    };
-
-    /**
-    * Destroy the component and its objects.
-    */
-    that.destroy = function () {
-        image.destroy();
-        image = null;
-        currentAnim = null;
-        frames = null;
-        loop = null;
-        spatial = null;
-        that.destroy();
-        that = null;
-    };
-
-    /**
-     * Get the current animation being played.
-     */
-    that.getCurrentAnim = function () {
-        return currentAnim;
-    };
-
-    /**
-     * Change the size of the sprite.
-     * You will need to change the position of the spatial component of this
-     * game object if you need a resize from the center.
-     * @param {float} pFactor factor by which the size will be changed.
-     */
-    that.changeSize = function (pFactor) {
-        changedWidth = pFactor * frameWidth;
-        changedHeight = pFactor * frameHeight;
-    };
-
-    /**
-     * Set the width of the sprite.
-     * You will need to change the position of the spatial component of this
-     * game object if you need a resize from the center.
-     * @param {float} pNewWidth new width of the sprite.
-     */
-    that.setWidth = function (pNewWidth) {
-        changedWidth = pNewWidth;
-    };
-
-    /**
-     * Set the height of the sprite.
-     * You will need to change the position of the spatial component of this
-     * game object if you need a resize from the center.
-     * @param {float} pNewHeight new height of the sprite.
-     */
-    that.setHeight = function (pNewHeight) {
-        changedHeight = pNewHeight;
-    };
-
-    /**
-     * Set the transparency of the sprite.
-     * @param {float} newAlpha new transparency value desired.
-     */
-    that.setAlpha = function (newAlpha) {
-        alpha = newAlpha;
-    };
-
-    /**
-     * Retrieve the height of a frame of the spritesheet.
-     */
-    that.getWidth = function () {
-        return changedWidth;
-    };
-
-    /**
-     * Retrieve the height of a frame of the spritesheet.
-     */
-    that.getHeight = function () {
-        return changedHeight;
-    };
-
-    /**
-     * Retrieve the height of a frame before it was resized.
-     */
-    that.getOriginalWidth = function () {
-        return frameWidth;
-    };
-
-    /**
-     * Retrieve the height of a frame before it was resized.
-     */
-    that.getOriginalHeight = function () {
-        return frameHeight;
-    };
-
-    /**
-     * Retrieve the transparency value of the sprite.
-     * @return {float} current transparency value.
-     */
-    that.getAlpha = function () {
-        return alpha;
-    };
-
-    return that;
+    }
+    this.currentTime = newTime;
+};
+/**
+ * Get the current animation being played.
+ * @method FM.AnimatedSpriteRendererComponent#getCurrentAnim
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @return {string} The name of the current animation.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.getCurrentAnim = function () {
+    "use strict";
+    return this.currentAnim;
+};
+/**
+ * Change the size of the sprite.
+ * You will need to change the position of the spatial component of this
+ * game object if you need a resize from the center.
+ * @method FM.AnimatedSpriteRendererComponent#changeSize
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @param {float} pFactor Factor by which the size will be changed.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.changeSize = function (pFactor) {
+    "use strict";
+    this.changedWidth = pFactor * this.frameWidth;
+    this.changedHeight = pFactor * this.frameHeight;
+};
+/**
+ * Set the width of the sprite.
+ * You will need to change the position of the spatial component of this
+ * game object if you need a resize from the center.
+ * @method FM.AnimatedSpriteRendererComponent#setWidth
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @param {float} pNewWidth New width of the sprite.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.setWidth = function (pNewWidth) {
+    "use strict";
+    this.changedWidth = pNewWidth;
+};
+/**
+ * Set the height of the sprite.
+ * You will need to change the position of the spatial component of this
+ * game object if you need a resize from the center.
+ * @method FM.AnimatedSpriteRendererComponent#setHeight
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @param {float} pNewHeight New height of the sprite.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.setHeight = function (pNewHeight) {
+    "use strict";
+    this.changedHeight = pNewHeight;
+};
+/**
+ * Set the transparency of the sprite.
+ * @method FM.AnimatedSpriteRendererComponent#setAlpha
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @param {float} pNewAlpha New transparency value desired.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.setAlpha = function (pNewAlpha) {
+    "use strict";
+    this.alpha = pNewAlpha;
+};
+/**
+ * Retrieve the height of a frame of the spritesheet.
+ * @method FM.AnimatedSpriteRendererComponent#getWidth
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @return {int} The actual width of a frame.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.getWidth = function () {
+    "use strict";
+    return this.changedWidth;
+};
+/**
+ * Retrieve the height of a frame of the spritesheet.
+ * @method FM.AnimatedSpriteRendererComponent#getHeight
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @return {int} The actual height of a frame.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.getHeight = function () {
+    "use strict";
+    return this.changedHeight;
+};
+/**
+ * Retrieve the height of a frame before it was resized.
+ * @method FM.AnimatedSpriteRendererComponent#getOriginalWidth
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @return {int} The width of a frame before resizing.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.getOriginalWidth = function () {
+    "use strict";
+    return this.frameWidth;
+};
+/**
+ * Retrieve the height of a frame before it was resized.
+ * @method FM.AnimatedSpriteRendererComponent#getOriginalHeight
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @return {int} The height of a frame before resizing.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.getOriginalHeight = function () {
+    "use strict";
+    return this.frameHeight;
+};
+/**
+ * Retrieve the transparency value of the sprite.
+ * @method FM.AnimatedSpriteRendererComponent#getAlpha
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ * @return {float} Current transparency value.
+ */
+FM.AnimatedSpriteRendererComponent.prototype.getAlpha = function () {
+    "use strict";
+    return this.alpha;
+};
+/**
+ * Destroy the component and its objects.
+ * @method FM.AnimatedSpriteRendererComponent#destroy
+ * @memberOf FM.AnimatedSpriteRendererComponent
+ */
+FM.AnimatedSpriteRendererComponent.prototype.destroy = function () {
+    "use strict";
+    this.image = null;
+    this.currentAnim = null;
+    this.frames = null;
+    this.loop = null;
+    this.spatial = null;
+    this.flipped = null;
+    this.changedWidth = null;
+    this.changedHeight = null;
+    this.delay = null;
+    this.currentDelay = null;
+    this.currentFrame = null;
+    this.finished = null;
+    this.xOffset = null;
+    this.yOffset = null;
+    this.alpha = null;
+    this.frameWidth = null;
+    this.frameHeight = null;
+    this.imageWidth = null;
+    this.imageHeight = null;
+    FM.Component.prototype.destroy.call(this);
 };
 </code></pre>
         </article>
@@ -342,13 +435,13 @@ FM.animatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jan 11 2014 14:41:50 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

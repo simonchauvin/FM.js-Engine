@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: system/audioAsset.js</title>
+    <title>JSDoc: Source: system/AudioAsset.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: system/audioAsset.js</h1>
+    <h1 class="page-title">Source: system/AudioAsset.js</h1>
     
     
 
@@ -27,101 +27,142 @@
         <article>
             <pre class="prettyprint source"><code>/*global FM*/
 /**
- * @class audioAsset
+ * An audio asset represents an Audio object that is usable in the FM.js 
+ * engine.
+ * @class FM.AudioAsset
+ * @param {string} pName Name of the asset.
+ * @param {string} pPath Path of the asset.
+ * @constructor
  * @author Simon Chauvin
  */
-FM.audioAsset = function (pName, pPath) {
+FM.AudioAsset = function (pName, pPath) {
     "use strict";
-    var that = new Audio(),
-
-        /**
-         * Name of the given to the asset.
-         */
-        name = pName,
-        /**
-         * Path to the audio file.
-         */
-        path = pPath,
-        /**
-         * Extension of the audio file.
-         */
-        extension = path.substring(path.lastIndexOf('.') + 1),
-        /**
-         * Specify the loading state of the audio file.
-         */
-        loaded = false,
-        /**
-         * Fired when the audio file has finished loading.
-         */
-        loadComplete = function () {
-            loaded = true;
-            FM.assetManager.assetLoaded();
-        };
-
     /**
-     * Load the audio file.
+     * The HTML5 Audio object.
+     * @type Audio
+     * @private
      */
-    that.load = function (pCallbackFunction) {
-        that.src = path;
-        loaded = false;
-        if (pCallbackFunction === undefined) {
-            that.addEventListener("loadeddata", loadComplete, false);
-        } else {
-            that.addEventListener("loadeddata", function () {
-                loadComplete(pCallbackFunction);
-                pCallbackFunction(that);
-            }, false);
-        }
-    };
-
+    this.audio = new Audio();
     /**
-     * Check if this audio file has been loaded.
+     * Name of the given to the asset.
+     * @type string
+     * @private
      */
-    that.isLoaded = function () {
-        return loaded;
-    };
-
+    this.name = pName;
     /**
-    * Destroy the asset and its objects
-    */
-    that.destroy = function () {
-        name = null;
-        path = null;
-        that = null;
-    };
-
-    /**
-     * Get the name of the asset.
+     * Path to the audio file.
+     * @type string
+     * @private
      */
-    that.getName = function () {
-        return name;
-    };
-
+    this.path = pPath;
     /**
-     * Get the path to the audio file.
+     * Extension of the audio file.
+     * @type string
+     * @private
      */
-    that.getPath = function () {
-        return path;
-    };
-
+    this.extension = this.path.substring(this.path.lastIndexOf('.') + 1);
     /**
-     * Check if the audio format is supported by the browser.
+     * Specify the loading state of the audio file.
+     * @type boolean
+     * @private
      */
-    that.isSupported = function () {
-        var canPlayThisType = false;
-        if (extension === "wav") {
-            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/wav; codecs="1"') !== "";
-        } else if (extension === "ogg") {
-            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/ogg; codecs="vorbis"') !== "";
-        } else if (extension === "mp3") {
-            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/mpeg;') !== "";
-        } else if (extension === "aac") {
-            canPlayThisType = !!that.canPlayType && that.canPlayType('audio/mp4; codecs="mp4a.40.2"') !== "";
-        }
-        return canPlayThisType;
-    };
-
-    return that;
+    this.loaded = false;
+};
+FM.AudioAsset.prototype.constructor = FM.AudioAsset;
+/**
+ * Fired when the audio file has finished loading.
+ * @method FM.AudioAsset#loadComplete
+ * @memberOf FM.AudioAsset
+ * @param {Event} event Contains data about the event.
+ * @private
+ */
+FM.AudioAsset.prototype.loadComplete = function (event) {
+    "use strict";
+    if (event) {
+        event.target.owner.loaded = true;
+    }
+    FM.AssetManager.assetLoaded();
+};
+/**
+ * Load the audio file.
+ * @method FM.AudioAsset#load
+ * @memberOf FM.AudioAsset
+ * @param {Function} pCallbackFunction The function that will be called when the
+ * asset is loaded.
+ */
+FM.AudioAsset.prototype.load = function (pCallbackFunction) {
+    "use strict";
+    this.audio.src = this.path;
+    this.loaded = false;
+    if (!pCallbackFunction) {
+        this.audio.addEventListener("loadeddata", FM.AudioAsset.prototype.loadComplete, false);
+    } else {
+        this.audio.addEventListener("loadeddata", function () {
+            FM.AudioAsset.prototype.loadComplete();
+            pCallbackFunction(this);
+        }, false);
+    }
+    this.audio.owner = this;
+};
+/**
+ * Check if this audio file has been loaded.
+ * @method FM.AudioAsset#isLoaded
+ * @memberOf FM.AudioAsset
+ * @return {boolean} Whether the asset is loaded or not.
+ */
+FM.AudioAsset.prototype.isLoaded = function () {
+    "use strict";
+    return this.loaded;
+};
+/**
+ * Get the HTML5 Audio object.
+ * @method FM.AudioAsset#getAudio
+ * @memberOf FM.AudioAsset
+ * @return {Audio} The HTML5 object.
+ */
+FM.AudioAsset.prototype.getAudio = function () {
+    "use strict";
+    return this.audio;
+};
+/**
+ * Get the name of the asset.
+ * @method FM.AudioAsset#getName
+ * @memberOf FM.AudioAsset
+ * @return {string} The name of the asset.
+ */
+FM.AudioAsset.prototype.getName = function () {
+    "use strict";
+    return this.name;
+};
+/**
+ * Get the path to the audio file.
+ * @method FM.AudioAsset#getPath
+ * @memberOf FM.AudioAsset
+ * @return {string} The path to the asset.
+ */
+FM.AudioAsset.prototype.getPath = function () {
+    "use strict";
+    return this.path;
+};
+/**
+ * Check if the audio format is supported by the browser.
+ * @method FM.AudioAsset#isSupported
+ * @memberOf FM.AudioAsset
+ * @return {boolean} Whether the file type is supported by the browser.
+ */
+FM.AudioAsset.prototype.isSupported = function () {
+    "use strict";
+    var canPlayThisType = false;
+    if (this.extension === "wav") {
+        canPlayThisType = !!this.audio.canPlayType && this.audio.canPlayType('audio/wav; codecs="1"') !== "";
+    } else if (this.extension === "ogg") {
+        canPlayThisType = !!this.audio.canPlayType && this.audio.canPlayType('audio/ogg; codecs="vorbis"') !== "";
+    } else if (this.extension === "mp3") {
+        canPlayThisType = !!this.audio.canPlayType && this.audio.canPlayType('audio/mpeg;') !== "";
+    } else if (this.extension === "aac") {
+        canPlayThisType = !!this.audio.canPlayType && this.audio.canPlayType('audio/mp4; codecs="mp4a.40.2"') !== "";
+    }
+    return canPlayThisType;
 };
 </code></pre>
         </article>
@@ -133,13 +174,13 @@ FM.audioAsset = function (pName, pPath) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jan 11 2014 14:41:50 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

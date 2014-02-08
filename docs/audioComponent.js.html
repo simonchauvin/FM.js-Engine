@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: components/sound/audioComponent.js</title>
+    <title>JSDoc: Source: components/sound/AudioComponent.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: components/sound/audioComponent.js</h1>
+    <h1 class="page-title">Source: components/sound/AudioComponent.js</h1>
     
     
 
@@ -27,126 +27,150 @@
         <article>
             <pre class="prettyprint source"><code>/*global FM*/
 /**
- * 
- * @class audioComponent
+ * Audio component to add to a game object for playing sounds.
+ * @class FM.AudioComponent
+ * @extends FM.Component
+ * @param {FM.GameObject} pOwner Game object owner of this component.
+ * @constructor
  * @author Simon Chauvin
- * @param owner
- * @returns {audioComponent}
  */
-FM.audioComponent = function (pOwner) {
+FM.AudioComponent = function (pOwner) {
     "use strict";
-    var that = FM.component(FM.componentTypes.SOUND, pOwner),
-        /**
-         * The list of sound objects.
-         */
-        sounds = [],
-        /**
-         * Replay a sound from the beginning.
-         */
-        replay = function (pSound) {
-            pSound.currentTime = 0;
-            pSound.play();
-        };
+    //Calling the constructor of FM.Component
+    FM.Component.call(this, FM.ComponentTypes.SOUND, pOwner);
     /**
-     * Add the component to the game object.
+     * The list of sound objects.
+     * @type Array
+     * @private
      */
-    pOwner.addComponent(that);
-
-    /**
-     * Play the sound given a certain volume and whether the sound loops or not.
-     */
-    that.play = function (pSoundName, volume, loop) {
-        var i, sound, soundFound = false;
-        for (i = 0; i &lt; sounds.length; i = i + 1) {
-            sound = sounds[i];
-            if (sound.getName() === pSoundName) {
-                soundFound = true;
-                sound.volume = volume;
-                if (loop) {
-                    sound.addEventListener('ended', function () {
-                        if (window.chrome) {
-                            this.load(replay);
-                        } else {
-                            this.currentTime = 0;
-                            this.play();
-                        }
-                    }, false);
-                }
-                if (window.chrome) {
-                    sound.load(replay);
-                } else {
-                    sound.play();
-                }
+    this.sounds = [];
+};
+/**
+ * FM.AudioComponent inherits from FM.Component.
+ */
+FM.AudioComponent.prototype = Object.create(FM.Component.prototype);
+FM.AudioComponent.prototype.constructor = FM.AudioComponent;
+/**
+ * Replay a sound from the beginning.
+ * @method FM.AudioComponent#replay
+ * @memberOf FM.AudioComponent
+ * @param {Audio} pSound The sound to be replayed.
+ * @private
+ */
+FM.AudioComponent.prototype.replay = function (pSound) {
+    "use strict";
+    pSound.currentTime = 0;
+    pSound.play();
+};
+/**
+ * Play the sound given a certain volume and whether the sound loops or not.
+ * @method FM.AudioComponent#play
+ * @memberOf FM.AudioComponent
+ * @param {string} pSoundName The name of the sound to play.
+ * @param {float} pVolume The volume at which playing the sound (0 to 1).
+ * @param {boolean} pLoop Whether the sound should loop or not.
+ */
+FM.AudioComponent.prototype.play = function (pSoundName, pVolume, pLoop) {
+    "use strict";
+    var i, sound, soundFound = false;
+    for (i = 0; i &lt; this.sounds.length; i = i + 1) {
+        sound = this.sounds[i];
+        if (sound && sound.getName() === pSoundName) {
+            soundFound = true;
+            sound.getAudio().volume = pVolume;
+            if (pLoop) {
+                sound.getAudio().addEventListener('ended', function () {
+                    if (window.chrome) {
+                        this.load(FM.AudioComponent.prototype.replay);
+                    } else {
+                        this.currentTime = 0;
+                        this.play();
+                    }
+                }, false);
+            }
+            if (window.chrome) {
+                sound.load(FM.AudioComponent.prototype.replay);
+            } else {
+                sound.getAudio().play();
             }
         }
-        if (!soundFound) {
-            if (FM.parameters.debug) {
-                console.log("WARNING: you're trying to play a sound that does not exist.");
-            }
+    }
+    if (!soundFound) {
+        if (FM.Parameters.debug) {
+            console.log("WARNING: you're trying to play a sound that does not exist.");
         }
-    };
-
-    /**
-     * Pause the sound.
-     */
-    that.pause = function (pSoundName) {
-        var i, sound;
-        for (i = 0; i &lt; sounds.length; i = i + 1) {
-            sound = sounds[i];
-            if (sound.getName() === pSoundName) {
-                sound.pause();
-            }
+    }
+};
+/**
+ * Pause the sound.
+ * @method FM.AudioComponent#pause
+ * @memberOf FM.AudioComponent
+ * @param {string} pSoundName The name of the sound to pause.
+ */
+FM.AudioComponent.prototype.pause = function (pSoundName) {
+    "use strict";
+    var i, sound;
+    for (i = 0; i &lt; this.sounds.length; i = i + 1) {
+        sound = this.sounds[i];
+        if (sound.getName() === pSoundName) {
+            sound.getAudio().pause();
         }
-    };
-
-    /**
-     * Add a sound to the component.
-     */
-    that.addSound = function (pSound) {
-        sounds.push(pSound);
-    };
-
-    /**
-    * Destroy the component and its objects
-    */
-    that.destroy = function () {
-        var i;
-        for (i = 0; i &lt; sounds.length; i = i + 1) {
-            sounds[i].destroy();
+    }
+};
+/**
+ * Add a sound to the component.
+ * @method FM.AudioComponent#addSound
+ * @memberOf FM.AudioComponent
+ * @param {FM.AudioAsset} pSound The sound to add to this component.
+ */
+FM.AudioComponent.prototype.addSound = function (pSound) {
+    "use strict";
+    this.sounds.push(pSound);
+};
+/**
+ * Check if a sound is currently playing.
+ * @method FM.AudioComponent#isPlaying
+ * @memberOf FM.AudioComponent
+ * @param {string} pSoundName The name of the sound to check.
+ * @return {boolean} Whether the sound is playing or not.
+ */
+FM.AudioComponent.prototype.isPlaying = function (pSoundName) {
+    "use strict";
+    var i, sound;
+    for (i = 0; i &lt; this.sounds.length; i = i + 1) {
+        sound = this.sounds[i];
+        if (sound.getName() === pSoundName) {
+            return !sound.getAudio().paused;
         }
-        sounds = null;
-        that.destroy();
-        that = null;
-    };
-
-    /**
-     * Check if a sound is currently playing.
-     */
-    that.isPlaying = function (pSoundName) {
-        var i, sound;
-        for (i = 0; i &lt; sounds.length; i = i + 1) {
-            sound = sounds[i];
-            if (sound.getName() === pSoundName) {
-                return !sound.paused;
-            }
+    }
+};
+/**
+ * Retrieve the audio object.
+ * @method FM.AudioComponent#getSoundByName
+ * @memberOf FM.AudioComponent
+ * @param {string} pSoundName The name of the sound to retrieve.
+ * @return {FM.AudioAsset} The sound found or null if not.
+ */
+FM.AudioComponent.prototype.getSoundByName = function (pSoundName) {
+    "use strict";
+    var i, sound;
+    for (i = 0; i &lt; this.sounds.length; i = i + 1) {
+        sound = this.sounds[i];
+        if (sound.getName() === pSoundName) {
+            return sound;
         }
-    };
-
-    /**
-     * Retrieve the audio object.
-     */
-    that.getSoundByName = function (pSoundName) {
-        var i, sound;
-        for (i = 0; i &lt; sounds.length; i = i + 1) {
-            sound = sounds[i];
-            if (sound.getName() === pSoundName) {
-                return sound;
-            }
-        }
-        return null;
-    };
-
-    return that;
+    }
+    return null;
+};
+/**
+ * Destroy the sound component and its objects.
+ * @method FM.AudioComponent#destroy
+ * @memberOf FM.AudioComponent
+ */
+FM.AudioComponent.prototype.destroy = function () {
+    "use strict";
+    this.sounds = null;
+    FM.Component.prototype.destroy.call(this);
 };
 </code></pre>
         </article>
@@ -158,13 +182,13 @@ FM.audioComponent = function (pOwner) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="aabbComponent.html">aabbComponent</a></li><li><a href="animatedSpriteRendererComponent.html">animatedSpriteRendererComponent</a></li><li><a href="assetManager.html">assetManager</a></li><li><a href="audioAsset.html">audioAsset</a></li><li><a href="audioComponent.html">audioComponent</a></li><li><a href="boxRendererComponent.html">boxRendererComponent</a></li><li><a href="circle.html">circle</a></li><li><a href="circleComponent.html">circleComponent</a></li><li><a href="circleRendererComponent.html">circleRendererComponent</a></li><li><a href="collision.html">collision</a></li><li><a href="component.html">component</a></li><li><a href="componentTypes.html">componentTypes</a></li><li><a href="emitterComponent.html">emitterComponent</a></li><li><a href="fileAsset.html">fileAsset</a></li><li><a href="game.html">game</a></li><li><a href="gameObject.html">gameObject</a></li><li><a href="imageAsset.html">imageAsset</a></li><li><a href="keyboard.html">keyboard</a></li><li><a href="lineRendererComponent.html">lineRendererComponent</a></li><li><a href="math.html">math</a></li><li><a href="objectType.html">objectType</a></li><li><a href="parameters.html">parameters</a></li><li><a href="physicComponent.html">physicComponent</a></li><li><a href="preloader.html">preloader</a></li><li><a href="quadTree.html">quadTree</a></li><li><a href="rectangle.html">rectangle</a></li><li><a href="simplePathComponent.html">simplePathComponent</a></li><li><a href="spriteRendererComponent.html">spriteRendererComponent</a></li><li><a href="state.html">state</a></li><li><a href="textRendererComponent.html">textRendererComponent</a></li><li><a href="tileMap.html">tileMap</a></li><li><a href="tmxLayer.html">tmxLayer</a></li><li><a href="tmxMap.html">tmxMap</a></li><li><a href="tmxObject.html">tmxObject</a></li><li><a href="tmxObjectGroup.html">tmxObjectGroup</a></li><li><a href="tmxPropertySet.html">tmxPropertySet</a></li><li><a href="tmxTileSet.html">tmxTileSet</a></li><li><a href="vector.html">vector</a></li><li><a href="world.html">world</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jan 11 2014 14:41:50 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

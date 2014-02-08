@@ -7,7 +7,7 @@ It runs on every modern browser and does not rely on any external libraries such
 Getting Started
 =============
 
-- Just modify the "FMHelloWorld" project that you can find in my repositories here on GitHub and start your game.
+- Just modify the [{FM.js(Engine);} boilerplate](https://github.com/simonchauvin/FM.js-Boilerplate). project that you can find in my repositories here on GitHub and start your game.
 - The "index.html" file features the name of your game as well as the JS files that must be included. It is also the 
 starting point of your game, you can add assets and choose the screen resolution.
 

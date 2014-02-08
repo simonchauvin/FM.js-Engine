@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/renderer/CircleRendererComponent.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: components/renderer/CircleRendererComponent.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/*global FM*/
+/**
+ * The circle renderer component is used to render a circle associated to a game
+ * object.
+ * @class FM.CircleRendererComponent
+ * @extends FM.Component
+ * @param {int} pRadius Radius of the circle to render.
+ * @param {string} pColor The color of the circle to render.
+ * @param {FM.GameObject} pOwner The game object that owns this component.
+ * @constructor
+ * @author Simon Chauvin
+ */
+FM.CircleRendererComponent = function (pRadius, pColor, pOwner) {
+    "use strict";
+    //Calling the constructor of FM.Component
+    FM.Component.call(this, FM.ComponentTypes.RENDERER, pOwner);
+    /**
+     * Width of the circle.
+     * @type int
+     * @private
+     */
+    this.width = pRadius * 2;
+    /**
+     * Height of the circle.
+     * @type int
+     * @private
+     */
+    this.height = pRadius * 2;
+    /**
+     * Color of the circle.
+     * @type string
+     * @private
+     */
+    this.color = pColor;
+    /**
+     * Transparency of the circle.
+     * @type float
+     * @private
+     */
+    this.alpha = 1;
+    /**
+     * Spatial component.
+     * @type FM.SpatialComponent
+     * @private
+     */
+    this.spatial = pOwner.components[FM.ComponentTypes.SPATIAL];
+
+    //Check if a spatial component is present
+    if (!this.spatial && FM.Parameters.debug) {
+        console.log("ERROR: No spatial component was added and you need one for rendering.");
+    }
+};
+/**
+ * FM.CircleRendererComponent inherits from FM.Component.
+ */
+FM.CircleRendererComponent.prototype = Object.create(FM.Component.prototype);
+FM.CircleRendererComponent.prototype.constructor = FM.CircleRendererComponent;
+/**
+ * Draw the circle.
+ * @method FM.CircleRendererComponent#draw
+ * @memberOf FM.CircleRendererComponent
+ * @param {CanvasRenderingContext2D} bufferContext Context on which drawing is 
+ * done.
+ * @param {FM.Vector} newPosition The position of the circle to draw.
+ */
+FM.CircleRendererComponent.prototype.draw = function (bufferContext, newPosition) {
+    "use strict";
+    var xPosition = newPosition.x - bufferContext.xOffset * this.owner.scrollFactor.x,
+        yPosition = newPosition.y - bufferContext.yOffset * this.owner.scrollFactor.y,
+        newCenter = new FM.Vector(xPosition + this.width / 2, yPosition + this.height / 2);
+    bufferContext.globalAlpha = this.alpha;
+    if (this.spatial.angle !== 0) {
+        bufferContext.save();
+        bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
+        bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
+        bufferContext.rotate(this.spatial.angle);
+        bufferContext.beginPath();
+        bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(this.width / 2), 0, 2 * Math.PI);
+        bufferContext.restore();
+    } else {
+        bufferContext.beginPath();
+        bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(this.width / 2), 0, 2 * Math.PI);
+    }
+    bufferContext.fillStyle = this.color;
+    bufferContext.fill();
+    bufferContext.globalAlpha = 1;
+};
+/**
+ * Set the width of the  circle.
+ * @method FM.CircleRendererComponent#setWidth
+ * @memberOf FM.CircleRendererComponent
+ * @param {int} pNewWidth New width desired.
+ */
+FM.CircleRendererComponent.prototype.setWidth = function (pNewWidth) {
+    "use strict";
+    this.width = pNewWidth;
+    this.height = pNewWidth;
+};
+/**
+ * Set the height of the circle.
+ * @method FM.CircleRendererComponent#setHeight
+ * @memberOf FM.CircleRendererComponent
+ * @param {int} pNewHeight New height desired.
+ */
+FM.CircleRendererComponent.prototype.setHeight = function (pNewHeight) {
+    "use strict";
+    this.height = pNewHeight;
+    this.width = pNewHeight;
+};
+/**
+ * Set the radius of the  circle.
+ * @method FM.CircleRendererComponent#setRadius
+ * @memberOf FM.CircleRendererComponent
+ * @param {int} pNewRadius New radius desired.
+ */
+FM.CircleRendererComponent.prototype.setRadius = function (pNewRadius) {
+    "use strict";
+    this.width = pNewRadius * 2;
+    this.height = pNewRadius * 2;
+};
+/**
+ * Set the color of the  circle.
+ * @method FM.CircleRendererComponent#setColor
+ * @memberOf FM.CircleRendererComponent
+ * @param {string} pNewColor New color desired.
+ */
+FM.CircleRendererComponent.prototype.setColor = function (pNewColor) {
+    "use strict";
+    this.color = pNewColor;
+};
+/**
+ * Set the transparency of the circle.
+ * @method FM.CircleRendererComponent#setAlpha
+ * @memberOf FM.CircleRendererComponent
+ * @param {float} pNewAlpha New transparency value desired.
+ */
+FM.CircleRendererComponent.prototype.setAlpha = function (pNewAlpha) {
+    "use strict";
+    this.alpha = pNewAlpha;
+};
+/**
+ * Retrieve the width of the circle.
+ * @method FM.CircleRendererComponent#getWidth
+ * @memberOf FM.CircleRendererComponent
+ * @return {int} The width of the circle.
+ */
+FM.CircleRendererComponent.prototype.getWidth = function () {
+    "use strict";
+    return this.width;
+};
+/**
+ * Retrieve the height of the circle.
+ * @method FM.CircleRendererComponent#getHeight
+ * @memberOf FM.CircleRendererComponent
+ * @return {int} The height of the circle.
+ */
+FM.CircleRendererComponent.prototype.getHeight = function () {
+    "use strict";
+    return this.height;
+};
+/**
+ * Retrieve the radius of the circle.
+ * @method FM.CircleRendererComponent#getRadius
+ * @memberOf FM.CircleRendererComponent
+ * @return {int} The radius of the circle.
+ */
+FM.CircleRendererComponent.prototype.getRadius = function () {
+    "use strict";
+    return this.width / 2;
+};
+/**
+ * Retrieve the color of the circle.
+ * @method FM.CircleRendererComponent#getColor
+ * @memberOf FM.CircleRendererComponent
+ * @return {string} The color of the circle.
+ */
+FM.CircleRendererComponent.prototype.getColor = function () {
+    "use strict";
+    return this.color;
+};
+/**
+ * Retrieve the transparency value of the circle.
+ * @method FM.CircleRendererComponent#getAlpha
+ * @memberOf FM.CircleRendererComponent
+ * @return {float} Current transparency value.
+ */
+FM.CircleRendererComponent.prototype.getAlpha = function () {
+    "use strict";
+    return this.alpha;
+};
+/**
+ * Destroy the component and its objects.
+ * @method FM.CircleRendererComponent#destroy
+ * @memberOf FM.CircleRendererComponent
+ */
+FM.CircleRendererComponent.prototype.destroy = function () {
+    "use strict";
+    this.width = null;
+    this.height = null;
+    this.color = null;
+    this.alpha = null;
+    this.spatial = null;
+    FM.Component.prototype.destroy.call(this);
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

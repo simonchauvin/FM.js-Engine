@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: ObjectType.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: ObjectType.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/*global FM*/
+/**
+ * An object type can be associated to a game object. Then all game objects of a
+ * certain type can be processed uniformally through the object type object.
+ * @class FM.ObjectType
+ * @param {string} pName The name of the object type.
+ * @constructor
+ * @author Simon Chauvin.
+ */
+FM.ObjectType = function (pName) {
+    "use strict";
+    /**
+     * Name of the type.
+     * @type string
+     * @private
+     */
+    this.name = pName;
+    /**
+     * Specify if the game objects of the current type are alive.
+     * @type boolean
+     * @private
+     */
+    this.alive = true;
+    /**
+     * Specify if the game objects of the current type are visible.
+     * @type boolean
+     * @private
+     */
+    this.visible = true;
+    /**
+     * Specify the depth at which the game objects of the current type are drawn.
+     * @type int
+     * @private
+     */
+    this.zIndex = 1;
+    /**
+     * Specify the different degrees of scrolling of game objects with this type.
+     * @type FM.Vector
+     * @private
+     */
+    this.scrollFactor = new FM.Vector(1, 1);
+    /**
+     * Other types of game objects the current type has to collide with.
+     * @type Array
+     * @private
+     */
+    this.collidesWith = [];
+};
+FM.ObjectType.prototype.constructor = FM.ObjectType;
+/**
+ * Check if the game objects of the current type overlap with the game objects
+ * of the given type.
+ * @method FM.ObjectType#overlapsWithType
+ * @memberOf FM.ObjectType
+ * @param {FM.ObjectType} pType The type to test if it overlaps with the 
+ * current one.
+ * @return {FM.Collision} Collision object if there is overlapping.
+ */
+FM.ObjectType.prototype.overlapsWithType = function (pType) {
+    "use strict";
+    var state = FM.Game.getCurrentState(),
+        quad = state.getQuad(),
+        gameObjects = state.members,
+        otherGameObjects,
+        i,
+        j,
+        hasType,
+        hasOtherType,
+        gameObject,
+        otherGameObject,
+        physic,
+        otherPhysic,
+        collision = null,
+        collisionTemp = null;
+    for (i = 0; i &lt; gameObjects.length; i = i + 1) {
+        gameObject = gameObjects[i];
+        physic = gameObject.components[FM.ComponentTypes.PHYSIC];
+        hasType = gameObject.hasType(this);
+        hasOtherType = gameObject.hasType(pType);
+        if (physic && (hasType || hasOtherType)) {
+            otherGameObjects = quad.retrieve(gameObject);
+            for (j = 0; j &lt; otherGameObjects.length; j = j + 1) {
+                otherGameObject = otherGameObjects[j];
+                otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
+                if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
+                        && ((hasType && otherGameObject.hasType(pType))
+                        || (hasOtherType && otherGameObject.hasType(this)))) {
+                    collisionTemp = physic.overlapsWithObject(otherPhysic);
+                    if (collisionTemp) {
+                        collision = collisionTemp;
+                    }
+                }
+            }
+        }
+    }
+    return collision;
+};
+/**
+ * Check if the game objects of the current type are overlapping with a 
+ * specified game object.
+ * @method FM.ObjectType#overlapsWithObject
+ * @memberOf FM.ObjectType
+ * @param {FM.GameObject} pGameObject Game object to test with the game objects
+ * of the current type.
+ * @return {FM.Collision} Collision object if there is overlapping.
+ */
+FM.ObjectType.prototype.overlapsWithObject = function (pGameObject) {
+    "use strict";
+    var gameObjects = FM.Game.getCurrentState().getQuad().retrieve(pGameObject),
+        i,
+        otherGameObject,
+        physic = pGameObject.components[FM.ComponentTypes.PHYSIC],
+        otherPhysic,
+        collision = null,
+        collisionTemp = null;
+    if (physic) {
+        for (i = 0; i &lt; gameObjects.length; i = i + 1) {
+            otherGameObject = gameObjects[i];
+            otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
+            if (otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(this)) {
+                collisionTemp = physic.overlapsWithObject(otherPhysic);
+                if (collisionTemp) {
+                    collision = collisionTemp;
+                }
+            }
+        }
+    } else {
+        if (FM.Parameters.debug) {
+            console.log("WARNING: you need to specify a game object with a physic component for checking overlaps.");
+        }
+    }
+    return collision;
+};
+/**
+ * Ensure that the game objects of the current type collide with a specified one.
+ * @method FM.ObjectType#addTypeToCollideWith
+ * @memberOf FM.ObjectType
+ * @param {FM.ObjectType} pType The type to collide with to add to all game 
+ * objects of this type.
+ */
+FM.ObjectType.prototype.addTypeToCollideWith = function (pType) {
+    "use strict";
+    this.collidesWith.push(pType);
+    var gameObjects = FM.Game.getCurrentState().members,
+        i,
+        gameObject,
+        physic;
+    for (i = 0; i &lt; gameObjects.length; i = i + 1) {
+        gameObject = gameObjects[i];
+        physic = gameObject.components[FM.ComponentTypes.PHYSIC];
+        if (physic && gameObject.hasType(this)) {
+            physic.addTypeToCollideWith(pType);
+        }
+    }
+};
+/**
+ * Remove a type that was supposed to collide with all the game objects of this type.
+ * @method FM.ObjectType#removeTypeToCollideWith
+ * @memberOf FM.ObjectType
+ * @param {FM.ObjectType} pType The type to collide with to remove from all 
+ * game objects of this type.
+ */
+FM.ObjectType.prototype.removeTypeToCollideWith = function (pType) {
+    "use strict";
+    this.collidesWith.splice(this.collidesWith.indexOf(pType), 1);
+    var gameObjects = FM.Game.getCurrentState().members,
+        i,
+        gameObject,
+        physic;
+    for (i = 0; i &lt; gameObjects.length; i = i + 1) {
+        gameObject = gameObjects[i];
+        physic = gameObject.components[FM.ComponentTypes.PHYSIC];
+        if (physic && gameObject.hasType(this)) {
+            physic.removeTypeToCollideWith(pType);
+        }
+    }
+};
+/**
+ * Set the z-index of every game objects of the current type.
+ * @method FM.ObjectType#setZIndex
+ * @memberOf FM.ObjectType
+ * @param {int} pZIndex The z index at which all game objects of this type must
+ * be.
+ */
+FM.ObjectType.prototype.setZIndex = function (pZIndex) {
+    "use strict";
+    this.zIndex = pZIndex;
+    var gameObjects = FM.Game.getCurrentState().members,
+        i,
+        gameObject;
+    for (i = 0; i &lt; gameObjects.length; i = i + 1) {
+        gameObject = gameObjects[i];
+        if (gameObject.hasType(this)) {
+            gameObject.zIndex = this.zIndex;
+        }
+    }
+};
+/**
+ * Set the scrollFactor of every game objects of the current type.
+ * @method FM.ObjectType#setScrollFactor
+ * @memberOf FM.ObjectType
+ * @param {FM.Vector} pScrollFactor The factor of scrolling to apply to all
+ * game objects of this type.
+ */
+FM.ObjectType.prototype.setScrollFactor = function (pScrollFactor) {
+    "use strict";
+    this.scrollFactor = pScrollFactor;
+    var gameObjects = FM.Game.getCurrentState().members,
+        i,
+        gameObject;
+    for (i = 0; i &lt; gameObjects.length; i = i + 1) {
+        gameObject = gameObjects[i];
+        if (gameObject.hasType(this)) {
+            gameObject.scrollFactor = this.scrollFactor;
+        }
+    }
+};
+/**
+ * Kill all the game objects of this type.
+ * @method FM.ObjectType#kill
+ * @memberOf FM.ObjectType
+ */
+FM.ObjectType.prototype.kill = function () {
+    "use strict";
+    this.alive = false;
+};
+/**
+ * Hide all the game objects of this type.
+ * @method FM.ObjectType#hide
+ * @memberOf FM.ObjectType
+ */
+FM.ObjectType.prototype.hide = function () {
+    "use strict";
+    this.visible = false;
+};
+/**
+ * Revive all the game objects of this type.
+ * @method FM.ObjectType#revive
+ * @memberOf FM.ObjectType
+ */
+FM.ObjectType.prototype.revive = function () {
+    "use strict";
+    this.alive = true;
+};
+/**
+ * Show all the game objects of this type.
+ * @method FM.ObjectType#show
+ * @memberOf FM.ObjectType
+ */
+FM.ObjectType.prototype.show = function () {
+    "use strict";
+    this.visible = true;
+};
+/**
+ * Check if the game objects of this type are alive.
+ * @method FM.ObjectType#isAlive
+ * @memberOf FM.ObjectType
+ * @return {boolean} Whether all the game objects of this type are alive.
+ */
+FM.ObjectType.prototype.isAlive = function () {
+    "use strict";
+    return this.alive;
+};
+/**
+ * Check if the game object of this type are visible.
+ * @method FM.ObjectType#isVisible
+ * @memberOf FM.ObjectType
+ * @return {boolean} Whether all the game objects of this type are visible.
+ */
+FM.ObjectType.prototype.isVisible = function () {
+    "use strict";
+    return this.visible;
+};
+/**
+ * Retrieve the name of the type.
+ * @method FM.ObjectType#getName
+ * @memberOf FM.ObjectType
+ * @return {string} The name of the type.
+ */
+FM.ObjectType.prototype.getName = function () {
+    "use strict";
+    return this.name;
+};
+/**
+* Destroy the type.
+* @method FM.ObjectType#destroy
+ * @memberOf FM.ObjectType
+*/
+FM.ObjectType.prototype.destroy = function () {
+    "use strict";
+    this.name = null;
+    this.alive = null;
+    this.visible = null;
+    this.zIndex = null;
+    this.scrollFactor.destroy();
+    this.scrollFactor = null;
+    this.collidesWith = null;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

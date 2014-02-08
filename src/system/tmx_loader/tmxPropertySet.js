@@ -1,20 +1,30 @@
 /*global FM*/
 /**
  * Object representing a set of properties.
- * @class tmxPropertySet
+ * @class FM.TmxPropertySet
+ * @extends Array
+ * @constructor
+ * @author Simon Chauvin
  */
-FM.tmxPropertySet = function () {
+FM.TmxPropertySet = function () {
     "use strict";
-    var that = [];
-
-    /**
-     * Add a property to this set.
-     */
-    that.add = function (propertyNode) {
-        var key = propertyNode.getAttribute("name"),
-            value = propertyNode.getAttribute("value");
-        that[key] = value;
-    };
-
-    return that;
+    Array.call(this);
+};
+/**
+ * FM.TmxPropertySet inherits from Array.
+ */
+FM.TmxPropertySet.prototype = Object.create(Array.prototype);
+FM.TmxPropertySet.prototype.constructor = FM.TmxPropertySet;
+/**
+ * Add a property to this set.
+ * @method FM.TmxPropertySet#add
+ * @memberOf FM.TmxPropertySet
+ * @param {Node} pPropertyNode The property node to add to this set of 
+ * properties.
+ */
+FM.TmxPropertySet.prototype.add = function (pPropertyNode) {
+    "use strict";
+    var key = pPropertyNode.getAttribute("name"),
+        value = pPropertyNode.getAttribute("value");
+    this[key] = value;
 };

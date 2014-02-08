@@ -11,12 +11,12 @@ FM.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
     /**
      * fmB2CircleComponent is based on component.
      */
-    var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
+    var that = FM.component(FM.ComponentTypes.PHYSIC, pOwner),
         /**
          * Imports.
          */
-         parameters = FM.parameters,
-         componentTypes = FM.componentTypes,
+         parameters = FM.Parameters,
+         componentTypes = FM.ComponentTypes,
 	/**
 	 * Box2D imports.
 	 */
@@ -163,7 +163,7 @@ FM.fmB2CircleComponent = function (pRadius, pWorld, pOwner) {
      */
     that.setLinearVelocity = function (pLinearVelocity) {
         //Imports
-        var param = FM.parameters;
+        var param = FM.Parameters;
 	body.SetAwake(true);
         body.SetLinearVelocity(new b2Vec2(pLinearVelocity.x / parameters.PIXELS_TO_METERS, pLinearVelocity.y / parameters.PIXELS_TO_METERS));
     };

@@ -1,38 +1,52 @@
 /*global FM*/
 /**
- * Object representing a collision between two objects.
- * @class collision
+ * The collision object represents a collision between two objects.
+ * @class FM.Collision
+ * @param {FM.PhysicComponent} pPhysicObjectA One of the two game objects' physic 
+ * component colliding.
+ * @param {FM.PhysicComponent} pPhysicObjectB One of the two game objects' physic 
+ * component colliding.
+ * @constructor
  * @author Simon Chauvin
  */
-FM.collision = function (pObjectA, pObjectB) {
+FM.Collision = function (pPhysicObjectA, pPhysicObjectB) {
     "use strict";
-    var that = {};
-
     /**
-     * Object A.
+     * Physic object A.
+     * @type FM.PhysicComponent
+     * @public
      */
-    that.a = pObjectA === 'undefined' ? null : pObjectA;
+    this.a = pPhysicObjectA || null;
     /**
-     * Object B.
+     * Physic object B.
+     * @type FM.PhysicComponent
+     * @public
      */
-    that.b = pObjectB === 'undefined' ? null : pObjectB;
+    this.b = pPhysicObjectB || null;
     /**
      * How much the two objects penetrates one another.
+     * @type float
+     * @public
      */
-    that.penetration = 0.0;
+    this.penetration = 0.0;
     /**
      * Normal of the collision, starting at the center of object a and ending
      * in the center of the object b.
+     * @type FM.Vector
+     * @public
      */
-    that.normal = null;
-
-    /**
-    * Destroy the manifold and its objects.
-    */
-    that.destroy = function () {
-        that.normal = null;
-        that = null;
-    };
-
-    return that;
+    this.normal = null;
+};
+FM.Collision.prototype.constructor = FM.Collision;
+/**
+ * Destroy the manifold and its objects.
+ * @method FM.Collision#destroy
+ * @memberOf FM.Collision
+ */
+FM.Collision.prototype.destroy = function () {
+    "use strict";
+    this.a = null;
+    this.b = null;
+    this.normal = null;
+    this.penetration = null;
 };

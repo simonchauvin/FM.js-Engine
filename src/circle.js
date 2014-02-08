@@ -1,35 +1,43 @@
 /*global FM*/
 /**
- * Under Creative Commons Licence
- * @class circle
+ * Circle object.
+ * @class FM.Circle
+ * @param {int} pX X position of the circle.
+ * @param {int} pY Y position of the circle.
+ * @param {int} pRadius Radius of the circle.
+ * @constructor
  * @author Simon Chauvin
- * @param radius
- * @returns {circle}
  */
-FM.circle = function (pX, pY, pRadius) {
+FM.Circle = function (pX, pY, pRadius) {
     "use strict";
-    var that = {};
-
     /**
      * x position.
+     * @type int
+     * @public
      */
-    that.x = pX;
+    this.x = pX;
     /**
      * y position.
+     * @type int
+     * @public
      */
-    that.y = pY;
-
+    this.y = pY;
     /**
      * Radius.
+     * @type int
+     * @public
      */
-    that.radius = pRadius;
-
-    /**
-    * Destroy the circle and its objects.
-    */
-    that.destroy = function () {
-        that = null;
-    };
-
-    return that;
+    this.radius = pRadius;
+};
+FM.Circle.prototype.constructor = FM.Circle;
+/**
+ * Destroy the circle and its objects.
+ * @method FM.Circle#destroy
+ * @memberOf FM.Circle
+ */
+FM.Circle.prototype.destroy = function () {
+    "use strict";
+    this.x = null;
+    this.y = null;
+    this.radius = null;
 };

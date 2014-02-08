@@ -1,9 +1,12 @@
 /*global FM*/
 /**
- * @class keyboard
+ * List of keyboard codes.
+ * @class FM.Keyboard
+ * @static
+ * @readonly
  * @author Simon Chauvin
  */
-FM.keyboard = {
+FM.Keyboard = {
     BACKSPACE: 8,
     TAB: 9,
     ENTER: 13,

@@ -1,138 +1,183 @@
 /*global FM*/
 /**
- * @class boxRendererComponent
+ * The box renderer component is used to associate a box of a given color to a 
+ * game object.
+ * @class FM.BoxRendererComponent
+ * @extends FM.Component
+ * @param {int} pWidth The width of the box to render.
+ * @param {int} pHeight The height of the box to render.
+ * @param {string} pColor Color of the box to render.
+ * @param {FM.GameObject} pOwner The game object that owns this component.
+ * @constructor
  * @author Simon Chauvin
  */
-FM.boxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
+FM.BoxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
     "use strict";
-    var that = FM.component(FM.componentTypes.RENDERER, pOwner),
-        /**
-         * Width of the box.
-         */
-        width = pWidth,
-        /**
-         * Height of the box.
-         */
-        height = pHeight,
-        /**
-         * Color of the box.
-         */
-        color = pColor,
-        /**
-         * Transparency of the box.
-         */
-        alpha = 1,
-        /**
-         * Spatial component.
-         */
-        spatial = pOwner.components[FM.componentTypes.SPATIAL];
+    //Calling the constructor of FM.Component
+    FM.Component.call(this, FM.ComponentTypes.RENDERER, pOwner);
+    /**
+     * Width of the box.
+     * @type int
+     * @private
+     */
+    this.width = pWidth;
+    /**
+     * Height of the box.
+     * @type int
+     * @private
+     */
+    this.height = pHeight;
+    /**
+     * Color of the box.
+     * @type string
+     * @private
+     */
+    this.color = pColor;
+    /**
+     * Transparency of the box.
+     * @type float
+     * @private
+     */
+    this.alpha = 1;
+    /**
+     * Spatial component.
+     * @type FM.SpatialComponent
+     * @private
+     */
+    this.spatial = pOwner.components[FM.ComponentTypes.SPATIAL];
+
     //Check if a spatial component is present
-    if (!spatial && FM.parameters.debug) {
+    if (!this.spatial && FM.Parameters.debug) {
         console.log("ERROR: No spatial component was added and you need one for rendering.");
     }
-    /**
-     * Add the component to the game object.
-     */
-    pOwner.addComponent(that);
-
-    /**
-    * Draw the box.
-    * @param {CanvasRenderingContext2D} bufferContext context (buffer) on which 
-    * drawing is done.
-    */
-    that.draw = function (bufferContext, newPosition) {
-        var xPosition = newPosition.x, yPosition = newPosition.y;
-        xPosition -= bufferContext.xOffset * pOwner.scrollFactor.x;
-        yPosition -= bufferContext.yOffset * pOwner.scrollFactor.y;
-        xPosition = Math.round(xPosition);
-        yPosition = Math.round(yPosition);
-        bufferContext.globalAlpha = alpha;
-        if (spatial.angle !== 0) {
-            bufferContext.save();
-            bufferContext.translate(xPosition, yPosition);
-            bufferContext.translate(Math.round(width / 2), Math.round(height / 2));
-            bufferContext.rotate(spatial.angle);
-            bufferContext.beginPath();
-            bufferContext.rect(xPosition, yPosition, width, height);
-            bufferContext.restore();
-        } else {
-            bufferContext.beginPath();
-            bufferContext.rect(xPosition, yPosition, width, height);
-        }
-        bufferContext.fillStyle = color;
-        bufferContext.fill();
-        bufferContext.globalAlpha = 1;
-    };
-
-    /**
-    * Destroy the component and its objects.
-    */
-    that.destroy = function () {
-        spatial = null;
-        that.destroy();
-        that = null;
-    };
-
-    /**
-     * Set the width of the box.
-     * @param {int} newWidth new width desired.
-     */
-    that.setWidth = function (newWidth) {
-        width = newWidth;
-    };
-
-    /**
-     * Set the height of the box.
-     * @param {int} newHeight new height desired.
-     */
-    that.setHeight = function (newHeight) {
-        height = newHeight;
-    };
-
-    /**
-     * Set the color of the  box.
-     * @param {string} newColor new color desired.
-     */
-    that.setColor = function (newColor) {
-        color = newColor;
-    };
-
-    /**
-     * Set the transparency of the box.
-     * @param {float} newAlpha new transparency value desired.
-     */
-    that.setAlpha = function (newAlpha) {
-        alpha = newAlpha;
-    };
-
-    /**
-     * Retrieve the width of the box.
-     */
-    that.getWidth = function () {
-        return width;
-    };
-
-    /**
-     * Retrieve the height of the box.
-     */
-    that.getHeight = function () {
-        return height;
-    };
-
-    /**
-     * Retrieve the color of the box.
-     */
-    that.getColor = function () {
-        return color;
-    };
-
-    /**
-     * Retrieve the transparency value of the box.
-     * @return {float} current transparency value.
-     */
-    that.getAlpha = function () {
-        return alpha;
-    };
-
-    return that;
+};
+/**
+ * FM.BoxRendererComponent inherits from FM.Component.
+ */
+FM.BoxRendererComponent.prototype = Object.create(FM.Component.prototype);
+FM.BoxRendererComponent.prototype.constructor = FM.BoxRendererComponent;
+/**
+ * Draw the box.
+ * @method FM.BoxRendererComponent#draw
+ * @memberOf FM.BoxRendererComponent
+ * @param {CanvasRenderingContext2D} bufferContext Context on which drawing is 
+ * done.
+ * @param {FM.Vector} newPosition Position of the box to render.
+ */
+FM.BoxRendererComponent.prototype.draw = function (bufferContext, newPosition) {
+    "use strict";
+    var xPosition = newPosition.x, yPosition = newPosition.y;
+    xPosition -= bufferContext.xOffset * this.owner.scrollFactor.x;
+    yPosition -= bufferContext.yOffset * this.owner.scrollFactor.y;
+    xPosition = Math.round(xPosition);
+    yPosition = Math.round(yPosition);
+    bufferContext.globalAlpha = this.alpha;
+    if (this.spatial.angle !== 0) {
+        bufferContext.save();
+        bufferContext.translate(xPosition, yPosition);
+        bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
+        bufferContext.rotate(this.spatial.angle);
+        bufferContext.beginPath();
+        bufferContext.rect(xPosition, yPosition, this.width, this.height);
+        bufferContext.restore();
+    } else {
+        bufferContext.beginPath();
+        bufferContext.rect(xPosition, yPosition, this.width, this.height);
+    }
+    bufferContext.fillStyle = this.color;
+    bufferContext.fill();
+    bufferContext.globalAlpha = 1;
+};
+/**
+ * Set the width of the box.
+ * @method FM.BoxRendererComponent#setWidth
+ * @memberOf FM.BoxRendererComponent
+ * @param {int} pNewWidth New width desired.
+ */
+FM.BoxRendererComponent.prototype.setWidth = function (pNewWidth) {
+    "use strict";
+    this.width = pNewWidth;
+};
+/**
+ * Set the height of the box.
+ * @method FM.BoxRendererComponent#setHeight
+ * @memberOf FM.BoxRendererComponent
+ * @param {int} pNewHeight New height desired.
+ */
+FM.BoxRendererComponent.prototype.setHeight = function (pNewHeight) {
+    "use strict";
+    this.height = pNewHeight;
+};
+/**
+ * Set the color of the  box.
+ * @method FM.BoxRendererComponent#setColor
+ * @memberOf FM.BoxRendererComponent
+ * @param {string} pNewColor New color desired.
+ */
+FM.BoxRendererComponent.prototype.setColor = function (pNewColor) {
+    "use strict";
+    this.color = pNewColor;
+};
+/**
+ * Set the transparency of the box.
+ * @method FM.BoxRendererComponent#setAlpha
+ * @memberOf FM.BoxRendererComponent
+ * @param {float} pNewAlpha New transparency value desired.
+ */
+FM.BoxRendererComponent.prototype.setAlpha = function (pNewAlpha) {
+    "use strict";
+    this.alpha = pNewAlpha;
+};
+/**
+ * Retrieve the width of the box.
+ * @method FM.BoxRendererComponent#getWidth
+ * @memberOf FM.BoxRendererComponent
+ * @return {int} Width of the box.
+ */
+FM.BoxRendererComponent.prototype.getWidth = function () {
+    "use strict";
+    return this.width;
+};
+/**
+ * Retrieve the height of the box.
+ * @method FM.BoxRendererComponent#getHeight
+ * @memberOf FM.BoxRendererComponent
+ * @return {int} Height of the box.
+ */
+FM.BoxRendererComponent.prototype.getHeight = function () {
+    "use strict";
+    return this.height;
+};
+/**
+ * Retrieve the color of the box.
+ * @method FM.BoxRendererComponent#getColor
+ * @memberOf FM.BoxRendererComponent
+ * @return {string} Color of the box.
+ */
+FM.BoxRendererComponent.prototype.getColor = function () {
+    "use strict";
+    return this.color;
+};
+/**
+ * Retrieve the transparency value of the box.
+ * @method FM.BoxRendererComponent#getAlpha
+ * @memberOf FM.BoxRendererComponent
+ * @return {float} Current transparency value.
+ */
+FM.BoxRendererComponent.prototype.getAlpha = function () {
+    "use strict";
+    return this.alpha;
+};
+/**
+ * Destroy the component and its objects.
+ * @method FM.BoxRendererComponent#destroy
+ * @memberOf FM.BoxRendererComponent
+ */
+FM.BoxRendererComponent.prototype.destroy = function () {
+    "use strict";
+    this.width = null;
+    this.height = null;
+    this.spatial = null;
+    this.color = null;
+    FM.Component.prototype.destroy.call(this);
 };

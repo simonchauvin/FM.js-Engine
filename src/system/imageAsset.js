@@ -1,70 +1,109 @@
 /*global FM*/
 /**
- * @class imageAsset
+ * An image asset is used to represent a sprite usable by the FM.js engine.
+ * @class FM.ImageAsset
+ * @param {string} pName The name of the asset.
+ * @param {string} pPath The path of the asset.
+ * @constructor
  * @author Simon Chauvin
  */
-FM.imageAsset = function (pName, pPath) {
+FM.ImageAsset = function (pName, pPath) {
     "use strict";
-    var that = new Image(),
-
-        /**
-         * Name of the given to the asset.
-         */
-        name = pName,
-        /**
-         * Path to the image file.
-         */
-        path = pPath,
-        /**
-         * Specify the loading state of the image.
-         */
-        loaded = false,
-        /**
-         * Fired when the image has finished loading.
-         */
-        loadComplete = function () {
-            loaded = true;
-            FM.assetManager.assetLoaded();
-        };
-
     /**
-     * Load the image.
+     * The HTML5 Image object.
+     * @type Image
+     * @private
      */
-    that.load = function () {
-        that.src = path;
-
-        that.addEventListener("load", loadComplete, false);
-    };
-
+    this.image = new Image();
     /**
-     * Check if this image has been loaded.
+     * Name of the given to the asset.
+     * @type string
+     * @private
      */
-    that.isLoaded = function () {
-        return loaded;
-    };
-
+    this.name = pName;
     /**
-    * Destroy the asset and its objects
-    */
-    that.destroy = function () {
-        name = null;
-        path = null;
-        that = null;
-    };
-
-    /**
-     * Get the name of the asset.
+     * Path to the image file.
+     * @type string
+     * @private
      */
-    that.getName = function () {
-        return name;
-    };
-
+    this.path = pPath;
     /**
-     * Get the path to the image file.
+     * Specify the loading state of the image.
+     * @type boolean
+     * @private
      */
-    that.getPath = function () {
-        return path;
-    };
-
-    return that;
+    this.loaded = false;
+};
+FM.ImageAsset.prototype.constructor = FM.ImageAsset;
+/**
+ * Fired when the image has finished loading.
+ * @method FM.ImageAsset#loadComplete
+ * @memberOf FM.ImageAsset
+ * @param {Event} event Contains data about the event.
+ * @private
+ */
+FM.ImageAsset.prototype.loadComplete = function (event) {
+    "use strict";
+    event.target.owner.setLoaded();
+    FM.AssetManager.assetLoaded();
+};
+/**
+ * Load the image.
+ * @method FM.ImageAsset#load
+ * @memberOf FM.ImageAsset
+ */
+FM.ImageAsset.prototype.load = function () {
+    "use strict";
+    this.image.src = this.path;
+    this.image.addEventListener("load", FM.ImageAsset.prototype.loadComplete, false);
+    this.image.owner = this;
+};
+/**
+ * Check if this image has been loaded.
+ * @method FM.ImageAsset#isLoaded
+ * @memberOf FM.ImageAsset
+ * @return {boolean} Whether the image is loaded or not.
+ */
+FM.ImageAsset.prototype.isLoaded = function () {
+    "use strict";
+    return this.loaded;
+};
+/**
+ * Set the loaded boolean variable to true.
+ * @method FM.ImageAsset#setLoaded
+ * @memberOf FM.ImageAsset
+ */
+FM.ImageAsset.prototype.setLoaded = function () {
+    "use strict";
+    this.loaded = true;
+};
+/**
+ * Get the HTML5 Image object.
+ * @method FM.ImageAsset#getImage
+ * @memberOf FM.ImageAsset
+ * @return {Image} The HTML5 object.
+ */
+FM.ImageAsset.prototype.getImage = function () {
+    "use strict";
+    return this.image;
+};
+/**
+ * Get the name of the asset.
+ * @method FM.ImageAsset#getName
+ * @memberOf FM.ImageAsset
+ * @return {string} The name of the asset.
+ */
+FM.ImageAsset.prototype.getName = function () {
+    "use strict";
+    return this.name;
+};
+/**
+ * Get the path to the image file.
+ * @method FM.ImageAsset#getPath
+ * @memberOf FM.ImageAsset
+ * @return {string} The path to the asset.
+ */
+FM.ImageAsset.prototype.getPath = function () {
+    "use strict";
+    return this.path;
 };

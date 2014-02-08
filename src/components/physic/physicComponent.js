@@ -1,465 +1,616 @@
 /*global FM*/
 /**
- * Component of basic physics.
- * @class physicComponent
- * @param {int} pWidth width of the collider.
- * @param {int} pHeight height of the collider.
- * @param {fmObject} The object that owns this component.
+ * Parent component of physics components to add to a game object for collisions
+ * and physics behavior.
+ * @class FM.PhysicComponent
+ * @extends FM.Component
+ * @param {int} pWidth Width of the collider.
+ * @param {int} pHeight Height of the collider.
+ * @param {FM.GameObject} pOwner The object that owns this component.
+ * @constructor
  * @author Simon Chauvin
  */
-FM.physicComponent = function (pWidth, pHeight, pOwner) {
+FM.PhysicComponent = function (pWidth, pHeight, pOwner) {
     "use strict";
+    //Calling the constructor of the FM.Component
+    FM.Component.call(this, FM.ComponentTypes.PHYSIC, pOwner);
     /**
-     * FM.physicComponent is based on component.
+     * World of the game.
+     * @type FM.World
+     * @private
      */
-    var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
-        /**
-         * World of the game.
-         */
-        world = FM.game.getCurrentState().getWorld(),
-        /**
-        * Quad tree containing all game objects with a physic component.
-         */
-        quad = FM.game.getCurrentState().getQuad(),
-        /**
-         * Represent the mass of the physic game object, 0 means infinite mass.
-         */
-        mass = 1,
-        /**
-         * Represent the inverse mass.
-         */
-        invMass = 1 / mass,
-        /**
-         * Array storing the types of game objects that can collide with this one.
-         */
-        collidesWith = [],
-        /**
-         * Store the collisions that this object has.
-         */
-        collisions = [],
-        /**
-         * Store the types of tile map that this object collides with.
-         */
-        tilesCollisions = [],
-        /**
-         * Spatial component reference.
-         */
-        spatial = pOwner.components[FM.componentTypes.SPATIAL],
-        /**
-         * Correct the position of the physic component.
-         */
-        correctPosition = function (collision) {
-            //Position correction
-            var correction = FM.vector(collision.penetration * collision.normal.x, collision.penetration * collision.normal.y),
-                aSpatial = collision.a.owner.components[FM.componentTypes.SPATIAL],
-                bSpatial = collision.b.owner.components[FM.componentTypes.SPATIAL],
-                //aPhysic = collision.a.owner.components[FM.componentTypes.PHYSIC],
-                //bPhysic = collision.b.owner.components[FM.componentTypes.PHYSIC],
-                massSum = 0,
-                aInvMass = collision.a.getInvMass(),
-                bInvMass = collision.b.getInvMass();
-            massSum = aInvMass + bInvMass;
-
-            //TODO make it work instead of the other below
-            /*var percent = 0.2; // usually 20% to 80%
-            var slop = 0.01; // usually 0.01 to 0.1
-            correction.x = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.x;
-            correction.y = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.y;
-            aSpatial.position.x -= invMass * correction.x;
-            aSpatial.position.y -= invMass * correction.y;
-            bSpatial.position.x += otherInvMass * correction.x;
-            bSpatial.position.y += otherInvMass * correction.y;*/
-
-            //TODO this is here that it goes wrong, need to add offset ?
-            aSpatial.position.x -= correction.x * (aInvMass / massSum);
-            aSpatial.position.y -= correction.y * (aInvMass / massSum);
-            bSpatial.position.x += correction.x * (bInvMass / massSum);
-            bSpatial.position.y += correction.y * (bInvMass / massSum);
-            //TODO try with physic tiles with fixed integer position value
-            //aSpatial.position.reset(Math.floor(aSpatial.position.x), Math.floor(aSpatial.position.y));
-            //bSpatial.position.reset(Math.floor(bSpatial.position.x), Math.floor(bSpatial.position.y));
-        },
-        /**
-         * Check collisions with a given array of tiles.
-         * @param {tileMap} tiles tiles to test for collisions.
-         */
-        checkCollisionsWithTiles = function (tiles, tileWidth, tileHeight, xPos, yPos) {
-            var i1 = Math.floor(yPos / tileHeight),
-                j1 = Math.floor(xPos / tileWidth),
-                i2 = Math.floor((yPos + that.height) / tileHeight),
-                j2 = Math.floor((xPos + that.width) / tileWidth),
-                i,
-                j;
-            for (i = i1; i <= i2; i = i + 1) {
-                for (j = j1; j <= j2; j = j + 1) {
-                    if (tiles[i] !== 0 && tiles[i][j] !== -1) {
-                        if (j === j1 || j === j2 || i === i1 || i === i2) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        },
-        /**
-         * Try to move the physic object and rollback if it collides with a tile.
-         */
-        tryToMove = function (tiles, tileWidth, tileHeight, xVel, yVel) {
-            var spX = spatial.position.x + xVel,
-                spY = spatial.position.y + yVel;
-            if (!checkCollisionsWithTiles(tiles, tileWidth, tileHeight, spX + that.offset.x, spY + that.offset.y)) {
-                spatial.position.x = spX;
-                spatial.position.y = spY;
-                return true;
-            }
-            return false;
-        },
-        /**
-         * Move the physic object one pixel at a time.
-         */
-        move = function (tileMap, xVel, yVel) {
-            var tiles = tileMap.getData(),
-                tileWidth = tileMap.getTileWidth(),
-                tileHeight = tileMap.getTileHeight(),
-                hasCollided = false;
-            if (Math.abs(xVel) >= tileWidth || Math.abs(yVel) >= tileHeight) {
-                move(tileMap, xVel / 2, yVel / 2);
-                move(tileMap, xVel - xVel / 2, yVel - yVel / 2);
-                return;
-            }
-
-            var hor = tryToMove(tiles, tileWidth, tileHeight, xVel, 0),
-                ver = tryToMove(tiles, tileWidth, tileHeight, 0, yVel),
-                i,
-                maxSpeed,
-                vel;
-            if (hor && ver) {
-                return;
-            }
-            if (!hor) {
-                that.velocity.x = 0;
-                maxSpeed = Math.abs(xVel);
-                for (i = 0; i < maxSpeed; i = i + 1) {
-                    if (xVel === 0) {
-                        vel = 0;
-                    } else if (xVel > 0) {
-                        vel = 1;
-                    } else {
-                        vel = -1;
-                    }
-                    if (!tryToMove(tiles, tileWidth, tileHeight, vel, 0)) {
-                        hasCollided = true;
-                        break;
-                    } else {
-                        that.velocity.x += vel;
-                    }
-                }
-            }
-            if (!ver) {
-                that.velocity.y = 0;
-                maxSpeed = Math.abs(yVel);
-                for (i = 0; i < maxSpeed; i = i + 1) {
-                    if (yVel === 0) {
-                        vel = 0;
-                    } else if (yVel > 0) {
-                        vel = 1;
-                    } else {
-                        vel = -1;
-                    }
-                    if (!tryToMove(tiles, tileWidth, tileHeight, 0, vel)) {
-                        hasCollided = true;
-                        break;
-                    } else {
-                        that.velocity.y += vel;
-                    }
-                }
-            }
-            return hasCollided;
-        };
+    this.world = FM.Game.getCurrentState().getWorld();
+    /**
+    * Quad tree containing all game objects with a physic component.
+    * @type FM.QuadTree
+    * @private
+     */
+    this.quad = FM.Game.getCurrentState().getQuad();
+    /**
+     * Represent the mass of the physic game object, 0 means infinite mass.
+     * @type int
+     * @private
+     */
+    this.mass = 1;
+    /**
+     * Represent the inverse mass.
+     * @type float
+     * @private
+     */
+    this.invMass = 1 / this.mass;
+    /**
+     * Array storing the types of game objects that can collide with this one.
+     * @type Array
+     * @private
+     */
+    this.collidesWith = [];
+    /**
+     * Store the collisions that this object has.
+     * @type Array
+     * @private
+     */
+    this.collisions = [];
+    /**
+     * Store the types of tile map that this object collides with.
+     * @type Array
+     * @private
+     */
+    this.tilesCollisions = [];
+    /**
+     * Spatial component reference.
+     * @type FM.SpatialComponent
+     * @private
+     */
+    this.spatial = pOwner.components[FM.ComponentTypes.SPATIAL];
     /**
      * Offset of the bounding box or circle.
+     * @type FM.Vector
+     * @public
      */
-    that.offset = FM.vector(0, 0);
+    this.offset = new FM.Vector(0, 0);
     /**
      * Width of the collider.
+     * @type int
+     * @public
      */
-    that.width = pWidth;
+    this.width = pWidth;
     /**
      * Height of the collider.
+     * @type int
+     * @public
      */
-    that.height = pHeight;
+    this.height = pHeight;
     /**
      * Velocity of the physic component.
+     * @type FM.Vector
+     * @public
      */
-    that.velocity = FM.vector(0, 0);
+    this.velocity = new FM.Vector(0, 0);
     /**
      * Acceleration applied to the physic object.
+     * @type FM.Vector
+     * @public
      */
-    that.acceleration = FM.vector(0, 0);
+    this.acceleration = new FM.Vector(0, 0);
     /**
      * How much the object's velocity is decreasing when acceleration is
      * equal to 0.
+     * @type FM.Vector
+     * @public
      */
-    that.drag = FM.vector(0, 0);
+    this.drag = new FM.Vector(0, 0);
     /**
      * Angular velocity.
+     * @type int
+     * @public
      */
-    that.angularVelocity = 0;
+    this.angularVelocity = 0;
     /**
      * How much the object's velocity is decreasing when acceleration is
      * equal to 0.
+     * @type FM.Vector
+     * @public
      */
-    that.angularDrag = FM.vector(0, 0);
+    this.angularDrag = new FM.Vector(0, 0);
     /**
      * Represent the maximum absolute value of the velocity.
+     * @type FM.Vector
+     * @public
      */
-    that.maxVelocity = FM.vector(1000, 1000);
+    this.maxVelocity = new FM.Vector(1000, 1000);
     /**
      * Maximum angular velocity.
+     * @type int
+     * @public
      */
-    that.maxAngularVelocity = 10000;
+    this.maxAngularVelocity = 10000;
     /**
      * Elasticity is a factor between 0 and 1 used for bouncing purposes.
+     * @type float
+     * @public
      */
-    that.elasticity = 0;
+    this.elasticity = 0;
+
     //Check if a spatial component is present
-    if (!spatial && FM.parameters.debug) {
+    if (!this.spatial && FM.Parameters.debug) {
         console.log("ERROR: No spatial component was added and you need one for physics.");
     }
+};
+/**
+ * FM.PhysicComponent inherits from FM.Component.
+ */
+FM.PhysicComponent.prototype = Object.create(FM.Component.prototype);
+FM.PhysicComponent.prototype.constructor = FM.PhysicComponent;
+/**
+ * Correct the position of the physic component.
+ * @method FM.PhysicComponent#correctPosition
+ * @memberOf FM.PhysicComponent
+ * @param {FM.Collision} pCollision The collision object containing the
+ * that needs position correcting.
+ * @private
+ */
+FM.PhysicComponent.prototype.correctPosition = function (pCollision) {
+    "use strict";
+    //Position correction
+    var correction = new FM.Vector(pCollision.penetration * pCollision.normal.x, pCollision.penetration * pCollision.normal.y),
+        aSpatial = pCollision.a.owner.components[FM.ComponentTypes.SPATIAL],
+        bSpatial = pCollision.b.owner.components[FM.ComponentTypes.SPATIAL],
+        //aPhysic = collision.a.owner.components[FM.ComponentTypes.PHYSIC],
+        //bPhysic = collision.b.owner.components[FM.ComponentTypes.PHYSIC],
+        massSum = 0,
+        aInvMass = pCollision.a.getInvMass(),
+        bInvMass = pCollision.b.getInvMass();
+    massSum = aInvMass + bInvMass;
 
-    /**
-    * Update the component.
-    */
-    that.update = function (dt) {
-        collisions = [];
-        tilesCollisions = [];
+    //TODO make it work instead of the other below
+    /*var percent = 0.2; // usually 20% to 80%
+    var slop = 0.01; // usually 0.01 to 0.1
+    correction.x = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.x;
+    correction.y = (Math.max(collision.penetration - slop, 0) / (massSum)) * percent * collision.normal.y;
+    aSpatial.position.x -= invMass * correction.x;
+    aSpatial.position.y -= invMass * correction.y;
+    bSpatial.position.x += otherInvMass * correction.x;
+    bSpatial.position.y += otherInvMass * correction.y;*/
 
-        //Limit velocity to a max value
-        //TODO maxvelocity should be in pixels per seconds
-        var currentVelocity = that.velocity.x + (invMass * that.acceleration.x) * dt,
-            maxVelocity = that.maxVelocity.x + (invMass * that.acceleration.x) * dt,
-            canMove = true,
-            hasCollided = false,
-            tileMap,
-            gameObjects,
-            i,
-            j,
-            otherGameObject,
-            otherPhysic,
-            collision = null;
-        if (Math.abs(currentVelocity) <= maxVelocity) {
-            that.velocity.x = currentVelocity;
-        } else if (currentVelocity < 0) {
-            that.velocity.x = -maxVelocity;
-        } else if (currentVelocity > 0) {
-            that.velocity.x = maxVelocity;
-        }
-        currentVelocity = that.velocity.y + (invMass * that.acceleration.y) * dt;
-        maxVelocity = that.maxVelocity.y + (invMass * that.acceleration.y) * dt;
-        if (Math.abs(currentVelocity) <= maxVelocity) {
-            that.velocity.y = currentVelocity;
-        } else if (currentVelocity < 0) {
-            that.velocity.y = -maxVelocity;
-        } else if (currentVelocity > 0) {
-            that.velocity.y = maxVelocity;
-        }
-
-        //Apply drag
-        if (that.acceleration.x === 0) {
-            if (that.velocity.x > 0) {
-                that.velocity.x -= that.drag.x;
-                if (that.velocity.x < 0) {
-                    that.velocity.x = 0;
-                }
-            } else if (that.velocity.x < 0) {
-                that.velocity.x += that.drag.x;
-                if (that.velocity.x > 0) {
-                    that.velocity.x = 0;
+    //TODO this is here that it goes wrong, need to add offset ?
+    aSpatial.position.x -= correction.x * (aInvMass / massSum);
+    aSpatial.position.y -= correction.y * (aInvMass / massSum);
+    bSpatial.position.x += correction.x * (bInvMass / massSum);
+    bSpatial.position.y += correction.y * (bInvMass / massSum);
+    //TODO try with physic tiles with fixed integer position value
+    //aSpatial.position.reset(Math.floor(aSpatial.position.x), Math.floor(aSpatial.position.y));
+    //bSpatial.position.reset(Math.floor(bSpatial.position.x), Math.floor(bSpatial.position.y));
+};
+/**
+ * Check collisions with a given array of tiles.
+ * @method FM.PhysicComponent#correctPosition
+ * @memberOf FM.PhysicComponent
+ * @param {Array} pTiles The list of tile IDs to test for collisions.
+ * @param {int} pTileWidth Width of a tile.
+ * @param {int} pTileHeight Height of a tile.
+ * @param {int} pXPos X position of the object to test.
+ * @param {int} pYPos Y position of the object to test.
+ * @return {boolean} Whether there is collision between with a tile.
+ * @private
+ */
+FM.PhysicComponent.prototype.checkCollisionsWithTiles = function (pTiles, pTileWidth, pTileHeight, pXPos, pYPos) {
+    "use strict";
+    var i1 = Math.floor(pYPos / pTileHeight),
+        j1 = Math.floor(pXPos / pTileWidth),
+        i2 = Math.floor((pYPos + this.height) / pTileHeight),
+        j2 = Math.floor((pXPos + this.width) / pTileWidth),
+        i,
+        j;
+    for (i = i1; i <= i2; i = i + 1) {
+        for (j = j1; j <= j2; j = j + 1) {
+            if (pTiles[i] !== 0 && pTiles[i][j] !== -1) {
+                if (j === j1 || j === j2 || i === i1 || i === i2) {
+                    return true;
                 }
             }
         }
-        if (that.acceleration.y === 0) {
-            if (that.velocity.y > 0) {
-                that.velocity.y -= that.drag.y;
-                if (that.velocity.y < 0) {
-                    that.velocity.y = 0;
-                }
-            } else if (that.velocity.y < 0) {
-                that.velocity.y += that.drag.y;
-                if (that.velocity.y > 0) {
-                    that.velocity.y = 0;
+    }
+    return false;
+};
+/**
+ * Try to move the physic object and rollback if it collides with a tile.
+ * @method FM.PhysicComponent#tryToMove
+ * @memberOf FM.PhysicComponent
+ * @param {Array} pTiles The list of tile IDs to test for collisions.
+ * @param {int} pTileWidth The width of a tile.
+ * @param {int} pTileHeight The height of a tile.
+ * @param {float} pXVel The x velocity of the object.
+ * @param {float} pYVel The y velocity of the object.
+ * @return {boolean} Whether the object can move or not.
+ * @private
+ */
+FM.PhysicComponent.prototype.tryToMove = function (pTiles, pTileWidth, pTileHeight, pXVel, pYVel) {
+    "use strict";
+    var spX = this.spatial.position.x + pXVel,
+        spY = this.spatial.position.y + pYVel;
+    if (!this.checkCollisionsWithTiles(pTiles, pTileWidth, pTileHeight, spX + this.offset.x, spY + this.offset.y)) {
+        this.spatial.position.x = spX;
+        this.spatial.position.y = spY;
+        return true;
+    }
+    return false;
+};
+/**
+ * Move the physic object one pixel at a time.
+ * @method FM.PhysicComponent#move
+ * @memberOf FM.PhysicComponent
+ * @param {FM.TileMap} pTileMap The tile map on which to move.
+ * @param {float} pXVel The x velocity of the object.
+ * @param {float} pYVel The y velocity of the object.
+ * @return {boolean} Whether the object has collided against the tile
+ * map or not.
+ * @private
+ */
+FM.PhysicComponent.prototype.move = function (tileMap, xVel, yVel) {
+    "use strict";
+    var tiles = tileMap.getData(),
+        tileWidth = tileMap.getTileWidth(),
+        tileHeight = tileMap.getTileHeight(),
+        hasCollided = false;
+    if (Math.abs(xVel) >= tileWidth || Math.abs(yVel) >= tileHeight) {
+        this.move(tileMap, xVel / 2, yVel / 2);
+        this.move(tileMap, xVel - xVel / 2, yVel - yVel / 2);
+        return;
+    }
+
+    var hor = this.tryToMove(tiles, tileWidth, tileHeight, xVel, 0),
+        ver = this.tryToMove(tiles, tileWidth, tileHeight, 0, yVel),
+        i,
+        maxSpeed,
+        vel;
+    if (hor && ver) {
+        return;
+    }
+    if (!hor) {
+        this.velocity.x = 0;
+        maxSpeed = Math.abs(xVel);
+        for (i = 0; i < maxSpeed; i = i + 1) {
+            if (xVel === 0) {
+                vel = 0;
+            } else if (xVel > 0) {
+                vel = 1;
+            } else {
+                vel = -1;
+            }
+            if (!this.tryToMove(tiles, tileWidth, tileHeight, vel, 0)) {
+                hasCollided = true;
+                break;
+            } else {
+                this.velocity.x += vel;
+            }
+        }
+    }
+    if (!ver) {
+        this.velocity.y = 0;
+        maxSpeed = Math.abs(yVel);
+        for (i = 0; i < maxSpeed; i = i + 1) {
+            if (yVel === 0) {
+                vel = 0;
+            } else if (yVel > 0) {
+                vel = 1;
+            } else {
+                vel = -1;
+            }
+            if (!this.tryToMove(tiles, tileWidth, tileHeight, 0, vel)) {
+                hasCollided = true;
+                break;
+            } else {
+                this.velocity.y += vel;
+            }
+        }
+    }
+    return hasCollided;
+};
+/**
+ * Update the component.
+ * @method FM.PhysicComponent#update
+ * @memberOf FM.PhysicComponent
+ * @param {float} dt The fixed delta time since the last frame.
+ */
+FM.PhysicComponent.prototype.update = function (dt) {
+    "use strict";
+    this.collisions = [];
+    this.tilesCollisions = [];
+
+    //Limit velocity to a max value
+    //TODO maxvelocity should be in pixels per seconds
+    var currentVelocity = this.velocity.x + (this.invMass * this.acceleration.x) * dt,
+        maxVelocity = this.maxVelocity.x + (this.invMass * this.acceleration.x) * dt,
+        canMove = true,
+        hasCollided = false,
+        tileMap,
+        gameObjects,
+        i,
+        j,
+        otherGameObject,
+        otherPhysic,
+        collision = null;
+    if (Math.abs(currentVelocity) <= maxVelocity) {
+        this.velocity.x = currentVelocity;
+    } else if (currentVelocity < 0) {
+        this.velocity.x = -maxVelocity;
+    } else if (currentVelocity > 0) {
+        this.velocity.x = maxVelocity;
+    }
+    currentVelocity = this.velocity.y + (this.invMass * this.acceleration.y) * dt;
+    maxVelocity = this.maxVelocity.y + (this.invMass * this.acceleration.y) * dt;
+    if (Math.abs(currentVelocity) <= maxVelocity) {
+        this.velocity.y = currentVelocity;
+    } else if (currentVelocity < 0) {
+        this.velocity.y = -maxVelocity;
+    } else if (currentVelocity > 0) {
+        this.velocity.y = maxVelocity;
+    }
+
+    //Apply drag
+    if (this.acceleration.x === 0) {
+        if (this.velocity.x > 0) {
+            this.velocity.x -= this.drag.x;
+            if (this.velocity.x < 0) {
+                this.velocity.x = 0;
+            }
+        } else if (this.velocity.x < 0) {
+            this.velocity.x += this.drag.x;
+            if (this.velocity.x > 0) {
+                this.velocity.x = 0;
+            }
+        }
+    }
+    if (this.acceleration.y === 0) {
+        if (this.velocity.y > 0) {
+            this.velocity.y -= this.drag.y;
+            if (this.velocity.y < 0) {
+                this.velocity.y = 0;
+            }
+        } else if (this.velocity.y < 0) {
+            this.velocity.y += this.drag.y;
+            if (this.velocity.y > 0) {
+                this.velocity.y = 0;
+            }
+        }
+    }
+
+    if (this.collidesWith.length > 0) {
+        if (this.world.hasTileCollisions()) {
+            for (i = 0; i < this.collidesWith.length; i = i + 1) {
+                tileMap = this.world.getTileMapFromType(this.collidesWith[i]);
+                if (tileMap && tileMap.canCollide()) {
+                    hasCollided = this.move(tileMap, this.velocity.x * dt, this.velocity.y * dt);
+                    if (hasCollided) {
+                        this.tilesCollisions.push({a: this.owner, b: tileMap});
+                    }
+                    canMove = false;
                 }
             }
         }
+    }
 
-        if (collidesWith.length > 0) {
-            if (world.hasTileCollisions()) {
-                for (i = 0; i < collidesWith.length; i = i + 1) {
-                    tileMap = world.getTileMapFromType(collidesWith[i]);
-                    if (tileMap && tileMap.canCollide()) {
-                        hasCollided = move(tileMap, that.velocity.x * dt, that.velocity.y * dt);
-                        if (hasCollided) {
-                            tilesCollisions.push({a: that.owner, b: tileMap});
+    //Update position
+    if (canMove) {
+        this.spatial.position.x += this.velocity.x * dt;
+        this.spatial.position.y += this.velocity.y * dt;
+    }
+
+    //If this game object collides with at least one type of game object
+    if (this.collidesWith.length > 0) {
+        this.quad = FM.Game.getCurrentState().getQuad();
+        gameObjects = this.quad.retrieve(this.owner);
+        //If there are other game objects near this one
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            otherGameObject = gameObjects[i];
+            otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
+            //If a game object is found and is alive and is not the current one
+            if (otherGameObject.isAlive() && this.owner.getId() !== otherGameObject.getId() && !otherPhysic.isCollidingWith(this.owner) && !this.isCollidingWith(otherGameObject)) {
+                for (j = 0; j < this.collidesWith.length; j = j + 1) {
+                    if (otherGameObject.hasType(this.collidesWith[j])) {
+                        collision = this.owner.components[FM.ComponentTypes.PHYSIC].overlapsWithObject(otherPhysic);
+                        if (collision !== null) {
+                            this.addCollision(collision);
+                            otherPhysic.addCollision(collision);
+                            this.resolveCollision(otherPhysic, collision);
+                            otherPhysic.resolveCollision(this, collision);
+                            this.correctPosition(collision);
                         }
-                        canMove = false;
                     }
                 }
             }
         }
-
-        //Update position
-        if (canMove) {
-            spatial.position.x += that.velocity.x * dt;
-            spatial.position.y += that.velocity.y * dt;
+    }
+};
+/**
+ * Resolve collision between current game object and the specified one.
+ * @method FM.PhysicComponent#resolveCollision
+ * @memberOf FM.PhysicComponent
+ * @param {FM.PhysicComponent} pOtherPhysic The other physic component of 
+ * the collision.
+ * @param {FM.Collision} pCollision The collision object containing the 
+ * data about the collision to resolve.
+ */
+FM.PhysicComponent.prototype.resolveCollision = function (pOtherPhysic, pCollision) {
+    "use strict";
+    var relativeVelocity = FM.Math.substractVectors(pOtherPhysic.velocity, this.velocity),
+        velocityAlongNormal = relativeVelocity.dotProduct(pCollision.normal),
+        //Compute restitution
+        e = Math.min(this.elasticity, pOtherPhysic.elasticity),
+        j = 0,
+        otherInvMass = pOtherPhysic.getInvMass(),
+        impulse = new FM.Vector(0, 0);
+    //Do not resolve if velocities are separating.
+    if (velocityAlongNormal > 0) {
+        return;
+    }
+    //Compute impulse scalar
+    j = -(1 + e) * velocityAlongNormal;
+    j /= this.invMass + otherInvMass;
+    //Apply impulse
+    impulse.reset(j * pCollision.normal.x, j * pCollision.normal.y);
+    this.velocity.x -= this.invMass * impulse.x;
+    this.velocity.y -= this.invMass * impulse.y;
+    pOtherPhysic.velocity.x += otherInvMass * impulse.x;
+    pOtherPhysic.velocity.y += otherInvMass * impulse.y;
+};
+/**
+ * Ensure that a game object collides with a certain type of other game 
+ * objects (with physic components of course).
+ * @method FM.PhysicComponent#addTypeToCollideWith
+ * @memberOf FM.PhysicComponent
+ * @param {FM.ObjectType} pType The type to add to the list of types that
+ * this object can collide with.
+ */
+FM.PhysicComponent.prototype.addTypeToCollideWith = function (pType) {
+    "use strict";
+    this.collidesWith.push(pType);
+};
+/**
+ * Remove a type that was supposed to collide with this game object.
+ * @method FM.PhysicComponent#removeTypeToCollideWith
+ * @memberOf FM.PhysicComponent
+ * @param {FM.ObjectType} pType The type to remove from the list of types
+ * that this object can collide with.
+ */
+FM.PhysicComponent.prototype.removeTypeToCollideWith = function (pType) {
+    "use strict";
+    this.collidesWith.splice(this.collidesWith.indexOf(pType), 1);
+};
+/**
+ * Add a collision object representing the collision to the list of current
+ * collisions.
+ * @method FM.PhysicComponent#addCollision
+ * @memberOf FM.PhysicComponent
+ * @param {FM.Collision} pCollision The collision object to add.
+ */
+FM.PhysicComponent.prototype.addCollision = function (pCollision) {
+    "use strict";
+    this.collisions.push(pCollision);
+};
+/**
+ * Get the velocity.
+ * @method FM.PhysicComponent#getLinearVelocity
+ * @memberOf FM.PhysicComponent
+ * @return {FM.Vector} The vector containing the current velocity of the 
+ * object.
+ */
+FM.PhysicComponent.prototype.getLinearVelocity = function () {
+    "use strict";
+    return this.velocity;
+};
+/**
+ * Check if the current physic component is colliding a specified type of physic component.
+ * @method FM.PhysicComponent#isCollidingWithType
+ * @memberOf FM.PhysicComponent
+ * @param {FM.ObjectType} pOtherType The type of objects to test for
+ * collision with this one.
+ * @return {boolean} Whether there is already collision between the the current physic component and the specified type of physic component.
+ */
+FM.PhysicComponent.prototype.isCollidingWithType = function (pOtherType) {
+    "use strict";
+    var i, collision;
+    for (i = 0; i < this.collisions.length; i = i + 1) {
+        collision = this.collisions[i];
+        if ((collision.b && collision.b.owner.hasType(pOtherType))
+                || (collision.a && collision.a.owner.hasType(pOtherType))) {
+            return true;
         }
-
-        //If this game object collides with at least one type of game object
-        if (collidesWith.length > 0) {
-            quad = FM.game.getCurrentState().getQuad();
-            gameObjects = quad.retrieve(pOwner);
-            //If there are other game objects near this one
-            for (i = 0; i < gameObjects.length; i = i + 1) {
-                otherGameObject = gameObjects[i];
-                otherPhysic = otherGameObject.components[FM.componentTypes.PHYSIC];
-                //If a game object is found and is alive and is not the current one
-                if (otherGameObject.isAlive() && pOwner.getId() !== otherGameObject.getId() && !otherPhysic.isCollidingWith(pOwner) && !that.isCollidingWith(otherGameObject)) {
-                    for (j = 0; j < collidesWith.length; j = j + 1) {
-                        if (otherGameObject.hasType(collidesWith[j])) {
-                            collision = pOwner.components[FM.componentTypes.PHYSIC].overlapsWithObject(otherPhysic);
-                            if (collision !== null) {
-                                that.addCollision(collision);
-                                otherPhysic.addCollision(collision);
-                                that.resolveCollision(otherPhysic, collision);
-                                otherPhysic.resolveCollision(that, collision);
-                                correctPosition(collision);
-                            }
-                        }
-                    }
-                }
-            }
+    }
+    for (i = 0; i < this.tilesCollisions.length; i = i + 1) {
+        collision = this.tilesCollisions[i];
+        if ((collision.b && collision.b.hasType(pOtherType))
+                || (collision.a && collision.a.hasType(pOtherType))) {
+            return true;
         }
-    };
-
-    /**
-     * Resolve collision between current game object and the specified one.
-     */
-    that.resolveCollision = function (otherPhysic, collision) {
-        var relativeVelocity = FM.math.substractVectors(otherPhysic.velocity, that.velocity),
-            velocityAlongNormal = relativeVelocity.dotProduct(collision.normal),
-            //Compute restitution
-            e = Math.min(that.elasticity, otherPhysic.elasticity),
-            j = 0,
-            otherInvMass = otherPhysic.getInvMass(),
-            impulse = FM.vector(0, 0);
-        //Do not resolve if velocities are separating.
-        if (velocityAlongNormal > 0) {
-            return;
+    }
+    return false;
+};
+/**
+ * Check if the current physic component is colliding with another one.
+ * @method FM.PhysicComponent#isCollidingWith
+ * @memberOf FM.PhysicComponent
+ * @param {FM.GameObject} pOtherGameObject The game object to test for 
+ * collision with this one.
+ * @return {boolean} Whether there is already collision between the physic components.
+ */
+FM.PhysicComponent.prototype.isCollidingWith = function (pOtherGameObject) {
+    "use strict";
+    var i, collision;
+    for (i = 0; i < this.collisions.length; i = i + 1) {
+        collision = this.collisions[i];
+        if ((collision.b && collision.b.owner.getId() === pOtherGameObject.getId())
+                || (collision.a && collision.a.owner.getId() === pOtherGameObject.getId())) {
+            return true;
         }
-        //Compute impulse scalar
-        j = -(1 + e) * velocityAlongNormal;
-        j /= invMass + otherInvMass;
-        //Apply impulse
-        impulse.reset(j * collision.normal.x, j * collision.normal.y);
-        that.velocity.x -= invMass * impulse.x;
-        that.velocity.y -= invMass * impulse.y;
-        otherPhysic.velocity.x += otherInvMass * impulse.x;
-        otherPhysic.velocity.y += otherInvMass * impulse.y;
-    };
-
-    /**
-     * Ensure that a game object collides with a certain type of other game 
-     * objects (with physic components of course).
-     */
-    that.addTypeToCollideWith = function (pType) {
-        collidesWith.push(pType);
-    };
-
-    /**
-     * Remove a type that was supposed to collide with this game object.
-     */
-    that.removeTypeToCollideWith = function (pType) {
-        collidesWith.splice(collidesWith.indexOf(pType), 1);
-    };
-    /**
-     * Add a collision object representing the collision to the list of current
-     * collisions.
-     * @param {collision} collision the collision object.
-     */
-    that.addCollision = function (collision) {
-        collisions.push(collision);
-    };
-
-    /**
-     * Get the velocity.
-     */
-    that.getLinearVelocity = function () {
-        return that.velocity;
-    };
-
-    /**
-     * Check if the current physic component is colliding a specified type of physic component.
-     * @returns {boolean} whether there is already collision between the the current physic component and the specified type of physic component.
-     */
-    that.isCollidingWithType = function (pOtherType) {
-        var i, collision;
-        for (i = 0; i < collisions.length; i = i + 1) {
-            collision = collisions[i];
-            if ((collision.b && collision.b.owner.hasType(pOtherType))
-                    || (collision.a && collision.a.owner.hasType(pOtherType))) {
-                return true;
-            }
-        }
-        for (i = 0; i < tilesCollisions.length; i = i + 1) {
-            collision = tilesCollisions[i];
-            if ((collision.b && collision.b.hasType(pOtherType))
-                    || (collision.a && collision.a.hasType(pOtherType))) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    /**
-     * Check if the current physic component is colliding with another one.
-     * @returns {boolean} whether there is already collision between the physic components.
-     */
-    that.isCollidingWith = function (pOtherGameObject) {
-        var i, collision;
-        for (i = 0; i < collisions.length; i = i + 1) {
-            collision = collisions[i];
-            if ((collision.b && collision.b.owner.getId() === pOtherGameObject.getId())
-                    || (collision.a && collision.a.owner.getId() === pOtherGameObject.getId())) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    /**
-     * Set the mass of the physic object.
-     */
-    that.setMass = function (newMass) {
-        mass = newMass;
-        if (mass === 0) {
-            invMass = 0;
-        } else {
-            invMass = 1 / mass;
-        }
-    };
-
-    /**
-     * Retrieve the mass of the physic object.
-     */
-    that.getMass = function () {
-        return mass;
-    };
-
-    /**
-     * Retrieve the inverse mass of the physic object.
-     */
-    that.getInvMass = function () {
-        return invMass;
-    };
-
-    return that;
+    }
+    return false;
+};
+/**
+ * Set the mass of the physic object.
+ * @method FM.PhysicComponent#setMass
+ * @memberOf FM.PhysicComponent
+ * @param {int} pNewMass The new mass to set.
+ */
+FM.PhysicComponent.prototype.setMass = function (pNewMass) {
+    "use strict";
+    this.mass = pNewMass;
+    if (this.mass === 0) {
+        this.invMass = 0;
+    } else {
+        this.invMass = 1 / this.mass;
+    }
+};
+/**
+ * Retrieve the mass of the physic object.
+ * @method FM.PhysicComponent#getMass
+ * @memberOf FM.PhysicComponent
+ * @return {int} The mass of this object.
+ */
+FM.PhysicComponent.prototype.getMass = function () {
+    "use strict";
+    return this.mass;
+};
+/**
+ * Retrieve the inverse mass of the physic object.
+ * @method FM.PhysicComponent#getInvMass
+ * @memberOf FM.PhysicComponent
+ * @return {int} The inverse mass of this object.
+ */
+FM.PhysicComponent.prototype.getInvMass = function () {
+    "use strict";
+    return this.invMass;
+};
+/**
+ * Destroy the component and its objects.
+ * @method FM.PhysicComponent#destroy
+ * @memberOf FM.PhysicComponent
+ */
+FM.PhysicComponent.prototype.destroy = function () {
+    "use strict";
+    this.quad = null;
+    this.world = null;
+    this.collisions = null;
+    this.tilesCollisions = null;
+    this.collidesWith = null;
+    this.offset.destroy();
+    this.offset = null;
+    this.velocity.destroy();
+    this.velocity = null;
+    this.acceleration.destroy();
+    this.acceleration = null;
+    this.spatial = null;
+    this.mass = null;
+    this.invMass = null;
+    this.width = null;
+    this.height = null;
+    this.maxAngularVelocity = null;
+    this.drag.destroy();
+    this.drag = null;
+    this.angularDrag.destroy();
+    this.angularDrag = null;
+    this.maxVelocity.destroy();
+    this.maxVelocity = null;
+    this.elasticity = null;
+    FM.Component.prototype.destroy.call(this);
 };

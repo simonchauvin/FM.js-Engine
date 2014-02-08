@@ -1,82 +1,137 @@
 /*global FM*/
 /**
- * @class fileAsset
+ * The file asset represents a file object that can be used by the FM.js engine.
+ * @class FM.FileAsset
+ * @param {string} pName Name of the asset.
+ * @param {string} pPath The path of the asset.
+ * @constructor
  * @author Simon Chauvin
  */
-FM.fileAsset = function (pName, pPath) {
+FM.FileAsset = function (pName, pPath) {
     "use strict";
-    var that = new XMLHttpRequest(),
-        /**
-         * Name of the asset.
-         */
-        name = pName,
-        /**
-         * Path of the file.
-         */
-        path = pPath,
-        /**
-         * Content of the file.
-         */
-        content = null,
-        /**
-         * Specify the loading state of the file.
-         */
-        loaded = false,
-        /**
-         * Fired when the loading is complete.
-         */
-        loadComplete = function () {
-            loaded = true;
-            content = that.responseText;
-            FM.assetManager.assetLoaded();
-        };
-
     /**
-     * Load the file.
+     * The HTML5 XMLHttpRequest object.
+     * @type XMLHttpRequest
+     * @private
      */
-    that.load = function () {
-        that.addEventListener("load", loadComplete, false);
-        that.open("GET", path, false);
-        that.send();
-    };
-
+    this.request = new XMLHttpRequest();
     /**
-     * Check if this file has been loaded.
+     * Name of the asset.
+     * @type string
+     * @private
      */
-    that.isLoaded = function () {
-        return loaded;
-    };
-
+    this.name = pName;
     /**
-    * Destroy the asset and its objects
-    */
-    that.destroy = function () {
-        name = null;
-        path = null;
-        content = null;
-        that = null;
-    };
-
-    /**
-     * Get the name of the file.
+     * Path of the file.
+     * @type string
+     * @private
      */
-    that.getName = function () {
-        return name;
-    };
-
+    this.path = pPath;
     /**
-     * Get the path to the file.
+     * Content of the file.
+     * @type string
+     * @private
      */
-    that.getPath = function () {
-        return path;
-    };
-
+    this.content = null;
     /**
-     * Get the content of the file.
+     * Specify the loading state of the file.
+     * @type boolean
+     * @private
      */
-    that.getContent = function () {
-        return content;
-    };
-
-    return that;
+    this.loaded = false;
+};
+FM.FileAsset.prototype.constructor = FM.FileAsset;
+/**
+ * Fired when the loading is complete.
+ * @method FM.FileAsset#loadComplete
+ * @memberOf FM.FileAsset
+ * @param {Event} event Contains data about the event.
+ * @private
+ */
+FM.FileAsset.prototype.loadComplete = function (event) {
+    "use strict";
+    event.target.owner.setLoaded();
+    event.target.owner.setContent(this.responseText);
+    FM.AssetManager.assetLoaded();
+};
+/**
+ * Load the file.
+ * @method FM.FileAsset#load
+ * @memberOf FM.FileAsset
+ */
+FM.FileAsset.prototype.load = function () {
+    "use strict";
+    this.request.addEventListener("load", FM.FileAsset.prototype.loadComplete, false);
+    this.request.owner = this;
+    this.request.open("GET", this.path, false);
+    this.request.send();
+};
+/**
+ * Check if this file has been loaded.
+ * @method FM.FileAsset#isLoaded
+ * @memberOf FM.FileAsset
+ * @return {boolean} Whether the asset is loaded.
+ */
+FM.FileAsset.prototype.isLoaded = function () {
+    "use strict";
+    return this.loaded;
+};
+/**
+ * Set the loaded boolean variable to true.
+ * @method FM.FileAsset#setLoaded
+ * @memberOf FM.FileAsset
+ */
+FM.FileAsset.prototype.setLoaded = function () {
+    "use strict";
+    this.loaded = true;
+};
+/**
+ * Get the HTML5 XMLHttpRequest object.
+ * @method FM.FileAsset#getRequest
+ * @memberOf FM.FileAsset
+ * @return {XMLHttpRequest} The HTML5 object.
+ */
+FM.FileAsset.prototype.getRequest = function () {
+    "use strict";
+    return this.request;
+};
+/**
+ * Get the name of the file.
+ * @method FM.FileAsset#getName
+ * @memberOf FM.FileAsset
+ * @return {string} The name of the asset.
+ */
+FM.FileAsset.prototype.getName = function () {
+    "use strict";
+    return this.name;
+};
+/**
+ * Get the path to the file.
+ * @method FM.FileAsset#getPath
+ * @memberOf FM.FileAsset
+ * @return {string} The path of the asset.
+ */
+FM.FileAsset.prototype.getPath = function () {
+    "use strict";
+    return this.path;
+};
+/**
+ * Get the content of the file.
+ * @method FM.FileAsset#getContent
+ * @memberOf FM.FileAsset
+ * @return {string} The content of the asset.
+ */
+FM.FileAsset.prototype.getContent = function () {
+    "use strict";
+    return this.content;
+};
+/**
+ * Set the content of the file.
+ * @method FM.FileAsset#setContent
+ * @memberOf FM.FileAsset
+ * @param {string} pNewContent The new content of the file.
+ */
+FM.FileAsset.prototype.setContent = function (pNewContent) {
+    "use strict";
+    this.content = pNewContent;
 };

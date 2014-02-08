@@ -10,12 +10,12 @@ FM.fmB2BoxComponent = function (pWidth, pHeight, pWorld, pOwner) {
     /**
      * fmB2BoxComponent is based on component.
      */
-    var that = FM.component(FM.componentTypes.PHYSIC, pOwner),
+    var that = FM.component(FM.ComponentTypes.PHYSIC, pOwner),
         /**
          * Imports.
          */
-         parameters = FM.parameters,
-         componentTypes = FM.componentTypes,
+         parameters = FM.Parameters,
+         componentTypes = FM.ComponentTypes,
 	/**
 	 * Box2D imports.
 	 */

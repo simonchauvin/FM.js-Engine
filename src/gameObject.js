@@ -1,191 +1,245 @@
 /*global FM*/
 /**
  * Object representing a game object.
- * @class gameObject
+ * @class FM.GameObject
+ * @param {int} pZIndex Specifies the z position (the depth) of the game object.
+ * @constructor
  * @author Simon Chauvin
- * @param {int} pZIndex specifies the z position of the game object.
  */
-FM.gameObject = function (pZIndex) {
+FM.GameObject = function (pZIndex) {
     "use strict";
-    var that = {},
-        /**
-         * ID allows to uniquely identify game objects.
-         */
-        id = 0,
-        /**
-         * A name for a game object sounds useful ?
-         */
-        name = "",
-        /**
-         * Specify if the game object is alive.
-         */
-        alive = true,
-        /**
-         * Specify if the game object is visible.
-         */
-        visible = true,
-        /**
-         * Types the game object is associated to.
-         */
-        types = [];
+    /**
+     * ID allows to uniquely identify game objects.
+     * @type int
+     * @private
+     */
+    this.id = 0;
+    /**
+     * Specify if the game object is alive.
+     * @type boolean
+     * @private
+     */
+    this.alive = true;
+    /**
+     * Specify if the game object is visible.
+     * @type boolean
+     * @private
+     */
+    this.visible = true;
+    /**
+     * Types the game object is associated to.
+     * @type Array
+     * @private
+     */
+    this.types = [];
     /**
      * Allows to specify different degrees of scrolling (useful for parallax).
+     * @type FM.Vector
+     * @public
      */
-    that.scrollFactor = FM.vector(1, 1);
+    this.scrollFactor = new FM.Vector(1, 1);
     /**
      * List of the components owned by the game object.
+     * @type Array
+     * @public
      */
-    that.components = {};
+    this.components = {};
     /**
      * Specify the depth at which the game object is.
+     * @type int
+     * @public
      */
-    that.zIndex = pZIndex;
-
-    /**
-     * Specify a type associated to this game object.
-     * @param {objectType} pType the type to add.
-     */
-    that.addType = function (pType) {
-        types.push(pType);
-    };
-
-    /**
-     * Remove a type associated to this game object.
-     * @param {objectType} pType the type to remove.
-     */
-    that.removeType = function (pType) {
-        types.splice(types.indexOf(pType), 1);
-    };
-
-    /**
-     * Check if this game object is associated to a given type.
-     * @param {objectType} pType the type to look for.
-     * @return {bool} whether the type specified is associated to this game
-     * object or not.
-     */
-    that.hasType = function (pType) {
-        return types.indexOf(pType) !== -1;
-    };
-
-    /**
-     * Add a component to the game object.
-     * @param {component} component the component to be added.
-     */
-    that.addComponent = function (component) {
-        var componentName = component.name;
-        if (!that.components[componentName]) {
-            that.components[componentName] = component;
-        }
-    };
-
-    /**
-     * Retrive a particular component.
-     * @param {componentTypes} type the component's type to be retrieved.
-     * @return {component} the component retrieved.
-     */
-    that.getComponent = function (type) {
-        return that.components[type];
-    };
-
-    /**
-    * Destroy the game object.
-    * Don't forget to remove it from the state too.
-    * Better use the remove method from state.
-    */
-    that.destroy = function () {
-        name = null;
-        that.scrollFactor = null;
-        var i;
-        for (i = 0; i < that.components.length; i = i + 1) {
-            that.components[i].destroy();
-        }
-        that.components = null;
-        that = null;
-    };
-
-    /**
-     * Kill the game object.
-     */
-    that.kill = function () {
-        alive = false;
-    };
-
-    /**
-     * Hide the game object.
-     */
-    that.hide = function () {
-        visible = false;
-    };
-
-    /**
-     * Revive the game object.
-     */
-    that.revive = function () {
-        alive = true;
-    };
-
-    /**
-     * Show the game object.
-     */
-    that.show = function () {
-        visible = true;
-    };
-
-    /**
-     * Retrieve the types of the game object.
-     * @return {Array} types of the game object.
-     */
-    that.getTypes = function () {
-        return types;
-    };
-
-    /**
-     * Retrieve the name of the game object.
-     * @return {string} name of the game object.
-     */
-    that.getName = function () {
-        return name;
-    };
-
-    /**
-     * Set the name of the game object.
-     * @param {string} pName name to give to the game object.
-     */
-    that.setName = function (pName) {
-        name = pName;
-    };
-
-    /**
-     * Retrieve the id of the game object.
-     * @return {int} id of the game object.
-     */
-    that.getId = function () {
-        return id;
-    };
-
-    /**
-     * Set the id of the game object.
-     * @param {int} pId id to give to the game object.
-     */
-    that.setId = function (pId) {
-        id = pId;
-    };
-
-    /**
-     * Check if the game object is alive.
-     * @return {boolean} true if the game object is alive, false otherwise.
-     */
-    that.isAlive = function () {
-        return alive;
-    };
-
-    /**
-     * Check if the game object is visible.
-     * @return {boolean} true if the game object is visible, false otherwise.
-     */
-    that.isVisible = function () {
-        return visible;
-    };
-
-    return that;
+    this.zIndex = pZIndex;
+};
+FM.GameObject.prototype.constructor = FM.GameObject;
+/**
+ * Specify a type associated to this game object.
+ * @method FM.GameObject#addType
+ * @memberOf FM.GameObject
+ * @param {FM.ObjectType} pType The type to add.
+ */
+FM.GameObject.prototype.addType = function (pType) {
+    "use strict";
+    this.types.push(pType);
+};
+/**
+ * Remove a type associated to this game object.
+ * @method FM.GameObject#removeType
+ * @memberOf FM.GameObject
+ * @param {FM.ObjectType} pType The type to remove.
+ */
+FM.GameObject.prototype.removeType = function (pType) {
+    "use strict";
+    this.types.splice(this.types.indexOf(pType), 1);
+};
+/**
+ * Check if this game object is associated to a given type.
+ * @method FM.GameObject#hasType
+ * @memberOf FM.GameObject
+ * @param {FM.ObjectType} pType The type to look for.
+ * @return {boolean} Whether the type specified is associated to this game
+ * object or not.
+ */
+FM.GameObject.prototype.hasType = function (pType) {
+    "use strict";
+    return this.types.indexOf(pType) !== -1;
+};
+/**
+ * Add a component to the game object.
+ * @method FM.GameObject#addComponent
+ * @memberOf FM.GameObject
+ * @param {FM.Component} pComponent The component to be added.
+ * @return {FM.Component} The component just added.
+ */
+FM.GameObject.prototype.addComponent = function (pComponent) {
+    "use strict";
+    var componentName = pComponent.name;
+    if (!this.components[componentName]) {
+        this.components[componentName] = pComponent;
+    }
+    return this.components[componentName];
+};
+/**
+ * Retrive a particular component.
+ * @method FM.GameObject#getComponent
+ * @memberOf FM.GameObject
+ * @param {FM.ComponentTypes} pType The component's type to be retrieved.
+ * @return {FM.Component} The component retrieved.
+ */
+FM.GameObject.prototype.getComponent = function (pType) {
+    "use strict";
+    return this.components[pType];
+};
+/**
+ * Kill the game object.
+ * @method FM.GameObject#kill
+ * @memberOf FM.GameObject
+ */
+FM.GameObject.prototype.kill = function () {
+    "use strict";
+    this.alive = false;
+};
+/**
+ * Hide the game object.
+ * @method FM.GameObject#hide
+ * @memberOf FM.GameObject
+ */
+FM.GameObject.prototype.hide = function () {
+    "use strict";
+    this.visible = false;
+};
+/**
+ * Revive the game object.
+ * @method FM.GameObject#revive
+ * @memberOf FM.GameObject
+ */
+FM.GameObject.prototype.revive = function () {
+    "use strict";
+    this.alive = true;
+};
+/**
+ * Show the game object.
+ * @method FM.GameObject#show
+ * @memberOf FM.GameObject
+ */
+FM.GameObject.prototype.show = function () {
+    "use strict";
+    this.visible = true;
+};
+/**
+ * Retrieve the types of the game object.
+ * @method FM.GameObject#getTypes
+ * @memberOf FM.GameObject
+ * @return {Array} Types of the game object.
+ */
+FM.GameObject.prototype.getTypes = function () {
+    "use strict";
+    return this.types;
+};
+/**
+ * Retrieve the id of the game object.
+ * @method FM.GameObject#getId
+ * @memberOf FM.GameObject
+ * @return {int} ID of the game object.
+ */
+FM.GameObject.prototype.getId = function () {
+    "use strict";
+    return this.id;
+};
+/**
+ * Set the id of the game object.
+ * @method FM.GameObject#setId
+ * @memberOf FM.GameObject
+ * @param {int} pId ID to give to the game object.
+ */
+FM.GameObject.prototype.setId = function (pId) {
+    "use strict";
+    this.id = pId;
+};
+/**
+ * Check if the game object is alive.
+ * @method FM.GameObject#isAlive
+ * @memberOf FM.GameObject
+ * @return {boolean} True if the game object is alive, false otherwise.
+ */
+FM.GameObject.prototype.isAlive = function () {
+    "use strict";
+    return this.alive;
+};
+/**
+ * Check if the game object is visible.
+ * @method FM.GameObject#isVisible
+ * @memberOf FM.GameObject
+ * @return {boolean} True if the game object is visible, false otherwise.
+ */
+FM.GameObject.prototype.isVisible = function () {
+    "use strict";
+    return this.visible;
+};
+/**
+* Destroy the game object.
+* Don't forget to remove it from the state too.
+* Better use the remove method from state.
+* @method FM.GameObject#destroy
+ * @memberOf FM.GameObject
+*/
+FM.GameObject.prototype.destroy = function () {
+    "use strict";
+    this.id = null;
+    this.alive = null;
+    this.visible = null;
+    this.types = null;
+    this.zIndex = null;
+    this.scrollFactor = null;
+    var comp = this.components[FM.ComponentTypes.SPATIAL];
+    if (comp) {
+        comp.destroy();
+        this.components[FM.ComponentTypes.SPATIAL] = null;
+    }
+    comp = this.components[FM.ComponentTypes.PATHFINDING];
+    if (comp) {
+        comp.destroy();
+        this.components[FM.ComponentTypes.PATHFINDING] = null;
+    }
+    comp = this.components[FM.ComponentTypes.RENDERER];
+    if (comp) {
+        comp.destroy();
+        this.components[FM.ComponentTypes.RENDERER] = null;
+    }
+    comp = this.components[FM.ComponentTypes.PHYSIC];
+    if (comp) {
+        comp.destroy();
+        this.components[FM.ComponentTypes.PHYSIC] = null;
+    }
+    comp = this.components[FM.ComponentTypes.SOUND];
+    if (comp) {
+        comp.destroy();
+        this.components[FM.ComponentTypes.SOUND] = null;
+    }
+    comp = this.components[FM.ComponentTypes.FX];
+    if (comp) {
+        comp.destroy();
+        this.components[FM.ComponentTypes.FX] = null;
+    }
+    this.components = null;
 };

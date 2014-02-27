@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/physic/CircleComponent.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: components/physic/CircleComponent.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/*global FM*/
+/**
+ * A circle component is a physic component to add to a game object for
+ * for collisions and physics behaviors as a circle.
+ * @class FM.CircleComponent
+ * @extends FM.PhysicComponent
+ * @param {int} pRadius The radius of the circle component.
+ * @param {FM.GameObject} pOwner The game object to which the component belongs.
+ * @constructor
+ * @author Simon Chauvin.
+ */
+FM.CircleComponent = function (pRadius, pOwner) {
+    "use strict";
+    //Calling the constructor of the FM.PhysicComponent
+    FM.PhysicComponent.call(this, pRadius * 2, pRadius * 2, pOwner);
+    /**
+     * Spatial component reference.
+     * @type FM.SpatialComponent
+     * @private
+     */
+    this.spatial = pOwner.components[FM.ComponentTypes.SPATIAL];
+    /**
+     * Check if the needed components are present.
+     */
+    if (FM.Parameters.debug) {
+        if (!this.spatial) {
+            console.log("ERROR: No spatial component was added and you need one for physics.");
+        }
+    }
+    /**
+     * Radius of the circle.
+     * @type int
+     * @public
+     */
+    this.radius = pRadius;
+};
+/**
+ * FM.CircleComponent inherits from FM.PhysicComponent.
+ */
+FM.CircleComponent.prototype = Object.create(FM.PhysicComponent.prototype);
+FM.CircleComponent.prototype.constructor = FM.CircleComponent;
+/**
+ * Check if the current circle is overlapping with the specified type.
+ * @method FM.CircleComponent#overlapsWithType
+ * @memberOf FM.CircleComponent
+ * @param {FM.ObjectType} pType The type to test for overlap with this 
+ * circle component.
+ * @return {FM.Collision} The collision object that contains the data of 
+ * the collision if there is one, null otherwise.
+ */
+FM.CircleComponent.prototype.overlapsWithType = function (pType) {
+    "use strict";
+    //TODO
+    return null;
+};
+/**
+ * Check if the current circle is overlapping with the specified physic object.
+ * @method FM.CircleComponent#overlapsWithObject
+ * @memberOf FM.CircleComponent
+ * @param {FM.PhysicComponent} pPhysic The physic component to test for
+ * overlap with the current one.
+ * @return {FM.Collision} The collision object that contains the data of 
+ * the collision if there is one, null otherwise.
+ */
+FM.CircleComponent.prototype.overlapsWithObject = function (pPhysic) {
+    "use strict";
+    var collision = pPhysic.overlapsWithCircle(this);
+    if (collision) {
+        return collision;
+    }
+    return null;
+};
+/**
+ * Check if the current circle is overlapping with the specified aabb.
+ * @method FM.CircleComponent#overlapsWithAabb
+ * @memberOf FM.CircleComponent
+ * @param {FM.AabbComponent} aabb The aabb component that needs to be tested
+ * for overlap with the current circle component.
+ * @return {FM.Collision} The collision object that contains the data of 
+ * the collision if there is one, null otherwise.
+ */
+FM.CircleComponent.prototype.overlapsWithAabb = function (aabb) {
+    "use strict";
+    var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
+        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+        otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
+        otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
+        center = new FM.Vector(min.x + this.radius, min.y + this.radius),
+        otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
+        normal = FM.Math.substractVectors(otherCenter, center),
+        distance,
+        radius,
+        closest = normal.clone(),
+        xExtent = (otherMax.x - otherMin.x) / 2,
+        yExtent = (otherMax.y - otherMin.y) / 2,
+        inside = false,
+        collision = null;
+    closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
+    closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
+    if (normal.isEquals(closest)) {
+        inside = true;
+        if (Math.abs(normal.x) > Math.abs(normal.y)) {
+            if (closest.x > 0) {
+                closest.x = xExtent;
+            } else {
+                closest.x = -xExtent;
+            }
+        } else {
+            if (closest.y > 0) {
+                closest.y = yExtent;
+            } else {
+                closest.y = -yExtent;
+            }
+        }
+    }
+    collision = new FM.Collision();
+    collision.a = this;
+    collision.b = aabb;
+    collision.normal = FM.Math.substractVectors(normal, closest);
+    distance = collision.normal.getLengthSquared();
+    radius = this.radius;
+    if (distance > (radius * radius) && !inside) {
+        return null;
+    }
+    distance = Math.sqrt(distance);
+    collision.penetration = radius - distance;
+    if (inside) {
+        collision.normal.reset(-collision.normal.x, -collision.normal.y);
+    }
+    collision.normal.normalize();
+    return collision;
+};
+
+/**
+ * Check if the current circle is overlapping with the specified circle.
+ * @method FM.CircleComponent#overlapsWithCircle
+ * @memberOf FM.CircleComponent
+ * @param {FM.CircleComponent} circle The circle component that needs to 
+ * be tested for overlap with the current circle component.
+ * @return {FM.Collision} The collision object that contains the data of 
+ * the collision if there is one, null otherwise.
+ */
+FM.CircleComponent.prototype.overlapsWithCircle = function (circle) {
+    "use strict";
+    var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
+        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+        otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+        center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
+        otherCenter = new FM.Vector(otherMin.x + circle.width / 2, otherMin.y + circle.height / 2),
+        radius = this.radius + circle.radius,
+        radius = radius * radius,
+        normal = FM.Math.substractVectors(otherCenter, center),
+        distance = normal.getLength(),
+        collision = null;
+    if (normal.getLengthSquared() > radius) {
+        return null;
+    } else {
+        collision = new FM.Collision();
+        collision.a = this;
+        collision.b = circle;
+        if (distance !== 0) {
+            collision.penetration = radius - distance;
+            collision.normal = normal.reset(normal.x / distance, normal.y / distance);
+        } else {
+            collision.penetration = this.radius;
+            collision.normal = normal.reset(1, 0);
+        }
+        return collision;
+    }
+    return null;
+};
+/**
+ * Draw debug information.
+ * @method FM.CircleComponent#drawDebug
+ * @memberOf FM.CircleComponent
+ * @param {CanvasRenderingContext2D} bufferContext Context on wich drawing 
+ * is done.
+ * @param {FM.Vector} newPosition Position of the sprite to render.
+ */
+FM.CircleComponent.prototype.drawDebug = function (bufferContext, newPosition) {
+    "use strict";
+    var newCenter = new FM.Vector(newPosition.x + this.radius, newPosition.y + this.radius),
+        dir = new FM.Vector(Math.cos(this.spatial.angle), Math.sin(this.spatial.angle));
+    bufferContext.beginPath();
+    bufferContext.strokeStyle = '#f4f';
+    bufferContext.arc((newCenter.x + this.offset.x) - bufferContext.xOffset, (newCenter.y + this.offset.y) - bufferContext.yOffset, this.radius, 0, 2 * Math.PI, false);
+    bufferContext.stroke();
+    bufferContext.beginPath();
+    bufferContext.strokeStyle = "Blue";
+    bufferContext.beginPath();
+    bufferContext.moveTo(newCenter.x + this.offset.x - bufferContext.xOffset, newCenter.y + this.offset.y - bufferContext.yOffset);
+    bufferContext.lineTo((newCenter.x + this.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + this.offset.y  + dir.y * 50) - bufferContext.yOffset);
+    bufferContext.stroke();
+};
+/**
+ * Destroy the component and its objects.
+ * @method FM.CircleComponent#destroy
+ * @memberOf FM.CircleComponent
+ */
+FM.CircleComponent.prototype.destroy = function () {
+    "use strict";
+    this.spatial = null;
+    this.radius = null;
+    FM.PhysicComponent.prototype.destroy.call(this);
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Feb 08 2014 20:00:56 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

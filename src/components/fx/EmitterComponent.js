@@ -156,7 +156,8 @@ FM.EmitterComponent.prototype.createParticles = function (pNumber, pImage, pWidt
  * @method FM.EmitterComponent#emit
  * @memberOf FM.EmitterComponent
  * @param {float} pLifeSpan Time to live for each particle.
- * @param {float} pFrequency Time between each emission.
+ * @param {float} pFrequency Time between each emission (-1 for only one 
+ * emission).
  * @param {int} pQuantity Number of particles to emit at each emission.
  */
 FM.EmitterComponent.prototype.emit = function (pLifeSpan, pFrequency, pQuantity) {
@@ -201,7 +202,10 @@ FM.EmitterComponent.prototype.update = function (dt) {
         }
         //Emit new particles
         this.timer += dt;
-        if (this.frequency === 0 || this.timer >= this.frequency) {
+        if (this.frequency !== -2 && (this.frequency === 0 || this.timer >= this.frequency)) {
+            if (this.frequency === -1) {
+                this.frequency = -2;
+            }
             this.timer = 0;
             count = 0;
             j = 0;

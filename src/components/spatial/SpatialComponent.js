@@ -18,13 +18,13 @@ FM.SpatialComponent = function (pX, pY, pOwner) {
      * @type FM.Vector
      * @public
      */
-    this.position = new FM.Vector(pX, pY);
+    this.position = new FM.Vector(Math.floor(pX), Math.floor(pY));
     /**
      * Position of the game object at last frame.
      * @type FM.Vector
      * @public
      */
-    this.previous = new FM.Vector(pX, pY);
+    this.previous = new FM.Vector(Math.floor(pX), Math.floor(pY));
     /**
      * Angle of the object defined in radians.
      * @type float

@@ -100,6 +100,18 @@ FM.GameObject.prototype.addComponent = function (pComponent) {
     return this.components[componentName];
 };
 /**
+ * Remove a component from the game object.
+ * @method FM.GameObject#removeComponent
+ * @memberOf FM.GameObject
+ * @param {FM.ComponentTypes} pType The type of the component to be removed.
+ */
+FM.GameObject.prototype.removeComponent = function (pType) {
+    "use strict";
+    if (!this.components[pType]) {
+        this.components[pType] = null;
+    }
+};
+/**
  * Retrive a particular component.
  * @method FM.GameObject#getComponent
  * @memberOf FM.GameObject
@@ -110,6 +122,78 @@ FM.GameObject.prototype.getComponent = function (pType) {
     "use strict";
     return this.components[pType];
 };
+/**
+ * Gets and sets the spatial component of this game object.
+ * @name FM.GameObject#spatial
+ */
+Object.defineProperty(FM.GameObject.prototype, "spatial", {
+    get: function () {
+        return this.components[FM.ComponentTypes.SPATIAL];
+    },
+    set: function (spatial) {
+        this.components[FM.ComponentTypes.SPATIAL] = spatial;
+    }
+});
+/**
+ * Gets and sets the renderer component of this game object.
+ * @name FM.GameObject#renderer
+ */
+Object.defineProperty(FM.GameObject.prototype, "renderer", {
+    get: function () {
+        return this.components[FM.ComponentTypes.RENDERER];
+    },
+    set: function (renderer) {
+        this.components[FM.ComponentTypes.RENDERER] = renderer;
+    }
+});
+/**
+ * Gets and sets the physic component of this game object.
+ * @name FM.GameObject#physic
+ */
+Object.defineProperty(FM.GameObject.prototype, "physic", {
+    get: function () {
+        return this.components[FM.ComponentTypes.PHYSIC];
+    },
+    set: function (physic) {
+        this.components[FM.ComponentTypes.PHYSIC] = physic;
+    }
+});
+/**
+ * Gets and sets the sound component of this game object.
+ * @name FM.GameObject#sound
+ */
+Object.defineProperty(FM.GameObject.prototype, "sound", {
+    get: function () {
+        return this.components[FM.ComponentTypes.SOUND];
+    },
+    set: function (sound) {
+        this.components[FM.ComponentTypes.SOUND] = sound;
+    }
+});
+/**
+ * Gets and sets the pathfinding component of this game object.
+ * @name FM.GameObject#pathfinding
+ */
+Object.defineProperty(FM.GameObject.prototype, "pathfinding", {
+    get: function () {
+        return this.components[FM.ComponentTypes.PATHFINDING];
+    },
+    set: function (pathfinding) {
+        this.components[FM.ComponentTypes.PATHFINDING] = pathfinding;
+    }
+});
+/**
+ * Gets and sets the fx component of this game object.
+ * @name FM.GameObject#fx
+ */
+Object.defineProperty(FM.GameObject.prototype, "fx", {
+    get: function () {
+        return this.components[FM.ComponentTypes.FX];
+    },
+    set: function (fx) {
+        this.components[FM.ComponentTypes.FX] = fx;
+    }
+});
 /**
  * Kill the game object.
  * @method FM.GameObject#kill
@@ -211,35 +295,41 @@ FM.GameObject.prototype.destroy = function () {
     this.types = null;
     this.zIndex = null;
     this.scrollFactor = null;
-    var comp = this.components[FM.ComponentTypes.SPATIAL];
+    var comp = this.spatial;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.SPATIAL);
         comp.destroy();
-        this.components[FM.ComponentTypes.SPATIAL] = null;
+        this.spatial = null;
     }
-    comp = this.components[FM.ComponentTypes.PATHFINDING];
+    comp = this.pathfinding;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.PATHFINDING);
         comp.destroy();
-        this.components[FM.ComponentTypes.PATHFINDING] = null;
+        this.pathfinding = null;
     }
-    comp = this.components[FM.ComponentTypes.RENDERER];
+    comp = this.renderer;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.RENDERER);
         comp.destroy();
-        this.components[FM.ComponentTypes.RENDERER] = null;
+        this.renderer = null;
     }
-    comp = this.components[FM.ComponentTypes.PHYSIC];
+    comp = this.physic;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.PHYSIC);
         comp.destroy();
-        this.components[FM.ComponentTypes.PHYSIC] = null;
+        this.physic = null;
     }
-    comp = this.components[FM.ComponentTypes.SOUND];
+    comp = this.sound;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.SOUND);
         comp.destroy();
-        this.components[FM.ComponentTypes.SOUND] = null;
+        this.sound = null;
     }
-    comp = this.components[FM.ComponentTypes.FX];
+    comp = this.fx;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.FX);
         comp.destroy();
-        this.components[FM.ComponentTypes.FX] = null;
+        this.fx = null;
     }
     this.components = null;
 };

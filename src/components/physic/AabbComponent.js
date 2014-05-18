@@ -45,8 +45,26 @@ FM.AabbComponent.prototype.constructor = FM.AabbComponent;
  */
 FM.AabbComponent.prototype.overlapsWithType = function (pType) {
     "use strict";
-    //TODO
-    return null;
+    var gameObjects,
+        i,
+        otherGameObject,
+        otherPhysic,
+        collision = null,
+        collisionTemp = null;
+    if (this.owner.isAlive()) {
+        gameObjects = FM.Game.getCurrentState().getQuad().retrieve(this.owner);
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            otherGameObject = gameObjects[i];
+            otherPhysic = otherGameObject.physic;
+            if (otherGameObject.isAlive() && otherPhysic && otherGameObject.hasType(pType)) {
+                collisionTemp = otherPhysic.overlapsWithAabb(this);
+                if (collisionTemp) {
+                    collision = collisionTemp;
+                }
+            }
+        }
+    }
+    return collision;
 };
 /**
  * Check if the current aabb is overlapping with the given physic 
@@ -77,46 +95,48 @@ FM.AabbComponent.prototype.overlapsWithObject = function (pPhysic) {
  */
 FM.AabbComponent.prototype.overlapsWithAabb = function (aabb) {
     "use strict";
-    var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
-        max = new FM.Vector(min.x + this.width, min.y + this.height),
-        otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
-        center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
-        otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
-        normal = FM.Math.substractVectors(otherCenter, center),
-        extent = (max.x - min.x) / 2,
-        otherExtent = (otherMax.x - otherMin.x) / 2,
-        xOverlap = extent + otherExtent - Math.abs(normal.x),
-        yOverlap,
-        collision = null;
-    // Exit with no intersection if found separated along an axis
-    if (max.x < otherMin.x || min.x > otherMax.x) { return null; }
-    if (max.y < otherMin.y || min.y > otherMax.y) { return null; }
+    if (this.owner.isAlive() && aabb.owner.isAlive()) {
+        var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
+            max = new FM.Vector(min.x + this.width, min.y + this.height),
+            otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
+            center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
+            otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
+            normal = FM.Math.substractVectors(otherCenter, center),
+            extent = (max.x - min.x) / 2,
+            otherExtent = (otherMax.x - otherMin.x) / 2,
+            xOverlap = extent + otherExtent - Math.abs(normal.x),
+            yOverlap,
+            collision = null;
+        // Exit with no intersection if found separated along an axis
+        if (max.x < otherMin.x || min.x > otherMax.x) { return null; }
+        if (max.y < otherMin.y || min.y > otherMax.y) { return null; }
 
-    if (xOverlap > 0) {
-        extent = (max.y - min.y) / 2;
-        otherExtent = (otherMax.y - otherMin.y) / 2;
-        yOverlap = extent + otherExtent - Math.abs(normal.y);
-        if (yOverlap > 0) {
-            collision = new FM.Collision(this, aabb);
-            // Find out which axis is the one of least penetration
-            if (xOverlap < yOverlap) {
-                if (normal.x < 0) {
-                    collision.normal = normal.reset(-1, 0);
+        if (xOverlap > 0) {
+            extent = (max.y - min.y) / 2;
+            otherExtent = (otherMax.y - otherMin.y) / 2;
+            yOverlap = extent + otherExtent - Math.abs(normal.y);
+            if (yOverlap > 0) {
+                collision = new FM.Collision(this, aabb);
+                // Find out which axis is the one of least penetration
+                if (xOverlap < yOverlap) {
+                    if (normal.x < 0) {
+                        collision.normal = normal.reset(-1, 0);
+                    } else {
+                        collision.normal = normal.reset(1, 0);
+                    }
+                    collision.penetration = xOverlap;
                 } else {
-                    collision.normal = normal.reset(1, 0);
+                    if (normal.y < 0) {
+                        collision.normal = normal.reset(0, -1);
+                    } else {
+                        collision.normal = normal.reset(0, 1);
+                    }
+                    collision.penetration = yOverlap;
                 }
-                collision.penetration = xOverlap;
-            } else {
-                if (normal.y < 0) {
-                    collision.normal = normal.reset(0, -1);
-                } else {
-                    collision.normal = normal.reset(0, 1);
-                }
-                collision.penetration = yOverlap;
+                return collision;
             }
-            return collision;
         }
     }
     return null;
@@ -132,53 +152,55 @@ FM.AabbComponent.prototype.overlapsWithAabb = function (aabb) {
  */
 FM.AabbComponent.prototype.overlapsWithCircle = function (circle) {
     "use strict";
-    var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
-        max = new FM.Vector(min.x + this.width, min.y + this.height),
-        center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
-        otherCenter = new FM.Vector(otherMin.x + circle.radius, otherMin.y + circle.radius),
-        normal = FM.Math.substractVectors(otherCenter, center),
-        distance,
-        radius,
-        closest = normal.clone(),
-        xExtent = (max.x - min.x) / 2,
-        yExtent = (max.y - min.y) / 2,
-        inside = false,
-        collision = null;
-    closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
-    closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
-    if (normal.isEquals(closest)) {
-        inside = true;
-        if (Math.abs(normal.x) > Math.abs(normal.y)) {
-            if (closest.x > 0) {
-                closest.x = xExtent;
+    var collision = null;
+    if (this.owner.isAlive() && circle.owner.isAlive()) {
+        var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+            max = new FM.Vector(min.x + this.width, min.y + this.height),
+            center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
+            otherCenter = new FM.Vector(otherMin.x + circle.radius, otherMin.y + circle.radius),
+            normal = FM.Math.substractVectors(otherCenter, center),
+            distance,
+            radius,
+            closest = normal.clone(),
+            xExtent = (max.x - min.x) / 2,
+            yExtent = (max.y - min.y) / 2,
+            inside = false;
+        closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
+        closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
+        if (normal.isEquals(closest)) {
+            inside = true;
+            if (Math.abs(normal.x) > Math.abs(normal.y)) {
+                if (closest.x > 0) {
+                    closest.x = xExtent;
+                } else {
+                    closest.x = -xExtent;
+                }
             } else {
-                closest.x = -xExtent;
-            }
-        } else {
-            if (closest.y > 0) {
-                closest.y = yExtent;
-            } else {
-                closest.y = -yExtent;
+                if (closest.y > 0) {
+                    closest.y = yExtent;
+                } else {
+                    closest.y = -yExtent;
+                }
             }
         }
+        collision = new FM.Collision();
+        collision.a = this;
+        collision.b = circle;
+        collision.normal = FM.Math.substractVectors(normal, closest);
+        distance = collision.normal.getLengthSquared();
+        radius = circle.radius;
+        if (distance > radius * radius && !inside) {
+            return null;
+        }
+        distance = Math.sqrt(distance);
+        collision.penetration = radius - distance;
+        if (inside) {
+            collision.normal.reset(-collision.normal.x, -collision.normal.y);
+        }
+        collision.normal.normalize();
     }
-    collision = new FM.Collision();
-    collision.a = this;
-    collision.b = circle;
-    collision.normal = FM.Math.substractVectors(normal, closest);
-    distance = collision.normal.getLengthSquared();
-    radius = circle.radius;
-    if (distance > radius * radius && !inside) {
-        return null;
-    }
-    distance = Math.sqrt(distance);
-    collision.penetration = radius - distance;
-    if (inside) {
-        collision.normal.reset(-collision.normal.x, -collision.normal.y);
-    }
-    collision.normal.normalize();
     return collision;
 };
 /**
@@ -192,7 +214,7 @@ FM.AabbComponent.prototype.overlapsWithCircle = function (circle) {
 FM.AabbComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     "use strict";
     var newCenter = new FM.Vector(newPosition.x + this.width / 2, newPosition.y + this.height / 2),
-        dir = new FM.Vector(Math.cos(this.spatial.angle), Math.sin(this.spatial.angle));
+        direction = new FM.Vector(newCenter.x + this.offset.x + Math.cos(this.spatial.angle) * 50, newCenter.y + this.offset.y + Math.sin(this.spatial.angle) * 50);
     bufferContext.strokeStyle = '#f4f';
     bufferContext.strokeRect(newPosition.x + this.offset.x - bufferContext.xOffset, newPosition.y + this.offset.y - bufferContext.yOffset, this.width,
                             this.height);
@@ -200,7 +222,7 @@ FM.AabbComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     bufferContext.strokeStyle = "Blue";
     bufferContext.beginPath();
     bufferContext.moveTo(newCenter.x + this.offset.x - bufferContext.xOffset, newCenter.y + this.offset.y - bufferContext.yOffset);
-    bufferContext.lineTo((newCenter.x + this.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + this.offset.y  + dir.y * 50) - bufferContext.yOffset);
+    bufferContext.lineTo(direction.x - bufferContext.xOffset, direction.y - bufferContext.yOffset);
     bufferContext.stroke();
 };
 /**

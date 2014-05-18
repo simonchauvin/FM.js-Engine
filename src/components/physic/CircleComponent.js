@@ -50,8 +50,26 @@ FM.CircleComponent.prototype.constructor = FM.CircleComponent;
  */
 FM.CircleComponent.prototype.overlapsWithType = function (pType) {
     "use strict";
-    //TODO
-    return null;
+    var gameObjects,
+        i,
+        otherGameObject,
+        otherPhysic,
+        collision = null,
+        collisionTemp = null;
+    if (this.owner.isAlive()) {
+        gameObjects = FM.Game.getCurrentState().getQuad().retrieve(this.owner);
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            otherGameObject = gameObjects[i];
+            otherPhysic = otherGameObject.physic;
+            if (otherGameObject.isAlive() && otherPhysic && otherGameObject.hasType(pType)) {
+                collisionTemp = otherPhysic.overlapsWithCircle(this);
+                if (collisionTemp) {
+                    collision = collisionTemp;
+                }
+            }
+        }
+    }
+    return collision;
 };
 /**
  * Check if the current circle is overlapping with the specified physic object.
@@ -81,53 +99,55 @@ FM.CircleComponent.prototype.overlapsWithObject = function (pPhysic) {
  */
 FM.CircleComponent.prototype.overlapsWithAabb = function (aabb) {
     "use strict";
-    var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
-        otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
-        center = new FM.Vector(min.x + this.radius, min.y + this.radius),
-        otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
-        normal = FM.Math.substractVectors(otherCenter, center),
-        distance,
-        radius,
-        closest = normal.clone(),
-        xExtent = (otherMax.x - otherMin.x) / 2,
-        yExtent = (otherMax.y - otherMin.y) / 2,
-        inside = false,
-        collision = null;
-    closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
-    closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
-    if (normal.isEquals(closest)) {
-        inside = true;
-        if (Math.abs(normal.x) > Math.abs(normal.y)) {
-            if (closest.x > 0) {
-                closest.x = xExtent;
+    var collision = null;
+    if (this.owner.isAlive() && aabb.owner.isAlive()) {
+        var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
+            otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
+            center = new FM.Vector(min.x + this.radius, min.y + this.radius),
+            otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
+            normal = FM.Math.substractVectors(otherCenter, center),
+            distance,
+            radius,
+            closest = normal.clone(),
+            xExtent = (otherMax.x - otherMin.x) / 2,
+            yExtent = (otherMax.y - otherMin.y) / 2,
+            inside = false;
+        closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
+        closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
+        if (normal.isEquals(closest)) {
+            inside = true;
+            if (Math.abs(normal.x) > Math.abs(normal.y)) {
+                if (closest.x > 0) {
+                    closest.x = xExtent;
+                } else {
+                    closest.x = -xExtent;
+                }
             } else {
-                closest.x = -xExtent;
-            }
-        } else {
-            if (closest.y > 0) {
-                closest.y = yExtent;
-            } else {
-                closest.y = -yExtent;
+                if (closest.y > 0) {
+                    closest.y = yExtent;
+                } else {
+                    closest.y = -yExtent;
+                }
             }
         }
+        collision = new FM.Collision();
+        collision.a = this;
+        collision.b = aabb;
+        collision.normal = FM.Math.substractVectors(normal, closest);
+        distance = collision.normal.getLengthSquared();
+        radius = this.radius;
+        if (distance > (radius * radius) && !inside) {
+            return null;
+        }
+        distance = Math.sqrt(distance);
+        collision.penetration = radius - distance;
+        if (inside) {
+            collision.normal.reset(-collision.normal.x, -collision.normal.y);
+        }
+        collision.normal.normalize();
     }
-    collision = new FM.Collision();
-    collision.a = this;
-    collision.b = aabb;
-    collision.normal = FM.Math.substractVectors(normal, closest);
-    distance = collision.normal.getLengthSquared();
-    radius = this.radius;
-    if (distance > (radius * radius) && !inside) {
-        return null;
-    }
-    distance = Math.sqrt(distance);
-    collision.penetration = radius - distance;
-    if (inside) {
-        collision.normal.reset(-collision.normal.x, -collision.normal.y);
-    }
-    collision.normal.normalize();
     return collision;
 };
 
@@ -142,30 +162,32 @@ FM.CircleComponent.prototype.overlapsWithAabb = function (aabb) {
  */
 FM.CircleComponent.prototype.overlapsWithCircle = function (circle) {
     "use strict";
-    var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
-        center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
-        otherCenter = new FM.Vector(otherMin.x + circle.width / 2, otherMin.y + circle.height / 2),
-        radius = this.radius + circle.radius,
-        radius = radius * radius,
-        normal = FM.Math.substractVectors(otherCenter, center),
-        distance = normal.getLength(),
-        collision = null;
-    if (normal.getLengthSquared() > radius) {
-        return null;
-    } else {
-        collision = new FM.Collision();
-        collision.a = this;
-        collision.b = circle;
-        if (distance !== 0) {
-            collision.penetration = radius - distance;
-            collision.normal = normal.reset(normal.x / distance, normal.y / distance);
+    if (this.owner.isAlive() && circle.owner.isAlive()) {
+        var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+            center = new FM.Vector(min.x + this.radius, min.y + this.radius),
+            otherCenter = new FM.Vector(otherMin.x + circle.radius, otherMin.y + circle.radius),
+            radius = this.radius + circle.radius,
+            radius = radius * radius,
+            normal = FM.Math.substractVectors(otherCenter, center),
+            distance = normal.getLength(),
+            collision = null;
+        if (normal.getLengthSquared() > radius) {
+            return null;
         } else {
-            collision.penetration = this.radius;
-            collision.normal = normal.reset(1, 0);
+            collision = new FM.Collision();
+            collision.a = this;
+            collision.b = circle;
+            if (distance !== 0) {
+                collision.penetration = radius - distance;
+                collision.normal = normal.reset(normal.x / distance, normal.y / distance);
+            } else {
+                collision.penetration = this.radius;
+                collision.normal = normal.reset(1, 0);
+            }
+            return collision;
         }
-        return collision;
     }
     return null;
 };
@@ -180,7 +202,7 @@ FM.CircleComponent.prototype.overlapsWithCircle = function (circle) {
 FM.CircleComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     "use strict";
     var newCenter = new FM.Vector(newPosition.x + this.radius, newPosition.y + this.radius),
-        dir = new FM.Vector(Math.cos(this.spatial.angle), Math.sin(this.spatial.angle));
+        direction = new FM.Vector(newCenter.x + this.offset.x + Math.cos(this.spatial.angle) * 50, newCenter.y + this.offset.y  + Math.sin(this.spatial.angle) * 50);
     bufferContext.beginPath();
     bufferContext.strokeStyle = '#f4f';
     bufferContext.arc((newCenter.x + this.offset.x) - bufferContext.xOffset, (newCenter.y + this.offset.y) - bufferContext.yOffset, this.radius, 0, 2 * Math.PI, false);
@@ -189,7 +211,7 @@ FM.CircleComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     bufferContext.strokeStyle = "Blue";
     bufferContext.beginPath();
     bufferContext.moveTo(newCenter.x + this.offset.x - bufferContext.xOffset, newCenter.y + this.offset.y - bufferContext.yOffset);
-    bufferContext.lineTo((newCenter.x + this.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + this.offset.y  + dir.y * 50) - bufferContext.yOffset);
+    bufferContext.lineTo(direction.x - bufferContext.xOffset, direction.y - bufferContext.yOffset);
     bufferContext.stroke();
 };
 /**

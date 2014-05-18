@@ -43,6 +43,13 @@ FM.Game = {
     */
     currentState: null,
     /**
+     * The next state to start once the current one is destroyed.
+     * @field
+     * @type FM.State
+     * @private
+     */
+    nextState: null,
+    /**
     * Canvas elements.
     * @field
     * @type Canvas2D
@@ -190,6 +197,12 @@ FM.Game = {
     */
     gameLoop: function () {
         "use strict";
+        if (FM.Game.nextState) {
+            FM.Game.currentState.destroy();
+            FM.Game.currentState = FM.Game.nextState;
+            FM.Game.nextState = null;
+            FM.Game.currentState.init();
+        }
         //Reset the screen
         FM.Game.context.clearRect(0, 0, FM.Game.screenWidth, FM.Game.screenHeight);
         FM.Game.context.fillStyle = FM.Game.backgroundColor;
@@ -454,9 +467,7 @@ FM.Game = {
     */
     switchState: function (newState) {
         "use strict";
-        FM.Game.currentState.destroy();
-        FM.Game.currentState = newState;
-        FM.Game.currentState.init();
+        FM.Game.nextState = newState;
     },
     /**
     * Change the game's background color.

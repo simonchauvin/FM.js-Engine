@@ -46,13 +46,15 @@ FM.AudioComponent.prototype.replay = function (pSound) {
 FM.AudioComponent.prototype.play = function (pSoundName, pVolume, pLoop) {
     "use strict";
     var i, sound, soundFound = false;
+    if (typeof pVolume === "undefined") {pVolume = 1;}
+    if (typeof pLoop === "undefined") {pLoop = false;}
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound && sound.getName() === pSoundName) {
+        if (sound && sound.name === pSoundName) {
             soundFound = true;
-            sound.getAudio().volume = pVolume;
+            sound.audio.volume = pVolume;
             if (pLoop) {
-                sound.getAudio().addEventListener('ended', function () {
+                sound.audio.addEventListener('ended', function () {
                     if (window.chrome) {
                         this.load(FM.AudioComponent.prototype.replay);
                     } else {
@@ -61,11 +63,7 @@ FM.AudioComponent.prototype.play = function (pSoundName, pVolume, pLoop) {
                     }
                 }, false);
             }
-            if (window.chrome) {
-                sound.load(FM.AudioComponent.prototype.replay);
-            } else {
-                sound.getAudio().play();
-            }
+            sound.load(FM.AudioComponent.prototype.replay);
         }
     }
     if (!soundFound) {
@@ -85,8 +83,8 @@ FM.AudioComponent.prototype.pause = function (pSoundName) {
     var i, sound;
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
-            sound.getAudio().pause();
+        if (sound.name === pSoundName) {
+            sound.audio.pause();
         }
     }
 };
@@ -112,8 +110,8 @@ FM.AudioComponent.prototype.isPlaying = function (pSoundName) {
     var i, sound;
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
-            return !sound.getAudio().paused;
+        if (sound.name === pSoundName) {
+            return !sound.audio.paused;
         }
     }
 };
@@ -129,7 +127,7 @@ FM.AudioComponent.prototype.getSoundByName = function (pSoundName) {
     var i, sound;
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
+        if (sound.name === pSoundName) {
             return sound;
         }
     }

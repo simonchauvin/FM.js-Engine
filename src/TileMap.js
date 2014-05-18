@@ -96,7 +96,7 @@ FM.TileMap.prototype.load = function (pData) {
         renderer,
         xOffset,
         yOffset,
-        image = this.tileSet.getImage(),
+        image = this.tileSet.image,
         i,
         j,
         n;

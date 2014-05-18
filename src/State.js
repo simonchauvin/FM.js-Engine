@@ -386,20 +386,18 @@ FM.State.prototype.draw = function (bufferContext, dt) {
                     spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
                 //Draw objects
                 if (renderer && gameObject.isVisible()) {
-                    var xPosition = newPosition.x, yPosition = newPosition.y,
-                        farthestXPosition = xPosition + renderer.getWidth(),
-                        farthestYPosition = yPosition + renderer.getHeight(),
-                        newViewX = 0, newViewY = 0;
-                    //If the game object has a scrolling factor then apply it
-                    newViewX = (this.camera.x + (this.screenWidth - this.camera.width) / 2) * gameObject.scrollFactor.x;
-                    newViewY = (this.camera.y + (this.screenHeight - this.camera.height) / 2) * gameObject.scrollFactor.y;
-
+                    var center = new FM.Vector(newPosition.x + renderer.getWidth() / 2, newPosition.y + renderer.getHeight() / 2),
+                        biggestSide = renderer.getWidth() > renderer.getHeight() ? renderer.getWidth() : renderer.getHeight(),
+                        //If the game object has a scrolling factor then apply it
+                        newView = new FM.Vector((this.camera.x + (this.screenWidth - this.camera.width) / 2) * gameObject.scrollFactor.x, 
+                            (this.camera.y + (this.screenHeight - this.camera.height) / 2) * gameObject.scrollFactor.y);
                     //Draw the game object if it is within the bounds of the screen
-                    if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
-                            && xPosition <= newViewX + this.camera.width && yPosition <= newViewY + this.camera.height) {
+                    if (center.x + biggestSide / 2 >= newView.x && center.y + biggestSide / 2 >= newView.y
+                            && center.x - biggestSide / 2 <= newView.x + this.camera.width && center.y - biggestSide / 2 <= newView.y + this.camera.height) {
                         renderer.draw(bufferContext, newPosition);
                     }
                 }
+                
                 //Draw physic debug
                 if (FM.Parameters.debug && gameObject.isAlive()) {
                     if (FM.Game.isDebugActivated()) {
@@ -517,6 +515,7 @@ FM.State.prototype.destroy = function () {
     var i;
     for (i = 0; i < this.members.length; i = i + 1) {
         this.members[i].destroy();
+        this.members[i] = null;
     }
     this.members = null;
 };

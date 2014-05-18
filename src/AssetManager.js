@@ -75,14 +75,15 @@ FM.AssetManager = {
         }
     },
     /**
-     * Fired when an asset has been loaded.
-     * @method FM.AssetManager#assetLoaded
+     * Called when an asset is loading.
+     * @method FM.AssetManager#updateProgress
+     * @param {number} pAmount Amount of the file loaded (0 to 1; 1 meaning
+     * fully loaded).
      * @memberOf FM.AssetManager
      */
-    assetLoaded: function () {
-        "use strict";
+    updateProgress: function (pAmount) {
         var assetManager = FM.AssetManager;
-        assetManager.loadingProgress += 100 / assetManager.assets.length;
+        assetManager.loadingProgress += (100 * pAmount) / assetManager.assets.length;
     },
     /**
      * Check if all assets have been loaded.
@@ -92,7 +93,15 @@ FM.AssetManager = {
      */
     areAllAssetsLoaded: function () {
         "use strict";
-        return Math.round(FM.AssetManager.loadingProgress) >= 100;
+        var assetManager = FM.AssetManager,
+            i,
+            allLoaded = true;
+        for (i = 0; i < assetManager.assets.length; i = i + 1) {
+            if (!assetManager.assets[i].loaded) {
+                allLoaded = false;
+            }
+        }
+        return allLoaded || Math.round(FM.AssetManager.loadingProgress) >= 100;
     },
     /**
      * Get an asset by its name.
@@ -106,7 +115,7 @@ FM.AssetManager = {
         "use strict";
         var asset = null, i = 0, assetManager = FM.AssetManager;
         for (i = 0; i < assetManager.assets.length; i = i + 1) {
-            if (assetManager.assets[i].getName() === name) {
+            if (assetManager.assets[i].name === name) {
                 asset = assetManager.assets[i];
             }
         }

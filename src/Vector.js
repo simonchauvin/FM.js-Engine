@@ -65,7 +65,7 @@ FM.Vector.prototype.multiply = function (vector) {
     return this;
 };
 /**
- * Dot operation on the current vector and the specified one;
+ * Dot product on the current vector and the specified one;
  * @method FM.Vector#dotProduct
  * @memberOf FM.Vector
  * @param {FM.Vector} vector The vector to dot product.
@@ -74,17 +74,6 @@ FM.Vector.prototype.multiply = function (vector) {
 FM.Vector.prototype.dotProduct = function (vector) {
     "use strict";
     return (this.x * vector.x + this.y * vector.y);
-};
-/**
- * Calculate the cross product of the current vector and another vector.
- * @method FM.Vector#crossProd
- * @memberOf FM.Vector
- * @param {FM.Vector} vector The vector to cross product.
- * @return {float} The cross product.
-*/
-FM.Vector.prototype.crossProd = function (vector) {
-    "use strict";
-    return this.x * vector.y - this.y * vector.x;
 };
 /**
  * Reset the vector the specified values.

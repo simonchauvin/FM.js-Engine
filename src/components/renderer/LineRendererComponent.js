@@ -51,6 +51,12 @@ FM.LineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
      */
     this.alpha = 1;
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -90,7 +96,7 @@ FM.LineRendererComponent.prototype.draw = function (bufferContext, newPosition) 
             //TODO might not work since I freed the physics
             // Needs to interpolate the points
             bufferContext.beginPath();
-            bufferContext.moveTo(Math.round(this.points[0].x), Math.round(this.points[0].y));
+            bufferContext.moveTo(this.rotationCenter.x + Math.round(this.points[0].x), this.rotationCenter.y + Math.round(this.points[0].y));
             for (i = 1; i < this.points.length; i = i + 1) {
                 bufferContext.lineTo(Math.round(this.points[i].x), Math.round(this.points[i].y));
             }

@@ -27,7 +27,7 @@ FM.AnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      * @type FM.ImageAsset
      * @private
      */
-    this.image = pImage.getImage();
+    this.image = pImage.image;
     /**
      * Width of the spritesheet.
      * @type int
@@ -131,6 +131,12 @@ FM.AnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      */
     this.loop = [];
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -216,15 +222,13 @@ FM.AnimatedSpriteRendererComponent.prototype.draw = function (bufferContext, new
         newTime = (new Date()).getTime() / 1000;
     xPosition -= bufferContext.xOffset * this.owner.scrollFactor.x;
     yPosition -= bufferContext.yOffset * this.owner.scrollFactor.y;
-    xPosition = Math.round(xPosition);
-    yPosition = Math.round(yPosition);
     bufferContext.globalAlpha = this.alpha;
     if (this.spatial.angle !== 0) {
         bufferContext.save();
         bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
         bufferContext.translate(Math.round(this.frameWidth / 2), Math.round(this.frameHeight / 2));
         bufferContext.rotate(this.spatial.angle);
-        bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round(-this.changedWidth / 2), Math.round(-this.changedHeight / 2), this.changedWidth, this.changedHeight);
+        bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round((this.rotationCenter.x - this.changedWidth) / 2), Math.round((this.rotationCenter.y - this.changedHeight) / 2), this.changedWidth, this.changedHeight);
         bufferContext.restore();
     } else {
         bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round(xPosition), Math.round(yPosition), this.changedWidth, this.changedHeight);

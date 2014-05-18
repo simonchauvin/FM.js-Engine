@@ -25,7 +25,7 @@ FM.SpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * @type FM.ImageAsset
      * @private
      */
-    this.image = pImage.getImage();
+    this.image = pImage.image;
     /**
      * Width of the sprite to display.
      * @type int
@@ -56,6 +56,12 @@ FM.SpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * @private
      */
     this.alpha = 1;
+    /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
     /**
      * Spatial component.
      * @type FM.SpatialComponent
@@ -98,7 +104,7 @@ FM.SpriteRendererComponent.prototype.draw = function (bufferContext, newPosition
         bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
         bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
         bufferContext.rotate(this.spatial.angle);
-        bufferContext.drawImage(this.image, offset.x, offset.y, this.width, this.height, Math.round(-this.changedWidth / 2), Math.round(-this.changedHeight / 2), this.changedWidth, this.changedHeight);
+        bufferContext.drawImage(this.image, offset.x, offset.y, this.width, this.height, Math.round((this.rotationCenter.x - this.changedWidth) / 2), Math.round((this.rotationCenter.y - this.changedHeight) / 2), this.changedWidth, this.changedHeight);
         bufferContext.restore();
     } else {
         bufferContext.drawImage(this.image, offset.x, offset.y, this.width, this.height, Math.round(xPosition), Math.round(yPosition), this.changedWidth, this.changedHeight);
@@ -152,7 +158,7 @@ FM.SpriteRendererComponent.prototype.setHeight = function (pNewHeight) {
  */
 FM.SpriteRendererComponent.prototype.setImage = function (pImage, pWidth, pHeight) {
     "use strict";
-    this.image = pImage.getImage();
+    this.image = pImage.image;
     this.width = pWidth;
     this.height = pHeight;
 };

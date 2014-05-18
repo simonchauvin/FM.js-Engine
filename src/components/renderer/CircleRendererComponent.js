@@ -39,6 +39,12 @@ FM.CircleRendererComponent = function (pRadius, pColor, pOwner) {
      */
     this.alpha = 1;
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -75,7 +81,7 @@ FM.CircleRendererComponent.prototype.draw = function (bufferContext, newPosition
         bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
         bufferContext.rotate(this.spatial.angle);
         bufferContext.beginPath();
-        bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(this.width / 2), 0, 2 * Math.PI);
+        bufferContext.arc(Math.round(this.rotationCenter.x), Math.round(this.rotationCenter.y), Math.round(this.width / 2), 0, 2 * Math.PI);
         bufferContext.restore();
     } else {
         bufferContext.beginPath();

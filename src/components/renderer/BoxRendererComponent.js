@@ -40,6 +40,12 @@ FM.BoxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
      */
     this.alpha = 1;
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -69,16 +75,14 @@ FM.BoxRendererComponent.prototype.draw = function (bufferContext, newPosition) {
     var xPosition = newPosition.x, yPosition = newPosition.y;
     xPosition -= bufferContext.xOffset * this.owner.scrollFactor.x;
     yPosition -= bufferContext.yOffset * this.owner.scrollFactor.y;
-    xPosition = Math.round(xPosition);
-    yPosition = Math.round(yPosition);
     bufferContext.globalAlpha = this.alpha;
     if (this.spatial.angle !== 0) {
         bufferContext.save();
-        bufferContext.translate(xPosition, yPosition);
+        bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
         bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
         bufferContext.rotate(this.spatial.angle);
         bufferContext.beginPath();
-        bufferContext.rect(xPosition, yPosition, this.width, this.height);
+        bufferContext.rect(this.rotationCenter.x, this.rotationCenter.y, this.width, this.height);
         bufferContext.restore();
     } else {
         bufferContext.beginPath();

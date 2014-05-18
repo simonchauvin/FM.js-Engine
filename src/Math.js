@@ -58,4 +58,15 @@ FM.Math = {
         "use strict";
         return Math.min(max, Math.max(min, val));
     },
+    /**
+     * Get the angle between two vectors.
+     * @method FM.Math#getAngle
+     * @memberOf FM.Math
+     * @param {FM.Vector} vec1 First vector.
+     * @param {FM.Vector} vec2 Second vector.
+     * @returns {Number} The angle in radians between the two vectors.
+     */
+    getAngle: function (vec1, vec2) {
+        return Math.atan2(vec2.y - vec1.y, vec2.x - vec1.x);
+    },
 };

@@ -74,20 +74,23 @@ FM.ObjectType.prototype.overlapsWithType = function (pType) {
         collisionTemp = null;
     for (i = 0; i < gameObjects.length; i = i + 1) {
         gameObject = gameObjects[i];
-        physic = gameObject.components[FM.ComponentTypes.PHYSIC];
-        hasType = gameObject.hasType(this);
-        hasOtherType = gameObject.hasType(pType);
-        if (physic && (hasType || hasOtherType)) {
-            otherGameObjects = quad.retrieve(gameObject);
-            for (j = 0; j < otherGameObjects.length; j = j + 1) {
-                otherGameObject = otherGameObjects[j];
-                otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
-                if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
-                        && ((hasType && otherGameObject.hasType(pType))
-                        || (hasOtherType && otherGameObject.hasType(this)))) {
-                    collisionTemp = physic.overlapsWithObject(otherPhysic);
-                    if (collisionTemp) {
-                        collision = collisionTemp;
+        if (gameObject.isAlive()) {
+            physic = gameObject.components[FM.ComponentTypes.PHYSIC];
+            hasType = gameObject.hasType(this);
+            hasOtherType = gameObject.hasType(pType);
+            if (physic && (hasType || hasOtherType)) {
+                otherGameObjects = quad.retrieve(gameObject);
+                for (j = 0; j < otherGameObjects.length; j = j + 1) {
+                    otherGameObject = otherGameObjects[j];
+                    if (otherGameObject.isAlive()) {
+                        otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
+                        if (otherPhysic && ((hasType && otherGameObject.hasType(pType))
+                                || (hasOtherType && otherGameObject.hasType(this)))) {
+                            collisionTemp = physic.overlapsWithObject(otherPhysic);
+                            if (collisionTemp) {
+                                collision = collisionTemp;
+                            }
+                        }
                     }
                 }
             }
@@ -113,11 +116,11 @@ FM.ObjectType.prototype.overlapsWithObject = function (pGameObject) {
         otherPhysic,
         collision = null,
         collisionTemp = null;
-    if (physic) {
+    if (physic && pGameObject.isAlive()) {
         for (i = 0; i < gameObjects.length; i = i + 1) {
             otherGameObject = gameObjects[i];
             otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
-            if (otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(this)) {
+            if (otherGameObject.isAlive() && otherPhysic && otherGameObject.hasType(this)) {
                 collisionTemp = physic.overlapsWithObject(otherPhysic);
                 if (collisionTemp) {
                     collision = collisionTemp;
@@ -126,7 +129,9 @@ FM.ObjectType.prototype.overlapsWithObject = function (pGameObject) {
         }
     } else {
         if (FM.Parameters.debug) {
-            console.log("WARNING: you need to specify a game object with a physic component for checking overlaps.");
+            if (!physic) {
+                console.log("WARNING: you need to provide a game object with a physic component for checking overlaps.");
+            }
         }
     }
     return collision;

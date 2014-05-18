@@ -73,13 +73,15 @@ FM.AudioComponent.prototype.replay = function (pSound) {
 FM.AudioComponent.prototype.play = function (pSoundName, pVolume, pLoop) {
     "use strict";
     var i, sound, soundFound = false;
+    if (typeof pVolume === "undefined") {pVolume = 1;}
+    if (typeof pLoop === "undefined") {pLoop = false;}
     for (i = 0; i &lt; this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound && sound.getName() === pSoundName) {
+        if (sound && sound.name === pSoundName) {
             soundFound = true;
-            sound.getAudio().volume = pVolume;
+            sound.audio.volume = pVolume;
             if (pLoop) {
-                sound.getAudio().addEventListener('ended', function () {
+                sound.audio.addEventListener('ended', function () {
                     if (window.chrome) {
                         this.load(FM.AudioComponent.prototype.replay);
                     } else {
@@ -88,11 +90,7 @@ FM.AudioComponent.prototype.play = function (pSoundName, pVolume, pLoop) {
                     }
                 }, false);
             }
-            if (window.chrome) {
-                sound.load(FM.AudioComponent.prototype.replay);
-            } else {
-                sound.getAudio().play();
-            }
+            sound.load(FM.AudioComponent.prototype.replay);
         }
     }
     if (!soundFound) {
@@ -112,8 +110,8 @@ FM.AudioComponent.prototype.pause = function (pSoundName) {
     var i, sound;
     for (i = 0; i &lt; this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
-            sound.getAudio().pause();
+        if (sound.name === pSoundName) {
+            sound.audio.pause();
         }
     }
 };
@@ -139,8 +137,8 @@ FM.AudioComponent.prototype.isPlaying = function (pSoundName) {
     var i, sound;
     for (i = 0; i &lt; this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
-            return !sound.getAudio().paused;
+        if (sound.name === pSoundName) {
+            return !sound.audio.paused;
         }
     }
 };
@@ -156,7 +154,7 @@ FM.AudioComponent.prototype.getSoundByName = function (pSoundName) {
     var i, sound;
     for (i = 0; i &lt; this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
+        if (sound.name === pSoundName) {
             return sound;
         }
     }
@@ -182,13 +180,13 @@ FM.AudioComponent.prototype.destroy = function () {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.Asset.html">Asset</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.Node.html">Node</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 27 2014 20:21:34 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sun May 18 2014 14:39:09 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

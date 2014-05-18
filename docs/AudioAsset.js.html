@@ -27,9 +27,10 @@
         <article>
             <pre class="prettyprint source"><code>/*global FM*/
 /**
- * An audio asset represents an Audio object that is usable in the FM.js 
+ * An audio asset represents an audio file that is usable in the FM.js 
  * engine.
  * @class FM.AudioAsset
+ * @extends FM.Asset
  * @param {string} pName Name of the asset.
  * @param {string} pPath Path of the asset.
  * @constructor
@@ -37,52 +38,24 @@
  */
 FM.AudioAsset = function (pName, pPath) {
     "use strict";
+    //Calling the constructor of FM.Asset
+    FM.Asset.call(this, pName, pPath);
     /**
      * The HTML5 Audio object.
      * @type Audio
-     * @private
      */
     this.audio = new Audio();
     /**
-     * Name of the given to the asset.
-     * @type string
-     * @private
-     */
-    this.name = pName;
-    /**
-     * Path to the audio file.
-     * @type string
-     * @private
-     */
-    this.path = pPath;
-    /**
      * Extension of the audio file.
      * @type string
-     * @private
      */
     this.extension = this.path.substring(this.path.lastIndexOf('.') + 1);
-    /**
-     * Specify the loading state of the audio file.
-     * @type boolean
-     * @private
-     */
-    this.loaded = false;
 };
-FM.AudioAsset.prototype.constructor = FM.AudioAsset;
 /**
- * Fired when the audio file has finished loading.
- * @method FM.AudioAsset#loadComplete
- * @memberOf FM.AudioAsset
- * @param {Event} event Contains data about the event.
- * @private
+ * FM.AudioAsset inherits from FM.Asset.
  */
-FM.AudioAsset.prototype.loadComplete = function (event) {
-    "use strict";
-    if (event) {
-        event.target.owner.loaded = true;
-    }
-    FM.AssetManager.assetLoaded();
-};
+FM.AudioAsset.prototype = Object.create(FM.Asset.prototype);
+FM.AudioAsset.prototype.constructor = FM.AudioAsset;
 /**
  * Load the audio file.
  * @method FM.AudioAsset#load
@@ -95,54 +68,30 @@ FM.AudioAsset.prototype.load = function (pCallbackFunction) {
     this.audio.src = this.path;
     this.loaded = false;
     if (!pCallbackFunction) {
-        this.audio.addEventListener("loadeddata", FM.AudioAsset.prototype.loadComplete, false);
+        this.audio.onloadeddata = function (e) {
+            if (e) {
+                e.target.owner.loaded = true;
+            }
+        }
     } else {
-        this.audio.addEventListener("loadeddata", function () {
-            FM.AudioAsset.prototype.loadComplete();
+        this.audio.onloadeddata = function (e) {
+            if (e) {
+                e.target.owner.loaded = true;
+            }
             pCallbackFunction(this);
-        }, false);
+        };
     }
     this.audio.owner = this;
-};
-/**
- * Check if this audio file has been loaded.
- * @method FM.AudioAsset#isLoaded
- * @memberOf FM.AudioAsset
- * @return {boolean} Whether the asset is loaded or not.
- */
-FM.AudioAsset.prototype.isLoaded = function () {
-    "use strict";
-    return this.loaded;
-};
-/**
- * Get the HTML5 Audio object.
- * @method FM.AudioAsset#getAudio
- * @memberOf FM.AudioAsset
- * @return {Audio} The HTML5 object.
- */
-FM.AudioAsset.prototype.getAudio = function () {
-    "use strict";
-    return this.audio;
-};
-/**
- * Get the name of the asset.
- * @method FM.AudioAsset#getName
- * @memberOf FM.AudioAsset
- * @return {string} The name of the asset.
- */
-FM.AudioAsset.prototype.getName = function () {
-    "use strict";
-    return this.name;
-};
-/**
- * Get the path to the audio file.
- * @method FM.AudioAsset#getPath
- * @memberOf FM.AudioAsset
- * @return {string} The path to the asset.
- */
-FM.AudioAsset.prototype.getPath = function () {
-    "use strict";
-    return this.path;
+    var that = this,
+        xmlHTTP = new XMLHttpRequest();
+    xmlHTTP.open('GET', this.path, true);
+    xmlHTTP.responseType = 'arraybuffer';
+    xmlHTTP.onprogress = function(e) {
+        var oldCompletionRate = that.completionLevel;
+        that.completionLevel = (e.loaded / e.total);
+        FM.AssetManager.updateProgress(that.completionLevel - oldCompletionRate);
+    };
+    xmlHTTP.send();
 };
 /**
  * Check if the audio format is supported by the browser.
@@ -174,13 +123,13 @@ FM.AudioAsset.prototype.isSupported = function () {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="FM.AabbComponent.html">AabbComponent</a></li><li><a href="FM.AnimatedSpriteRendererComponent.html">AnimatedSpriteRendererComponent</a></li><li><a href="FM.Asset.html">Asset</a></li><li><a href="FM.AssetManager.html">AssetManager</a></li><li><a href="FM.AudioAsset.html">AudioAsset</a></li><li><a href="FM.AudioComponent.html">AudioComponent</a></li><li><a href="FM.BoxRendererComponent.html">BoxRendererComponent</a></li><li><a href="FM.Circle.html">Circle</a></li><li><a href="FM.CircleComponent.html">CircleComponent</a></li><li><a href="FM.CircleRendererComponent.html">CircleRendererComponent</a></li><li><a href="FM.Collision.html">Collision</a></li><li><a href="FM.Component.html">Component</a></li><li><a href="FM.ComponentTypes.html">ComponentTypes</a></li><li><a href="FM.EmitterComponent.html">EmitterComponent</a></li><li><a href="FM.FileAsset.html">FileAsset</a></li><li><a href="FM.Game.html">Game</a></li><li><a href="FM.GameObject.html">GameObject</a></li><li><a href="FM.ImageAsset.html">ImageAsset</a></li><li><a href="FM.Keyboard.html">Keyboard</a></li><li><a href="FM.LineRendererComponent.html">LineRendererComponent</a></li><li><a href="FM.Math.html">Math</a></li><li><a href="FM.Node.html">Node</a></li><li><a href="FM.ObjectType.html">ObjectType</a></li><li><a href="FM.Parameters.html">Parameters</a></li><li><a href="FM.PhysicComponent.html">PhysicComponent</a></li><li><a href="FM.Preloader.html">Preloader</a></li><li><a href="FM.QuadTree.html">QuadTree</a></li><li><a href="FM.Rectangle.html">Rectangle</a></li><li><a href="FM.SimplePathComponent.html">SimplePathComponent</a></li><li><a href="FM.SpatialComponent.html">SpatialComponent</a></li><li><a href="FM.SpriteRendererComponent.html">SpriteRendererComponent</a></li><li><a href="FM.State.html">State</a></li><li><a href="FM.TextRendererComponent.html">TextRendererComponent</a></li><li><a href="FM.TileMap.html">TileMap</a></li><li><a href="FM.TmxLayer.html">TmxLayer</a></li><li><a href="FM.TmxMap.html">TmxMap</a></li><li><a href="FM.TmxObject.html">TmxObject</a></li><li><a href="FM.TmxObjectGroup.html">TmxObjectGroup</a></li><li><a href="FM.TmxPropertySet.html">TmxPropertySet</a></li><li><a href="FM.TmxTileSet.html">TmxTileSet</a></li><li><a href="FM.Vector.html">Vector</a></li><li><a href="FM.World.html">World</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 27 2014 20:21:34 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sun May 18 2014 14:39:09 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

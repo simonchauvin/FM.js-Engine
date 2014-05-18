@@ -50,8 +50,8 @@
                 Vector.js, World.js">
             </filelist>
             <filelist dir="${system}" files= "Collision.js, Component.js, 
-                AudioAsset.js, FileAsset.js, ImageAsset.js,
-                Preloader.js, QuadTree.js, Utils.js">
+                Asset.js, AudioAsset.js, FileAsset.js, ImageAsset.js,
+                Preloader.js, Node.js, QuadTree.js, Utils.js">
             </filelist>
             <filelist dir="${tmx}" files= "TmxLayer.js, TmxMap.js, 
                 TmxObject.js, TmxObjectGroup.js, TmxPropertySet.js,

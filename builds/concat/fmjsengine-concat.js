@@ -84,14 +84,15 @@ FM.AssetManager = {
         }
     },
     /**
-     * Fired when an asset has been loaded.
-     * @method FM.AssetManager#assetLoaded
+     * Called when an asset is loading.
+     * @method FM.AssetManager#updateProgress
+     * @param {number} pAmount Amount of the file loaded (0 to 1; 1 meaning
+     * fully loaded).
      * @memberOf FM.AssetManager
      */
-    assetLoaded: function () {
-        "use strict";
+    updateProgress: function (pAmount) {
         var assetManager = FM.AssetManager;
-        assetManager.loadingProgress += 100 / assetManager.assets.length;
+        assetManager.loadingProgress += (100 * pAmount) / assetManager.assets.length;
     },
     /**
      * Check if all assets have been loaded.
@@ -101,7 +102,15 @@ FM.AssetManager = {
      */
     areAllAssetsLoaded: function () {
         "use strict";
-        return Math.round(FM.AssetManager.loadingProgress) >= 100;
+        var assetManager = FM.AssetManager,
+            i,
+            allLoaded = true;
+        for (i = 0; i < assetManager.assets.length; i = i + 1) {
+            if (!assetManager.assets[i].loaded) {
+                allLoaded = false;
+            }
+        }
+        return allLoaded || Math.round(FM.AssetManager.loadingProgress) >= 100;
     },
     /**
      * Get an asset by its name.
@@ -115,7 +124,7 @@ FM.AssetManager = {
         "use strict";
         var asset = null, i = 0, assetManager = FM.AssetManager;
         for (i = 0; i < assetManager.assets.length; i = i + 1) {
-            if (assetManager.assets[i].getName() === name) {
+            if (assetManager.assets[i].name === name) {
                 asset = assetManager.assets[i];
             }
         }
@@ -331,6 +340,13 @@ FM.Game = {
     */
     currentState: null,
     /**
+     * The next state to start once the current one is destroyed.
+     * @field
+     * @type FM.State
+     * @private
+     */
+    nextState: null,
+    /**
     * Canvas elements.
     * @field
     * @type Canvas2D
@@ -478,6 +494,12 @@ FM.Game = {
     */
     gameLoop: function () {
         "use strict";
+        if (FM.Game.nextState) {
+            FM.Game.currentState.destroy();
+            FM.Game.currentState = FM.Game.nextState;
+            FM.Game.nextState = null;
+            FM.Game.currentState.init();
+        }
         //Reset the screen
         FM.Game.context.clearRect(0, 0, FM.Game.screenWidth, FM.Game.screenHeight);
         FM.Game.context.fillStyle = FM.Game.backgroundColor;
@@ -742,9 +764,7 @@ FM.Game = {
     */
     switchState: function (newState) {
         "use strict";
-        FM.Game.currentState.destroy();
-        FM.Game.currentState = newState;
-        FM.Game.currentState.init();
+        FM.Game.nextState = newState;
     },
     /**
     * Change the game's background color.
@@ -1010,6 +1030,18 @@ FM.GameObject.prototype.addComponent = function (pComponent) {
     return this.components[componentName];
 };
 /**
+ * Remove a component from the game object.
+ * @method FM.GameObject#removeComponent
+ * @memberOf FM.GameObject
+ * @param {FM.ComponentTypes} pType The type of the component to be removed.
+ */
+FM.GameObject.prototype.removeComponent = function (pType) {
+    "use strict";
+    if (!this.components[pType]) {
+        this.components[pType] = null;
+    }
+};
+/**
  * Retrive a particular component.
  * @method FM.GameObject#getComponent
  * @memberOf FM.GameObject
@@ -1020,6 +1052,78 @@ FM.GameObject.prototype.getComponent = function (pType) {
     "use strict";
     return this.components[pType];
 };
+/**
+ * Gets and sets the spatial component of this game object.
+ * @name FM.GameObject#spatial
+ */
+Object.defineProperty(FM.GameObject.prototype, "spatial", {
+    get: function () {
+        return this.components[FM.ComponentTypes.SPATIAL];
+    },
+    set: function (spatial) {
+        this.components[FM.ComponentTypes.SPATIAL] = spatial;
+    }
+});
+/**
+ * Gets and sets the renderer component of this game object.
+ * @name FM.GameObject#renderer
+ */
+Object.defineProperty(FM.GameObject.prototype, "renderer", {
+    get: function () {
+        return this.components[FM.ComponentTypes.RENDERER];
+    },
+    set: function (renderer) {
+        this.components[FM.ComponentTypes.RENDERER] = renderer;
+    }
+});
+/**
+ * Gets and sets the physic component of this game object.
+ * @name FM.GameObject#physic
+ */
+Object.defineProperty(FM.GameObject.prototype, "physic", {
+    get: function () {
+        return this.components[FM.ComponentTypes.PHYSIC];
+    },
+    set: function (physic) {
+        this.components[FM.ComponentTypes.PHYSIC] = physic;
+    }
+});
+/**
+ * Gets and sets the sound component of this game object.
+ * @name FM.GameObject#sound
+ */
+Object.defineProperty(FM.GameObject.prototype, "sound", {
+    get: function () {
+        return this.components[FM.ComponentTypes.SOUND];
+    },
+    set: function (sound) {
+        this.components[FM.ComponentTypes.SOUND] = sound;
+    }
+});
+/**
+ * Gets and sets the pathfinding component of this game object.
+ * @name FM.GameObject#pathfinding
+ */
+Object.defineProperty(FM.GameObject.prototype, "pathfinding", {
+    get: function () {
+        return this.components[FM.ComponentTypes.PATHFINDING];
+    },
+    set: function (pathfinding) {
+        this.components[FM.ComponentTypes.PATHFINDING] = pathfinding;
+    }
+});
+/**
+ * Gets and sets the fx component of this game object.
+ * @name FM.GameObject#fx
+ */
+Object.defineProperty(FM.GameObject.prototype, "fx", {
+    get: function () {
+        return this.components[FM.ComponentTypes.FX];
+    },
+    set: function (fx) {
+        this.components[FM.ComponentTypes.FX] = fx;
+    }
+});
 /**
  * Kill the game object.
  * @method FM.GameObject#kill
@@ -1121,35 +1225,41 @@ FM.GameObject.prototype.destroy = function () {
     this.types = null;
     this.zIndex = null;
     this.scrollFactor = null;
-    var comp = this.components[FM.ComponentTypes.SPATIAL];
+    var comp = this.spatial;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.SPATIAL);
         comp.destroy();
-        this.components[FM.ComponentTypes.SPATIAL] = null;
+        this.spatial = null;
     }
-    comp = this.components[FM.ComponentTypes.PATHFINDING];
+    comp = this.pathfinding;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.PATHFINDING);
         comp.destroy();
-        this.components[FM.ComponentTypes.PATHFINDING] = null;
+        this.pathfinding = null;
     }
-    comp = this.components[FM.ComponentTypes.RENDERER];
+    comp = this.renderer;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.RENDERER);
         comp.destroy();
-        this.components[FM.ComponentTypes.RENDERER] = null;
+        this.renderer = null;
     }
-    comp = this.components[FM.ComponentTypes.PHYSIC];
+    comp = this.physic;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.PHYSIC);
         comp.destroy();
-        this.components[FM.ComponentTypes.PHYSIC] = null;
+        this.physic = null;
     }
-    comp = this.components[FM.ComponentTypes.SOUND];
+    comp = this.sound;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.SOUND);
         comp.destroy();
-        this.components[FM.ComponentTypes.SOUND] = null;
+        this.sound = null;
     }
-    comp = this.components[FM.ComponentTypes.FX];
+    comp = this.fx;
     if (comp) {
+        this.removeComponent(FM.ComponentTypes.FX);
         comp.destroy();
-        this.components[FM.ComponentTypes.FX] = null;
+        this.fx = null;
     }
     this.components = null;
 };
@@ -1322,6 +1432,17 @@ FM.Math = {
         "use strict";
         return Math.min(max, Math.max(min, val));
     },
+    /**
+     * Get the angle between two vectors.
+     * @method FM.Math#getAngle
+     * @memberOf FM.Math
+     * @param {FM.Vector} vec1 First vector.
+     * @param {FM.Vector} vec2 Second vector.
+     * @returns {Number} The angle in radians between the two vectors.
+     */
+    getAngle: function (vec1, vec2) {
+        return Math.atan2(vec2.y - vec1.y, vec2.x - vec1.x);
+    },
 };
 /*global FM*/
 /**
@@ -1399,20 +1520,23 @@ FM.ObjectType.prototype.overlapsWithType = function (pType) {
         collisionTemp = null;
     for (i = 0; i < gameObjects.length; i = i + 1) {
         gameObject = gameObjects[i];
-        physic = gameObject.components[FM.ComponentTypes.PHYSIC];
-        hasType = gameObject.hasType(this);
-        hasOtherType = gameObject.hasType(pType);
-        if (physic && (hasType || hasOtherType)) {
-            otherGameObjects = quad.retrieve(gameObject);
-            for (j = 0; j < otherGameObjects.length; j = j + 1) {
-                otherGameObject = otherGameObjects[j];
-                otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
-                if (otherPhysic && gameObject.getId() !== otherGameObject.getId()
-                        && ((hasType && otherGameObject.hasType(pType))
-                        || (hasOtherType && otherGameObject.hasType(this)))) {
-                    collisionTemp = physic.overlapsWithObject(otherPhysic);
-                    if (collisionTemp) {
-                        collision = collisionTemp;
+        if (gameObject.isAlive()) {
+            physic = gameObject.components[FM.ComponentTypes.PHYSIC];
+            hasType = gameObject.hasType(this);
+            hasOtherType = gameObject.hasType(pType);
+            if (physic && (hasType || hasOtherType)) {
+                otherGameObjects = quad.retrieve(gameObject);
+                for (j = 0; j < otherGameObjects.length; j = j + 1) {
+                    otherGameObject = otherGameObjects[j];
+                    if (otherGameObject.isAlive()) {
+                        otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
+                        if (otherPhysic && ((hasType && otherGameObject.hasType(pType))
+                                || (hasOtherType && otherGameObject.hasType(this)))) {
+                            collisionTemp = physic.overlapsWithObject(otherPhysic);
+                            if (collisionTemp) {
+                                collision = collisionTemp;
+                            }
+                        }
                     }
                 }
             }
@@ -1438,11 +1562,11 @@ FM.ObjectType.prototype.overlapsWithObject = function (pGameObject) {
         otherPhysic,
         collision = null,
         collisionTemp = null;
-    if (physic) {
+    if (physic && pGameObject.isAlive()) {
         for (i = 0; i < gameObjects.length; i = i + 1) {
             otherGameObject = gameObjects[i];
             otherPhysic = otherGameObject.components[FM.ComponentTypes.PHYSIC];
-            if (otherPhysic && pGameObject.getId() !== otherGameObject.getId() && otherGameObject.hasType(this)) {
+            if (otherGameObject.isAlive() && otherPhysic && otherGameObject.hasType(this)) {
                 collisionTemp = physic.overlapsWithObject(otherPhysic);
                 if (collisionTemp) {
                     collision = collisionTemp;
@@ -1451,7 +1575,9 @@ FM.ObjectType.prototype.overlapsWithObject = function (pGameObject) {
         }
     } else {
         if (FM.Parameters.debug) {
-            console.log("WARNING: you need to specify a game object with a physic component for checking overlaps.");
+            if (!physic) {
+                console.log("WARNING: you need to provide a game object with a physic component for checking overlaps.");
+            }
         }
     }
     return collision;
@@ -2060,20 +2186,18 @@ FM.State.prototype.draw = function (bufferContext, dt) {
                     spatial.position.y * dt + spatial.previous.y * (1.0 - dt));
                 //Draw objects
                 if (renderer && gameObject.isVisible()) {
-                    var xPosition = newPosition.x, yPosition = newPosition.y,
-                        farthestXPosition = xPosition + renderer.getWidth(),
-                        farthestYPosition = yPosition + renderer.getHeight(),
-                        newViewX = 0, newViewY = 0;
-                    //If the game object has a scrolling factor then apply it
-                    newViewX = (this.camera.x + (this.screenWidth - this.camera.width) / 2) * gameObject.scrollFactor.x;
-                    newViewY = (this.camera.y + (this.screenHeight - this.camera.height) / 2) * gameObject.scrollFactor.y;
-
+                    var center = new FM.Vector(newPosition.x + renderer.getWidth() / 2, newPosition.y + renderer.getHeight() / 2),
+                        biggestSide = renderer.getWidth() > renderer.getHeight() ? renderer.getWidth() : renderer.getHeight(),
+                        //If the game object has a scrolling factor then apply it
+                        newView = new FM.Vector((this.camera.x + (this.screenWidth - this.camera.width) / 2) * gameObject.scrollFactor.x, 
+                            (this.camera.y + (this.screenHeight - this.camera.height) / 2) * gameObject.scrollFactor.y);
                     //Draw the game object if it is within the bounds of the screen
-                    if (farthestXPosition >= newViewX && farthestYPosition >= newViewY
-                            && xPosition <= newViewX + this.camera.width && yPosition <= newViewY + this.camera.height) {
+                    if (center.x + biggestSide / 2 >= newView.x && center.y + biggestSide / 2 >= newView.y
+                            && center.x - biggestSide / 2 <= newView.x + this.camera.width && center.y - biggestSide / 2 <= newView.y + this.camera.height) {
                         renderer.draw(bufferContext, newPosition);
                     }
                 }
+                
                 //Draw physic debug
                 if (FM.Parameters.debug && gameObject.isAlive()) {
                     if (FM.Game.isDebugActivated()) {
@@ -2191,6 +2315,7 @@ FM.State.prototype.destroy = function () {
     var i;
     for (i = 0; i < this.members.length; i = i + 1) {
         this.members[i].destroy();
+        this.members[i] = null;
     }
     this.members = null;
 };
@@ -2342,7 +2467,7 @@ FM.TileMap.prototype.load = function (pData) {
         renderer,
         xOffset,
         yOffset,
-        image = this.tileSet.getImage(),
+        image = this.tileSet.image,
         i,
         j,
         n;
@@ -2586,7 +2711,7 @@ FM.Vector.prototype.multiply = function (vector) {
     return this;
 };
 /**
- * Dot operation on the current vector and the specified one;
+ * Dot product on the current vector and the specified one;
  * @method FM.Vector#dotProduct
  * @memberOf FM.Vector
  * @param {FM.Vector} vector The vector to dot product.
@@ -2595,17 +2720,6 @@ FM.Vector.prototype.multiply = function (vector) {
 FM.Vector.prototype.dotProduct = function (vector) {
     "use strict";
     return (this.x * vector.x + this.y * vector.y);
-};
-/**
- * Calculate the cross product of the current vector and another vector.
- * @method FM.Vector#crossProd
- * @memberOf FM.Vector
- * @param {FM.Vector} vector The vector to cross product.
- * @return {float} The cross product.
-*/
-FM.Vector.prototype.crossProd = function (vector) {
-    "use strict";
-    return this.x * vector.y - this.y * vector.x;
 };
 /**
  * Reset the vector the specified values.
@@ -2883,9 +2997,43 @@ FM.Component.prototype.destroy = function () {
 };
 /*global FM*/
 /**
- * An audio asset represents an Audio object that is usable in the FM.js 
+ * The asset class represents an asset that can be used by the FM.js engine.
+ * @class FM.Asset
+ * @param {string} pName Name of the asset.
+ * @param {string} pPath The path of the asset.
+ * @constructor
+ * @author Simon Chauvin
+ */
+FM.Asset = function (pName, pPath) {
+    "use strict";
+    /**
+     * Name of the asset.
+     * @type string
+     */
+    this.name = pName;
+    /**
+     * Path of the asset.
+     * @type string
+     */
+    this.path = pPath;
+    /**
+     * Whether the asset is loaded or not.
+     * @type boolean
+     */
+    this.loaded = false;
+    /**
+     * Tracks the loading of the asset from 0 (not loaded) to 1 
+     * (fully loaded).
+     * @type number
+     */
+    this.completionLevel = 0;
+};
+FM.Asset.prototype.constructor = FM.Asset;/*global FM*/
+/**
+ * An audio asset represents an audio file that is usable in the FM.js 
  * engine.
  * @class FM.AudioAsset
+ * @extends FM.Asset
  * @param {string} pName Name of the asset.
  * @param {string} pPath Path of the asset.
  * @constructor
@@ -2893,52 +3041,24 @@ FM.Component.prototype.destroy = function () {
  */
 FM.AudioAsset = function (pName, pPath) {
     "use strict";
+    //Calling the constructor of FM.Asset
+    FM.Asset.call(this, pName, pPath);
     /**
      * The HTML5 Audio object.
      * @type Audio
-     * @private
      */
     this.audio = new Audio();
     /**
-     * Name of the given to the asset.
-     * @type string
-     * @private
-     */
-    this.name = pName;
-    /**
-     * Path to the audio file.
-     * @type string
-     * @private
-     */
-    this.path = pPath;
-    /**
      * Extension of the audio file.
      * @type string
-     * @private
      */
     this.extension = this.path.substring(this.path.lastIndexOf('.') + 1);
-    /**
-     * Specify the loading state of the audio file.
-     * @type boolean
-     * @private
-     */
-    this.loaded = false;
 };
-FM.AudioAsset.prototype.constructor = FM.AudioAsset;
 /**
- * Fired when the audio file has finished loading.
- * @method FM.AudioAsset#loadComplete
- * @memberOf FM.AudioAsset
- * @param {Event} event Contains data about the event.
- * @private
+ * FM.AudioAsset inherits from FM.Asset.
  */
-FM.AudioAsset.prototype.loadComplete = function (event) {
-    "use strict";
-    if (event) {
-        event.target.owner.loaded = true;
-    }
-    FM.AssetManager.assetLoaded();
-};
+FM.AudioAsset.prototype = Object.create(FM.Asset.prototype);
+FM.AudioAsset.prototype.constructor = FM.AudioAsset;
 /**
  * Load the audio file.
  * @method FM.AudioAsset#load
@@ -2951,54 +3071,30 @@ FM.AudioAsset.prototype.load = function (pCallbackFunction) {
     this.audio.src = this.path;
     this.loaded = false;
     if (!pCallbackFunction) {
-        this.audio.addEventListener("loadeddata", FM.AudioAsset.prototype.loadComplete, false);
+        this.audio.onloadeddata = function (e) {
+            if (e) {
+                e.target.owner.loaded = true;
+            }
+        }
     } else {
-        this.audio.addEventListener("loadeddata", function () {
-            FM.AudioAsset.prototype.loadComplete();
+        this.audio.onloadeddata = function (e) {
+            if (e) {
+                e.target.owner.loaded = true;
+            }
             pCallbackFunction(this);
-        }, false);
+        };
     }
     this.audio.owner = this;
-};
-/**
- * Check if this audio file has been loaded.
- * @method FM.AudioAsset#isLoaded
- * @memberOf FM.AudioAsset
- * @return {boolean} Whether the asset is loaded or not.
- */
-FM.AudioAsset.prototype.isLoaded = function () {
-    "use strict";
-    return this.loaded;
-};
-/**
- * Get the HTML5 Audio object.
- * @method FM.AudioAsset#getAudio
- * @memberOf FM.AudioAsset
- * @return {Audio} The HTML5 object.
- */
-FM.AudioAsset.prototype.getAudio = function () {
-    "use strict";
-    return this.audio;
-};
-/**
- * Get the name of the asset.
- * @method FM.AudioAsset#getName
- * @memberOf FM.AudioAsset
- * @return {string} The name of the asset.
- */
-FM.AudioAsset.prototype.getName = function () {
-    "use strict";
-    return this.name;
-};
-/**
- * Get the path to the audio file.
- * @method FM.AudioAsset#getPath
- * @memberOf FM.AudioAsset
- * @return {string} The path to the asset.
- */
-FM.AudioAsset.prototype.getPath = function () {
-    "use strict";
-    return this.path;
+    var that = this,
+        xmlHTTP = new XMLHttpRequest();
+    xmlHTTP.open('GET', this.path, true);
+    xmlHTTP.responseType = 'arraybuffer';
+    xmlHTTP.onprogress = function(e) {
+        var oldCompletionRate = that.completionLevel;
+        that.completionLevel = (e.loaded / e.total);
+        FM.AssetManager.updateProgress(that.completionLevel - oldCompletionRate);
+    };
+    xmlHTTP.send();
 };
 /**
  * Check if the audio format is supported by the browser.
@@ -3022,7 +3118,7 @@ FM.AudioAsset.prototype.isSupported = function () {
 };
 /*global FM*/
 /**
- * The file asset represents a file object that can be used by the FM.js engine.
+ * The file asset represents a file that can be used by the FM.js engine.
  * @class FM.FileAsset
  * @param {string} pName Name of the asset.
  * @param {string} pPath The path of the asset.
@@ -3031,6 +3127,8 @@ FM.AudioAsset.prototype.isSupported = function () {
  */
 FM.FileAsset = function (pName, pPath) {
     "use strict";
+    //Calling the constructor of FM.Asset
+    FM.Asset.call(this, pName, pPath);
     /**
      * The HTML5 XMLHttpRequest object.
      * @type XMLHttpRequest
@@ -3038,44 +3136,13 @@ FM.FileAsset = function (pName, pPath) {
      */
     this.request = new XMLHttpRequest();
     /**
-     * Name of the asset.
-     * @type string
-     * @private
-     */
-    this.name = pName;
-    /**
-     * Path of the file.
-     * @type string
-     * @private
-     */
-    this.path = pPath;
-    /**
      * Content of the file.
      * @type string
-     * @private
      */
     this.content = null;
-    /**
-     * Specify the loading state of the file.
-     * @type boolean
-     * @private
-     */
-    this.loaded = false;
 };
+FM.FileAsset.prototype = Object.create(FM.Asset.prototype);
 FM.FileAsset.prototype.constructor = FM.FileAsset;
-/**
- * Fired when the loading is complete.
- * @method FM.FileAsset#loadComplete
- * @memberOf FM.FileAsset
- * @param {Event} event Contains data about the event.
- * @private
- */
-FM.FileAsset.prototype.loadComplete = function (event) {
-    "use strict";
-    event.target.owner.setLoaded();
-    event.target.owner.setContent(this.responseText);
-    FM.AssetManager.assetLoaded();
-};
 /**
  * Load the file.
  * @method FM.FileAsset#load
@@ -3083,81 +3150,20 @@ FM.FileAsset.prototype.loadComplete = function (event) {
  */
 FM.FileAsset.prototype.load = function () {
     "use strict";
-    this.request.addEventListener("load", FM.FileAsset.prototype.loadComplete, false);
+    var that = this;
+    this.request.onload = function (e) {
+        e.target.owner.loaded = true;
+        e.target.owner.content = this.responseText;
+    };
     this.request.owner = this;
-    this.request.open("GET", this.path, false);
+    this.request.open("GET", this.path, true);
+    this.request.onprogress = function(e) {
+        var oldCompletionRate = that.completionLevel;
+        that.completionLevel = (e.loaded / e.total);
+        FM.AssetManager.updateProgress(that.completionLevel - oldCompletionRate);
+    };
     this.request.send();
-};
-/**
- * Check if this file has been loaded.
- * @method FM.FileAsset#isLoaded
- * @memberOf FM.FileAsset
- * @return {boolean} Whether the asset is loaded.
- */
-FM.FileAsset.prototype.isLoaded = function () {
-    "use strict";
-    return this.loaded;
-};
-/**
- * Set the loaded boolean variable to true.
- * @method FM.FileAsset#setLoaded
- * @memberOf FM.FileAsset
- */
-FM.FileAsset.prototype.setLoaded = function () {
-    "use strict";
-    this.loaded = true;
-};
-/**
- * Get the HTML5 XMLHttpRequest object.
- * @method FM.FileAsset#getRequest
- * @memberOf FM.FileAsset
- * @return {XMLHttpRequest} The HTML5 object.
- */
-FM.FileAsset.prototype.getRequest = function () {
-    "use strict";
-    return this.request;
-};
-/**
- * Get the name of the file.
- * @method FM.FileAsset#getName
- * @memberOf FM.FileAsset
- * @return {string} The name of the asset.
- */
-FM.FileAsset.prototype.getName = function () {
-    "use strict";
-    return this.name;
-};
-/**
- * Get the path to the file.
- * @method FM.FileAsset#getPath
- * @memberOf FM.FileAsset
- * @return {string} The path of the asset.
- */
-FM.FileAsset.prototype.getPath = function () {
-    "use strict";
-    return this.path;
-};
-/**
- * Get the content of the file.
- * @method FM.FileAsset#getContent
- * @memberOf FM.FileAsset
- * @return {string} The content of the asset.
- */
-FM.FileAsset.prototype.getContent = function () {
-    "use strict";
-    return this.content;
-};
-/**
- * Set the content of the file.
- * @method FM.FileAsset#setContent
- * @memberOf FM.FileAsset
- * @param {string} pNewContent The new content of the file.
- */
-FM.FileAsset.prototype.setContent = function (pNewContent) {
-    "use strict";
-    this.content = pNewContent;
-};
-/*global FM*/
+};/*global FM*/
 /**
  * An image asset is used to represent a sprite usable by the FM.js engine.
  * @class FM.ImageAsset
@@ -3168,44 +3174,16 @@ FM.FileAsset.prototype.setContent = function (pNewContent) {
  */
 FM.ImageAsset = function (pName, pPath) {
     "use strict";
+    //Calling the constructor of FM.Asset
+    FM.Asset.call(this, pName, pPath);
     /**
      * The HTML5 Image object.
      * @type Image
-     * @private
      */
     this.image = new Image();
-    /**
-     * Name of the given to the asset.
-     * @type string
-     * @private
-     */
-    this.name = pName;
-    /**
-     * Path to the image file.
-     * @type string
-     * @private
-     */
-    this.path = pPath;
-    /**
-     * Specify the loading state of the image.
-     * @type boolean
-     * @private
-     */
-    this.loaded = false;
 };
+FM.ImageAsset.prototype = Object.create(FM.Asset.prototype);
 FM.ImageAsset.prototype.constructor = FM.ImageAsset;
-/**
- * Fired when the image has finished loading.
- * @method FM.ImageAsset#loadComplete
- * @memberOf FM.ImageAsset
- * @param {Event} event Contains data about the event.
- * @private
- */
-FM.ImageAsset.prototype.loadComplete = function (event) {
-    "use strict";
-    event.target.owner.setLoaded();
-    FM.AssetManager.assetLoaded();
-};
 /**
  * Load the image.
  * @method FM.ImageAsset#load
@@ -3214,59 +3192,21 @@ FM.ImageAsset.prototype.loadComplete = function (event) {
 FM.ImageAsset.prototype.load = function () {
     "use strict";
     this.image.src = this.path;
-    this.image.addEventListener("load", FM.ImageAsset.prototype.loadComplete, false);
+    this.image.onload = function (e) {
+        e.target.owner.loaded = true;
+    };
     this.image.owner = this;
-};
-/**
- * Check if this image has been loaded.
- * @method FM.ImageAsset#isLoaded
- * @memberOf FM.ImageAsset
- * @return {boolean} Whether the image is loaded or not.
- */
-FM.ImageAsset.prototype.isLoaded = function () {
-    "use strict";
-    return this.loaded;
-};
-/**
- * Set the loaded boolean variable to true.
- * @method FM.ImageAsset#setLoaded
- * @memberOf FM.ImageAsset
- */
-FM.ImageAsset.prototype.setLoaded = function () {
-    "use strict";
-    this.loaded = true;
-};
-/**
- * Get the HTML5 Image object.
- * @method FM.ImageAsset#getImage
- * @memberOf FM.ImageAsset
- * @return {Image} The HTML5 object.
- */
-FM.ImageAsset.prototype.getImage = function () {
-    "use strict";
-    return this.image;
-};
-/**
- * Get the name of the asset.
- * @method FM.ImageAsset#getName
- * @memberOf FM.ImageAsset
- * @return {string} The name of the asset.
- */
-FM.ImageAsset.prototype.getName = function () {
-    "use strict";
-    return this.name;
-};
-/**
- * Get the path to the image file.
- * @method FM.ImageAsset#getPath
- * @memberOf FM.ImageAsset
- * @return {string} The path to the asset.
- */
-FM.ImageAsset.prototype.getPath = function () {
-    "use strict";
-    return this.path;
-};
-/*global FM*/
+    var that = this,
+        xmlHTTP = new XMLHttpRequest();
+    xmlHTTP.open('GET', this.path, true);
+    xmlHTTP.responseType = 'arraybuffer';
+    xmlHTTP.onprogress = function(e) {
+        var oldCompletionRate = that.completionLevel;
+        that.completionLevel = (e.loaded / e.total);
+        FM.AssetManager.updateProgress(that.completionLevel - oldCompletionRate);
+    };
+    xmlHTTP.send();
+};/*global FM*/
 /**
  * The Preloader is used to set the preload page.
  * You can create a custom preloader extending this one and providing it to 
@@ -3375,6 +3315,272 @@ FM.Preloader.prototype.destroy = function () {
 };
 /*global FM*/
 /**
+ * The node is used to subdivide the game space to optimize the performance
+ * for collisions testing.
+ * @class FM.Node
+ * @param {int} pLevel The level of depth of the quad tree to create.
+ * @param {FM.Rectangle} pBounds The rectangle delimiting the quad tree in the
+ * screen space.
+ * @constructor
+ * @author Simon Chauvin
+ */
+FM.Node = function (pLevel, pBounds) {
+    "use strict";
+    /**
+     * Maximum number of objects per node.
+     * @constant
+     * @type int
+     * @private
+     */
+    this.MAX_OBJECTS = 10;
+    /**
+     * Maximum depth of the node.
+     * @constant
+     * @type int
+     * @private
+     */
+    this.MAX_LEVELS = 5;
+    /**
+     * Current depth level of the node.
+     * @type int
+     * @private
+     */
+    this.level = pLevel;
+    /**
+     * Objects present in the node.
+     * @type Array
+     * @private
+     */
+    this.objects = [];
+    /**
+     * Objects present in between nodes.
+     * @type Array
+     * @private
+     */
+    this._stuckObjects = [];
+    /**
+     * Bounds delimiting the node in the screen space.
+     * @type FM.Rectangle
+     * @private
+     */
+    this.bounds = pBounds;
+    /**
+     * The four nodes created when a node is split.
+     * @type Array
+     * @private
+     */
+    this.nodes = [];
+};
+FM.Node.prototype.constructor = FM.Node;
+/**
+ * Determine the nodes the given object belongs to. Can return multiple indices
+ * if the object is overlapping more than one node.
+ * @method FM.Node#_getIndices
+ * @memberOf FM.Node
+ * @param {FM.GameObject} gameObject The game object to retrieve the
+ * index from.
+ * @return {Array} The indices of nodes in which the given object is.
+ * @private
+ */
+FM.Node.prototype._getIndices = function (gameObject) {
+    "use strict";
+    var indices = [],
+        spatial = gameObject.spatial,
+        physic = gameObject.physic,
+        rightQuadrant = this.bounds.x + this.bounds.width / 2,
+        bottomQuadrant = this.bounds.y + this.bounds.height / 2,
+        isLeft = spatial.position.x < rightQuadrant,
+        isRight = spatial.position.x > rightQuadrant || spatial.position.x + physic.width > rightQuadrant,
+        isTop = spatial.position.y < bottomQuadrant,
+        isBottom = spatial.position.y > bottomQuadrant || spatial.position.y + physic.height > bottomQuadrant;
+    if (isTop) {
+        if (isLeft) {
+            indices.push(0);
+        }
+        if (isRight) {
+            indices.push(1);
+        }
+        
+    }
+    if (isBottom) {
+        if (isLeft) {
+            indices.push(2);
+        }
+        if (isRight) {
+            indices.push(3);
+        }
+    }
+    return indices;
+};
+/**
+ * Determine which node the object belongs to. Returns only one index.
+ * @method FM.Node#_getIndex
+ * @memberOf FM.Node
+ * @param {FM.GameObject} gameObject The game object to retrieve the
+ * index from.
+ * @return {Array} The indices of nodes in which the given object is.
+ * @private
+ */
+FM.Node.prototype._getIndex = function (gameObject) {
+    "use strict";
+    	var index = 0,
+            position = gameObject.spatial.position,
+            left = (position.x > this.bounds.x + this.bounds.width / 2)? false : true,
+            top = (position.y > this.bounds.y + this.bounds.height / 2)? false : true;
+        if (left) {
+            if(!top) {
+                index = 2;
+            }
+        }
+        else {
+            if (top) {
+                index = 1;
+            }
+            else {
+                index = 3;
+            }
+        }
+        return index;
+};
+/*
+ * Splits the node into 4 subnodes.
+ * @method FM.Node#split
+ * @memberOf FM.Node
+ * @private
+ */
+FM.Node.prototype.split = function () {
+    "use strict";
+    var subWidth = this.bounds.width / 2,
+        subHeight = this.bounds.height / 2,
+        x = this.bounds.x,
+        y = this.bounds.y;
+    this.nodes.push(new FM.Node(this.level + 1, new FM.Rectangle(x, y, subWidth, subHeight)));
+    this.nodes.push(new FM.Node(this.level + 1, new FM.Rectangle(x + subWidth, y, subWidth, subHeight)));
+    this.nodes.push(new FM.Node(this.level + 1, new FM.Rectangle(x, y + subHeight, subWidth, subHeight)));
+    this.nodes.push(new FM.Node(this.level + 1, new FM.Rectangle(x + subWidth, y + subHeight, subWidth, subHeight)));
+};
+/*
+ * Insert the object into the node. If the node
+ * exceeds the capacity, it will split and add all
+ * objects to their corresponding nodes.
+ * @method FM.Node#insert
+ * @memberOf FM.Node
+ * @param {FM.GameObject} gameObject The game object to insert in the node.
+ */
+FM.Node.prototype.insert = function (gameObject) {
+    "use strict";
+    var index = this._getIndex(gameObject),
+        position = gameObject.spatial.position,
+        physic = gameObject.physic,
+        node = this.nodes[index],
+        i;
+    if (this.nodes.length > 0) {
+        if (position.x >= node.bounds.x &&
+            position.x + physic.width <= node.bounds.x + node.bounds.width &&
+            position.y >= node.bounds.y &&
+            position.y + physic.height <= node.bounds.y + node.bounds.height)
+        {
+            node.insert(gameObject);
+        } else {
+            this._stuckObjects.push(gameObject);
+        }
+        return;
+    }
+    this.objects.push(gameObject);
+    if (this.objects.length > this.MAX_OBJECTS && this.level < this.MAX_LEVELS) {
+        if (this.nodes.length === 0) {
+            this.split();
+            for (i = 0; i < this.objects.length; i++) {
+                this.insert(this.objects[i]);
+            }
+            this.objects.length = 0;
+        }
+    }
+};
+/*
+ * Remove the object from the node.
+ * @method FM.Node#remove
+ * @memberOf FM.Node
+ * @param {FM.GameObject} gameObject The game object to insert in the node.
+ */
+FM.Node.prototype.remove = function (gameObject) {
+    "use strict";
+    if (this.nodes.length > 0) {
+        this.nodes[this._getIndex(gameObject)].remove(gameObject);
+        return;
+    }
+    this.objects.splice(this.objects.indexOf(gameObject), 1);
+};
+/*
+ * Return all objects that could collide with the given object.
+ * @method FM.Node#retrieve
+ * @memberOf FM.Node
+ * @param {FM.GameObject} gameObject The game object to test if it can
+ * collide with any other object.
+ * @return {Array} The list of objects that can collide with the given one.
+ */
+FM.Node.prototype.retrieve = function (gameObject) {
+    "use strict";
+    var returnObjects = [],
+        indices = this._getIndices(gameObject),
+        i;
+    for (i = 0; i < indices.length; i++) {
+        if (this.nodes.length > 0) {
+            returnObjects = returnObjects.concat(this.nodes[indices[i]].retrieve(gameObject));
+        }
+    }
+    for (i = 0; i < this._stuckObjects.length; i = i + 1) {
+        if (gameObject.getId() !== this._stuckObjects[i].getId()) {
+            returnObjects.push(this._stuckObjects[i]);
+        }
+    }
+    for (i = 0; i < this.objects.length; i = i + 1) {
+        if (gameObject.getId() !== this.objects[i].getId()) {
+            returnObjects.push(this.objects[i]);
+        }
+    }
+    return returnObjects;
+};
+/**
+ * Clears the node.
+ * @method FM.Node#clear
+ * @memberOf FM.Node
+ */
+FM.Node.prototype.clear = function () {
+    "use strict";
+    this.objects.length = 0;
+    this._stuckObjects.length = 0;
+    for (var i = 0; i < this.nodes.length; i = i + 1) {
+        if (this.nodes[i]) {
+            this.nodes[i].clear();
+            this.nodes[i] = null;
+        }
+    }
+    this.nodes.length = 0;
+};
+/**
+ * Destroy the node.
+ * @method FM.Node#destroy
+ * @memberOf FM.Node
+ */
+FM.Node.prototype.destroy = function () {
+    "use strict";
+    this.level = null;
+    this.bounds = null;
+    for (var i = 0; i < this.nodes.length; i++) {
+        if (this.nodes[i]) {
+            this.nodes[i].destroy();
+            this.nodes[i] = null;
+        }
+    }
+    this.nodes = null;
+    this.objects = null;
+    this._stuckObjects = null;
+    this.MAX_LEVELS = null;
+    this.MAX_OBJECTS = null;
+};
+/*global FM*/
+/**
  * The quad tree is used to subdivide the game space to optimize the performance
  * for collisions testing.
  * @class FM.QuadTree
@@ -3387,97 +3593,13 @@ FM.Preloader.prototype.destroy = function () {
 FM.QuadTree = function (pLevel, pBounds) {
     "use strict";
     /**
-     * Maximum number of objects per quad tree.
-     * @constant
-     * @type int
+     * The root node (top level).
+     * @type FM.Node
      * @private
      */
-    this.MAX_OBJECTS = 10;
-    /**
-     * Maximum depth of the quad tree.
-     * @constant
-     * @type int
-     * @private
-     */
-    this.MAX_LEVELS = 5;
-    /**
-     * Current depth level of the quad tree.
-     * @type int
-     * @private
-     */
-    this.level = pLevel;
-    /**
-     * Objects present in the quad tree.
-     * @type Array
-     * @private
-     */
-    this.objects = [];
-    /**
-     * Bounds delimiting the quad tree in the screen space.
-     * @type FM.Rectangle
-     * @private
-     */
-    this.bounds = pBounds;
-    /**
-     * The four nodes created when a quad tree is split.
-     * @type Array
-     * @private
-     */
-    this.nodes = [];
+    this.root = new FM.Node(pLevel, pBounds);
 };
 FM.QuadTree.prototype.constructor = FM.QuadTree;
-/**
- * Determine which node the object belongs to. -1 means
- * object cannot completely fit within a child node and is part
- * of the parent node.
- * @method FM.QuadTree#getIndex
- * @memberOf FM.QuadTree
- * @param {FM.GameObject} gameObject The game object to retrieve the
- * index from.
- * @return {int} The index of the node in which the given object is.
- * @private
- */
-FM.QuadTree.prototype.getIndex = function (gameObject) {
-    "use strict";
-    var index = -1,
-        spatial = gameObject.components[FM.ComponentTypes.SPATIAL],
-        physic = gameObject.components[FM.ComponentTypes.PHYSIC],
-        verticalMidpoint = this.bounds.x + (this.bounds.width / 2),
-        horizontalMidpoint = this.bounds.y + (this.bounds.height / 2),
-        topQuadrant = (spatial.position.y < horizontalMidpoint && spatial.position.y + physic.height < horizontalMidpoint),
-        bottomQuadrant = (spatial.position.y > horizontalMidpoint);
-    if (spatial.position.x < verticalMidpoint && spatial.position.x + physic.width < verticalMidpoint) {
-        if (topQuadrant) {
-            index = 1;
-        } else if (bottomQuadrant) {
-            index = 2;
-        }
-    } else if (spatial.position.x > verticalMidpoint) {
-        if (topQuadrant) {
-            index = 0;
-        } else if (bottomQuadrant) {
-            index = 3;
-        }
-    }
-    return index;
-};
-/*
- * Splits the node into 4 subnodes.
- * @method FM.QuadTree#split
- * @memberOf FM.QuadTree
- * @private
- */
-FM.QuadTree.prototype.split = function () {
-    "use strict";
-    var subWidth = this.bounds.width / 2,
-        subHeight = this.bounds.height / 2,
-        x = this.bounds.x,
-        y = this.bounds.y;
-    this.nodes.push(new FM.QuadTree(this.level + 1, new FM.Rectangle(x + subWidth, y, subWidth, subHeight)));
-    this.nodes.push(new FM.QuadTree(this.level + 1, new FM.Rectangle(x, y, subWidth, subHeight)));
-    this.nodes.push(new FM.QuadTree(this.level + 1, new FM.Rectangle(x, y + subHeight, subWidth, subHeight)));
-    this.nodes.push(new FM.QuadTree(this.level + 1, new FM.Rectangle(x + subWidth, y + subHeight, subWidth, subHeight)));
-};
 /*
  * Insert the object into the quadtree. If the node
  * exceeds the capacity, it will split and add all
@@ -3489,28 +3611,7 @@ FM.QuadTree.prototype.split = function () {
  */
 FM.QuadTree.prototype.insert = function (gameObject) {
     "use strict";
-    if (this.nodes.length > 0) {
-        var index = this.getIndex(gameObject);
-        if (index !== -1) {
-            this.nodes[index].insert(gameObject);
-            return;
-        }
-    }
-    this.objects.push(gameObject);
-    if (this.objects.length > this.MAX_OBJECTS && this.level < this.MAX_LEVELS) {
-        if (this.nodes.length === 0) {
-            this.split();
-        }
-        var i = 0, index;
-        while (i < this.objects.length) {
-            index = this.getIndex(this.objects[i]);
-            if (index !== -1) {
-                this.nodes[index].insert(this.objects.splice(i, 1)[0]);
-            } else {
-                i = i + 1;
-            }
-        }
-    }
+    this.root.insert(gameObject);
 };
 /*
  * Remove the object from the quadtree.
@@ -3521,14 +3622,7 @@ FM.QuadTree.prototype.insert = function (gameObject) {
  */
 FM.QuadTree.prototype.remove = function (gameObject) {
     "use strict";
-    if (this.nodes.length > 0) {
-        var index = this.getIndex(gameObject);
-        if (index !== -1) {
-            this.nodes[index].remove(gameObject);
-            return;
-        }
-    }
-    this.objects.splice(this.objects.indexOf(gameObject), 1);
+    this.root.remove(gameObject);
 };
 /*
  * Return all objects that could collide with the given object.
@@ -3540,16 +3634,7 @@ FM.QuadTree.prototype.remove = function (gameObject) {
  */
 FM.QuadTree.prototype.retrieve = function (gameObject) {
     "use strict";
-    var returnObjects = [],
-        index = this.getIndex(gameObject);
-    if (index !== -1 && this.nodes.length > 0) {
-        returnObjects = this.nodes[index].retrieve(gameObject);
-    }
-    var i;
-    for (i = 0; i < this.objects.length; i = i + 1) {
-        returnObjects.push(this.objects[i]);
-    }
-    return returnObjects;
+    return this.root.retrieve(gameObject);
 };
 /**
  * Clears the quadtree.
@@ -3558,15 +3643,7 @@ FM.QuadTree.prototype.retrieve = function (gameObject) {
  */
 FM.QuadTree.prototype.clear = function () {
     "use strict";
-    this.objects = [];
-    var i;
-    for (i = 0; i < this.nodes.length; i = i + 1) {
-        if (this.nodes[i]) {
-            this.nodes[i].clear();
-            this.nodes[i] = null;
-        }
-    }
-    this.nodes = [];
+    this.root.clear();
 };
 /**
  * Destroy the quad tree.
@@ -3575,12 +3652,8 @@ FM.QuadTree.prototype.clear = function () {
  */
 FM.QuadTree.prototype.destroy = function () {
     "use strict";
-    this.level = null;
-    this.bounds = null;
-    this.nodes = null;
-    this.objects = null;
-    this.MAX_LEVELS = null;
-    this.MAX_OBJECTS = null;
+    this.root.destroy();
+    this.root = null;
 };
 /*global FM*/
 /**
@@ -4744,7 +4817,10 @@ FM.EmitterComponent.prototype.update = function (dt) {
         }
         //Emit new particles
         this.timer += dt;
-        if (this.frequency === 0 || this.timer >= this.frequency) {
+        if (this.frequency !== -2 && (this.frequency === 0 || this.timer >= this.frequency)) {
+            if (this.frequency === -1) {
+                this.frequency = -2;
+            }
             this.timer = 0;
             count = 0;
             j = 0;
@@ -5925,8 +6001,26 @@ FM.AabbComponent.prototype.constructor = FM.AabbComponent;
  */
 FM.AabbComponent.prototype.overlapsWithType = function (pType) {
     "use strict";
-    //TODO
-    return null;
+    var gameObjects,
+        i,
+        otherGameObject,
+        otherPhysic,
+        collision = null,
+        collisionTemp = null;
+    if (this.owner.isAlive()) {
+        gameObjects = FM.Game.getCurrentState().getQuad().retrieve(this.owner);
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            otherGameObject = gameObjects[i];
+            otherPhysic = otherGameObject.physic;
+            if (otherGameObject.isAlive() && otherPhysic && otherGameObject.hasType(pType)) {
+                collisionTemp = otherPhysic.overlapsWithAabb(this);
+                if (collisionTemp) {
+                    collision = collisionTemp;
+                }
+            }
+        }
+    }
+    return collision;
 };
 /**
  * Check if the current aabb is overlapping with the given physic 
@@ -5957,46 +6051,48 @@ FM.AabbComponent.prototype.overlapsWithObject = function (pPhysic) {
  */
 FM.AabbComponent.prototype.overlapsWithAabb = function (aabb) {
     "use strict";
-    var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
-        max = new FM.Vector(min.x + this.width, min.y + this.height),
-        otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
-        center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
-        otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
-        normal = FM.Math.substractVectors(otherCenter, center),
-        extent = (max.x - min.x) / 2,
-        otherExtent = (otherMax.x - otherMin.x) / 2,
-        xOverlap = extent + otherExtent - Math.abs(normal.x),
-        yOverlap,
-        collision = null;
-    // Exit with no intersection if found separated along an axis
-    if (max.x < otherMin.x || min.x > otherMax.x) { return null; }
-    if (max.y < otherMin.y || min.y > otherMax.y) { return null; }
+    if (this.owner.isAlive() && aabb.owner.isAlive()) {
+        var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
+            max = new FM.Vector(min.x + this.width, min.y + this.height),
+            otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
+            center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
+            otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
+            normal = FM.Math.substractVectors(otherCenter, center),
+            extent = (max.x - min.x) / 2,
+            otherExtent = (otherMax.x - otherMin.x) / 2,
+            xOverlap = extent + otherExtent - Math.abs(normal.x),
+            yOverlap,
+            collision = null;
+        // Exit with no intersection if found separated along an axis
+        if (max.x < otherMin.x || min.x > otherMax.x) { return null; }
+        if (max.y < otherMin.y || min.y > otherMax.y) { return null; }
 
-    if (xOverlap > 0) {
-        extent = (max.y - min.y) / 2;
-        otherExtent = (otherMax.y - otherMin.y) / 2;
-        yOverlap = extent + otherExtent - Math.abs(normal.y);
-        if (yOverlap > 0) {
-            collision = new FM.Collision(this, aabb);
-            // Find out which axis is the one of least penetration
-            if (xOverlap < yOverlap) {
-                if (normal.x < 0) {
-                    collision.normal = normal.reset(-1, 0);
+        if (xOverlap > 0) {
+            extent = (max.y - min.y) / 2;
+            otherExtent = (otherMax.y - otherMin.y) / 2;
+            yOverlap = extent + otherExtent - Math.abs(normal.y);
+            if (yOverlap > 0) {
+                collision = new FM.Collision(this, aabb);
+                // Find out which axis is the one of least penetration
+                if (xOverlap < yOverlap) {
+                    if (normal.x < 0) {
+                        collision.normal = normal.reset(-1, 0);
+                    } else {
+                        collision.normal = normal.reset(1, 0);
+                    }
+                    collision.penetration = xOverlap;
                 } else {
-                    collision.normal = normal.reset(1, 0);
+                    if (normal.y < 0) {
+                        collision.normal = normal.reset(0, -1);
+                    } else {
+                        collision.normal = normal.reset(0, 1);
+                    }
+                    collision.penetration = yOverlap;
                 }
-                collision.penetration = xOverlap;
-            } else {
-                if (normal.y < 0) {
-                    collision.normal = normal.reset(0, -1);
-                } else {
-                    collision.normal = normal.reset(0, 1);
-                }
-                collision.penetration = yOverlap;
+                return collision;
             }
-            return collision;
         }
     }
     return null;
@@ -6012,53 +6108,55 @@ FM.AabbComponent.prototype.overlapsWithAabb = function (aabb) {
  */
 FM.AabbComponent.prototype.overlapsWithCircle = function (circle) {
     "use strict";
-    var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
-        max = new FM.Vector(min.x + this.width, min.y + this.height),
-        center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
-        otherCenter = new FM.Vector(otherMin.x + circle.radius, otherMin.y + circle.radius),
-        normal = FM.Math.substractVectors(otherCenter, center),
-        distance,
-        radius,
-        closest = normal.clone(),
-        xExtent = (max.x - min.x) / 2,
-        yExtent = (max.y - min.y) / 2,
-        inside = false,
-        collision = null;
-    closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
-    closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
-    if (normal.isEquals(closest)) {
-        inside = true;
-        if (Math.abs(normal.x) > Math.abs(normal.y)) {
-            if (closest.x > 0) {
-                closest.x = xExtent;
+    var collision = null;
+    if (this.owner.isAlive() && circle.owner.isAlive()) {
+        var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+            max = new FM.Vector(min.x + this.width, min.y + this.height),
+            center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
+            otherCenter = new FM.Vector(otherMin.x + circle.radius, otherMin.y + circle.radius),
+            normal = FM.Math.substractVectors(otherCenter, center),
+            distance,
+            radius,
+            closest = normal.clone(),
+            xExtent = (max.x - min.x) / 2,
+            yExtent = (max.y - min.y) / 2,
+            inside = false;
+        closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
+        closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
+        if (normal.isEquals(closest)) {
+            inside = true;
+            if (Math.abs(normal.x) > Math.abs(normal.y)) {
+                if (closest.x > 0) {
+                    closest.x = xExtent;
+                } else {
+                    closest.x = -xExtent;
+                }
             } else {
-                closest.x = -xExtent;
-            }
-        } else {
-            if (closest.y > 0) {
-                closest.y = yExtent;
-            } else {
-                closest.y = -yExtent;
+                if (closest.y > 0) {
+                    closest.y = yExtent;
+                } else {
+                    closest.y = -yExtent;
+                }
             }
         }
+        collision = new FM.Collision();
+        collision.a = this;
+        collision.b = circle;
+        collision.normal = FM.Math.substractVectors(normal, closest);
+        distance = collision.normal.getLengthSquared();
+        radius = circle.radius;
+        if (distance > radius * radius && !inside) {
+            return null;
+        }
+        distance = Math.sqrt(distance);
+        collision.penetration = radius - distance;
+        if (inside) {
+            collision.normal.reset(-collision.normal.x, -collision.normal.y);
+        }
+        collision.normal.normalize();
     }
-    collision = new FM.Collision();
-    collision.a = this;
-    collision.b = circle;
-    collision.normal = FM.Math.substractVectors(normal, closest);
-    distance = collision.normal.getLengthSquared();
-    radius = circle.radius;
-    if (distance > radius * radius && !inside) {
-        return null;
-    }
-    distance = Math.sqrt(distance);
-    collision.penetration = radius - distance;
-    if (inside) {
-        collision.normal.reset(-collision.normal.x, -collision.normal.y);
-    }
-    collision.normal.normalize();
     return collision;
 };
 /**
@@ -6072,7 +6170,7 @@ FM.AabbComponent.prototype.overlapsWithCircle = function (circle) {
 FM.AabbComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     "use strict";
     var newCenter = new FM.Vector(newPosition.x + this.width / 2, newPosition.y + this.height / 2),
-        dir = new FM.Vector(Math.cos(this.spatial.angle), Math.sin(this.spatial.angle));
+        direction = new FM.Vector(newCenter.x + this.offset.x + Math.cos(this.spatial.angle) * 50, newCenter.y + this.offset.y + Math.sin(this.spatial.angle) * 50);
     bufferContext.strokeStyle = '#f4f';
     bufferContext.strokeRect(newPosition.x + this.offset.x - bufferContext.xOffset, newPosition.y + this.offset.y - bufferContext.yOffset, this.width,
                             this.height);
@@ -6080,7 +6178,7 @@ FM.AabbComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     bufferContext.strokeStyle = "Blue";
     bufferContext.beginPath();
     bufferContext.moveTo(newCenter.x + this.offset.x - bufferContext.xOffset, newCenter.y + this.offset.y - bufferContext.yOffset);
-    bufferContext.lineTo((newCenter.x + this.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + this.offset.y  + dir.y * 50) - bufferContext.yOffset);
+    bufferContext.lineTo(direction.x - bufferContext.xOffset, direction.y - bufferContext.yOffset);
     bufferContext.stroke();
 };
 /**
@@ -6145,8 +6243,26 @@ FM.CircleComponent.prototype.constructor = FM.CircleComponent;
  */
 FM.CircleComponent.prototype.overlapsWithType = function (pType) {
     "use strict";
-    //TODO
-    return null;
+    var gameObjects,
+        i,
+        otherGameObject,
+        otherPhysic,
+        collision = null,
+        collisionTemp = null;
+    if (this.owner.isAlive()) {
+        gameObjects = FM.Game.getCurrentState().getQuad().retrieve(this.owner);
+        for (i = 0; i < gameObjects.length; i = i + 1) {
+            otherGameObject = gameObjects[i];
+            otherPhysic = otherGameObject.physic;
+            if (otherGameObject.isAlive() && otherPhysic && otherGameObject.hasType(pType)) {
+                collisionTemp = otherPhysic.overlapsWithCircle(this);
+                if (collisionTemp) {
+                    collision = collisionTemp;
+                }
+            }
+        }
+    }
+    return collision;
 };
 /**
  * Check if the current circle is overlapping with the specified physic object.
@@ -6176,53 +6292,55 @@ FM.CircleComponent.prototype.overlapsWithObject = function (pPhysic) {
  */
 FM.CircleComponent.prototype.overlapsWithAabb = function (aabb) {
     "use strict";
-    var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
-        otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
-        center = new FM.Vector(min.x + this.radius, min.y + this.radius),
-        otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
-        normal = FM.Math.substractVectors(otherCenter, center),
-        distance,
-        radius,
-        closest = normal.clone(),
-        xExtent = (otherMax.x - otherMin.x) / 2,
-        yExtent = (otherMax.y - otherMin.y) / 2,
-        inside = false,
-        collision = null;
-    closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
-    closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
-    if (normal.isEquals(closest)) {
-        inside = true;
-        if (Math.abs(normal.x) > Math.abs(normal.y)) {
-            if (closest.x > 0) {
-                closest.x = xExtent;
+    var collision = null;
+    if (this.owner.isAlive() && aabb.owner.isAlive()) {
+        var otherSpatial = aabb.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + aabb.offset.x, otherSpatial.position.y + aabb.offset.y),
+            otherMax = new FM.Vector(otherMin.x + aabb.width, otherMin.y + aabb.height),
+            center = new FM.Vector(min.x + this.radius, min.y + this.radius),
+            otherCenter = new FM.Vector(otherMin.x + aabb.width / 2, otherMin.y + aabb.height / 2),
+            normal = FM.Math.substractVectors(otherCenter, center),
+            distance,
+            radius,
+            closest = normal.clone(),
+            xExtent = (otherMax.x - otherMin.x) / 2,
+            yExtent = (otherMax.y - otherMin.y) / 2,
+            inside = false;
+        closest.x = FM.Math.clamp(closest.x, -xExtent, xExtent);
+        closest.y = FM.Math.clamp(closest.y, -yExtent, yExtent);
+        if (normal.isEquals(closest)) {
+            inside = true;
+            if (Math.abs(normal.x) > Math.abs(normal.y)) {
+                if (closest.x > 0) {
+                    closest.x = xExtent;
+                } else {
+                    closest.x = -xExtent;
+                }
             } else {
-                closest.x = -xExtent;
-            }
-        } else {
-            if (closest.y > 0) {
-                closest.y = yExtent;
-            } else {
-                closest.y = -yExtent;
+                if (closest.y > 0) {
+                    closest.y = yExtent;
+                } else {
+                    closest.y = -yExtent;
+                }
             }
         }
+        collision = new FM.Collision();
+        collision.a = this;
+        collision.b = aabb;
+        collision.normal = FM.Math.substractVectors(normal, closest);
+        distance = collision.normal.getLengthSquared();
+        radius = this.radius;
+        if (distance > (radius * radius) && !inside) {
+            return null;
+        }
+        distance = Math.sqrt(distance);
+        collision.penetration = radius - distance;
+        if (inside) {
+            collision.normal.reset(-collision.normal.x, -collision.normal.y);
+        }
+        collision.normal.normalize();
     }
-    collision = new FM.Collision();
-    collision.a = this;
-    collision.b = aabb;
-    collision.normal = FM.Math.substractVectors(normal, closest);
-    distance = collision.normal.getLengthSquared();
-    radius = this.radius;
-    if (distance > (radius * radius) && !inside) {
-        return null;
-    }
-    distance = Math.sqrt(distance);
-    collision.penetration = radius - distance;
-    if (inside) {
-        collision.normal.reset(-collision.normal.x, -collision.normal.y);
-    }
-    collision.normal.normalize();
     return collision;
 };
 
@@ -6237,30 +6355,32 @@ FM.CircleComponent.prototype.overlapsWithAabb = function (aabb) {
  */
 FM.CircleComponent.prototype.overlapsWithCircle = function (circle) {
     "use strict";
-    var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
-        min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
-        otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
-        center = new FM.Vector(min.x + this.width / 2, min.y + this.height / 2),
-        otherCenter = new FM.Vector(otherMin.x + circle.width / 2, otherMin.y + circle.height / 2),
-        radius = this.radius + circle.radius,
-        radius = radius * radius,
-        normal = FM.Math.substractVectors(otherCenter, center),
-        distance = normal.getLength(),
-        collision = null;
-    if (normal.getLengthSquared() > radius) {
-        return null;
-    } else {
-        collision = new FM.Collision();
-        collision.a = this;
-        collision.b = circle;
-        if (distance !== 0) {
-            collision.penetration = radius - distance;
-            collision.normal = normal.reset(normal.x / distance, normal.y / distance);
+    if (this.owner.isAlive() && circle.owner.isAlive()) {
+        var otherSpatial = circle.owner.components[FM.ComponentTypes.SPATIAL],
+            min = new FM.Vector(this.spatial.position.x + this.offset.x, this.spatial.position.y + this.offset.y),
+            otherMin = new FM.Vector(otherSpatial.position.x + circle.offset.x, otherSpatial.position.y + circle.offset.y),
+            center = new FM.Vector(min.x + this.radius, min.y + this.radius),
+            otherCenter = new FM.Vector(otherMin.x + circle.radius, otherMin.y + circle.radius),
+            radius = this.radius + circle.radius,
+            radius = radius * radius,
+            normal = FM.Math.substractVectors(otherCenter, center),
+            distance = normal.getLength(),
+            collision = null;
+        if (normal.getLengthSquared() > radius) {
+            return null;
         } else {
-            collision.penetration = this.radius;
-            collision.normal = normal.reset(1, 0);
+            collision = new FM.Collision();
+            collision.a = this;
+            collision.b = circle;
+            if (distance !== 0) {
+                collision.penetration = radius - distance;
+                collision.normal = normal.reset(normal.x / distance, normal.y / distance);
+            } else {
+                collision.penetration = this.radius;
+                collision.normal = normal.reset(1, 0);
+            }
+            return collision;
         }
-        return collision;
     }
     return null;
 };
@@ -6275,7 +6395,7 @@ FM.CircleComponent.prototype.overlapsWithCircle = function (circle) {
 FM.CircleComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     "use strict";
     var newCenter = new FM.Vector(newPosition.x + this.radius, newPosition.y + this.radius),
-        dir = new FM.Vector(Math.cos(this.spatial.angle), Math.sin(this.spatial.angle));
+        direction = new FM.Vector(newCenter.x + this.offset.x + Math.cos(this.spatial.angle) * 50, newCenter.y + this.offset.y  + Math.sin(this.spatial.angle) * 50);
     bufferContext.beginPath();
     bufferContext.strokeStyle = '#f4f';
     bufferContext.arc((newCenter.x + this.offset.x) - bufferContext.xOffset, (newCenter.y + this.offset.y) - bufferContext.yOffset, this.radius, 0, 2 * Math.PI, false);
@@ -6284,7 +6404,7 @@ FM.CircleComponent.prototype.drawDebug = function (bufferContext, newPosition) {
     bufferContext.strokeStyle = "Blue";
     bufferContext.beginPath();
     bufferContext.moveTo(newCenter.x + this.offset.x - bufferContext.xOffset, newCenter.y + this.offset.y - bufferContext.yOffset);
-    bufferContext.lineTo((newCenter.x + this.offset.x + dir.x * 50) - bufferContext.xOffset, (newCenter.y + this.offset.y  + dir.y * 50) - bufferContext.yOffset);
+    bufferContext.lineTo(direction.x - bufferContext.xOffset, direction.y - bufferContext.yOffset);
     bufferContext.stroke();
 };
 /**
@@ -6327,7 +6447,7 @@ FM.AnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      * @type FM.ImageAsset
      * @private
      */
-    this.image = pImage.getImage();
+    this.image = pImage.image;
     /**
      * Width of the spritesheet.
      * @type int
@@ -6431,6 +6551,12 @@ FM.AnimatedSpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) 
      */
     this.loop = [];
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -6516,15 +6642,13 @@ FM.AnimatedSpriteRendererComponent.prototype.draw = function (bufferContext, new
         newTime = (new Date()).getTime() / 1000;
     xPosition -= bufferContext.xOffset * this.owner.scrollFactor.x;
     yPosition -= bufferContext.yOffset * this.owner.scrollFactor.y;
-    xPosition = Math.round(xPosition);
-    yPosition = Math.round(yPosition);
     bufferContext.globalAlpha = this.alpha;
     if (this.spatial.angle !== 0) {
         bufferContext.save();
         bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
         bufferContext.translate(Math.round(this.frameWidth / 2), Math.round(this.frameHeight / 2));
         bufferContext.rotate(this.spatial.angle);
-        bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round(-this.changedWidth / 2), Math.round(-this.changedHeight / 2), this.changedWidth, this.changedHeight);
+        bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round((this.rotationCenter.x - this.changedWidth) / 2), Math.round((this.rotationCenter.y - this.changedHeight) / 2), this.changedWidth, this.changedHeight);
         bufferContext.restore();
     } else {
         bufferContext.drawImage(this.image, Math.round(this.xOffset), Math.round(this.yOffset), this.frameWidth, this.frameHeight, Math.round(xPosition), Math.round(yPosition), this.changedWidth, this.changedHeight);
@@ -6740,6 +6864,12 @@ FM.BoxRendererComponent = function (pWidth, pHeight, pColor, pOwner) {
      */
     this.alpha = 1;
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -6769,16 +6899,14 @@ FM.BoxRendererComponent.prototype.draw = function (bufferContext, newPosition) {
     var xPosition = newPosition.x, yPosition = newPosition.y;
     xPosition -= bufferContext.xOffset * this.owner.scrollFactor.x;
     yPosition -= bufferContext.yOffset * this.owner.scrollFactor.y;
-    xPosition = Math.round(xPosition);
-    yPosition = Math.round(yPosition);
     bufferContext.globalAlpha = this.alpha;
     if (this.spatial.angle !== 0) {
         bufferContext.save();
-        bufferContext.translate(xPosition, yPosition);
+        bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
         bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
         bufferContext.rotate(this.spatial.angle);
         bufferContext.beginPath();
-        bufferContext.rect(xPosition, yPosition, this.width, this.height);
+        bufferContext.rect(this.rotationCenter.x, this.rotationCenter.y, this.width, this.height);
         bufferContext.restore();
     } else {
         bufferContext.beginPath();
@@ -6922,6 +7050,12 @@ FM.CircleRendererComponent = function (pRadius, pColor, pOwner) {
      */
     this.alpha = 1;
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -6958,7 +7092,7 @@ FM.CircleRendererComponent.prototype.draw = function (bufferContext, newPosition
         bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
         bufferContext.rotate(this.spatial.angle);
         bufferContext.beginPath();
-        bufferContext.arc(Math.round(newCenter.x), Math.round(newCenter.y), Math.round(this.width / 2), 0, 2 * Math.PI);
+        bufferContext.arc(Math.round(this.rotationCenter.x), Math.round(this.rotationCenter.y), Math.round(this.width / 2), 0, 2 * Math.PI);
         bufferContext.restore();
     } else {
         bufferContext.beginPath();
@@ -7138,6 +7272,12 @@ FM.LineRendererComponent = function (pLineWidth, pLineStyle, pOwner) {
      */
     this.alpha = 1;
     /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
+    /**
      * Spatial component.
      * @type FM.SpatialComponent
      * @private
@@ -7177,7 +7317,7 @@ FM.LineRendererComponent.prototype.draw = function (bufferContext, newPosition) 
             //TODO might not work since I freed the physics
             // Needs to interpolate the points
             bufferContext.beginPath();
-            bufferContext.moveTo(Math.round(this.points[0].x), Math.round(this.points[0].y));
+            bufferContext.moveTo(this.rotationCenter.x + Math.round(this.points[0].x), this.rotationCenter.y + Math.round(this.points[0].y));
             for (i = 1; i < this.points.length; i = i + 1) {
                 bufferContext.lineTo(Math.round(this.points[i].x), Math.round(this.points[i].y));
             }
@@ -7363,7 +7503,7 @@ FM.SpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * @type FM.ImageAsset
      * @private
      */
-    this.image = pImage.getImage();
+    this.image = pImage.image;
     /**
      * Width of the sprite to display.
      * @type int
@@ -7394,6 +7534,12 @@ FM.SpriteRendererComponent = function (pImage, pWidth, pHeight, pOwner) {
      * @private
      */
     this.alpha = 1;
+    /**
+     * Used to specify the center of the rotation to apply.
+     * @type FM.Vector
+     * @private
+     */
+    this.rotationCenter = new FM.Vector(0, 0);
     /**
      * Spatial component.
      * @type FM.SpatialComponent
@@ -7436,7 +7582,7 @@ FM.SpriteRendererComponent.prototype.draw = function (bufferContext, newPosition
         bufferContext.translate(Math.round(xPosition), Math.round(yPosition));
         bufferContext.translate(Math.round(this.width / 2), Math.round(this.height / 2));
         bufferContext.rotate(this.spatial.angle);
-        bufferContext.drawImage(this.image, offset.x, offset.y, this.width, this.height, Math.round(-this.changedWidth / 2), Math.round(-this.changedHeight / 2), this.changedWidth, this.changedHeight);
+        bufferContext.drawImage(this.image, offset.x, offset.y, this.width, this.height, Math.round((this.rotationCenter.x - this.changedWidth) / 2), Math.round((this.rotationCenter.y - this.changedHeight) / 2), this.changedWidth, this.changedHeight);
         bufferContext.restore();
     } else {
         bufferContext.drawImage(this.image, offset.x, offset.y, this.width, this.height, Math.round(xPosition), Math.round(yPosition), this.changedWidth, this.changedHeight);
@@ -7490,7 +7636,7 @@ FM.SpriteRendererComponent.prototype.setHeight = function (pNewHeight) {
  */
 FM.SpriteRendererComponent.prototype.setImage = function (pImage, pWidth, pHeight) {
     "use strict";
-    this.image = pImage.getImage();
+    this.image = pImage.image;
     this.width = pWidth;
     this.height = pHeight;
 };
@@ -7755,13 +7901,15 @@ FM.AudioComponent.prototype.replay = function (pSound) {
 FM.AudioComponent.prototype.play = function (pSoundName, pVolume, pLoop) {
     "use strict";
     var i, sound, soundFound = false;
+    if (typeof pVolume === "undefined") {pVolume = 1;}
+    if (typeof pLoop === "undefined") {pLoop = false;}
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound && sound.getName() === pSoundName) {
+        if (sound && sound.name === pSoundName) {
             soundFound = true;
-            sound.getAudio().volume = pVolume;
+            sound.audio.volume = pVolume;
             if (pLoop) {
-                sound.getAudio().addEventListener('ended', function () {
+                sound.audio.addEventListener('ended', function () {
                     if (window.chrome) {
                         this.load(FM.AudioComponent.prototype.replay);
                     } else {
@@ -7770,11 +7918,7 @@ FM.AudioComponent.prototype.play = function (pSoundName, pVolume, pLoop) {
                     }
                 }, false);
             }
-            if (window.chrome) {
-                sound.load(FM.AudioComponent.prototype.replay);
-            } else {
-                sound.getAudio().play();
-            }
+            sound.load(FM.AudioComponent.prototype.replay);
         }
     }
     if (!soundFound) {
@@ -7794,8 +7938,8 @@ FM.AudioComponent.prototype.pause = function (pSoundName) {
     var i, sound;
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
-            sound.getAudio().pause();
+        if (sound.name === pSoundName) {
+            sound.audio.pause();
         }
     }
 };
@@ -7821,8 +7965,8 @@ FM.AudioComponent.prototype.isPlaying = function (pSoundName) {
     var i, sound;
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
-            return !sound.getAudio().paused;
+        if (sound.name === pSoundName) {
+            return !sound.audio.paused;
         }
     }
 };
@@ -7838,7 +7982,7 @@ FM.AudioComponent.prototype.getSoundByName = function (pSoundName) {
     var i, sound;
     for (i = 0; i < this.sounds.length; i = i + 1) {
         sound = this.sounds[i];
-        if (sound.getName() === pSoundName) {
+        if (sound.name === pSoundName) {
             return sound;
         }
     }
@@ -7874,13 +8018,13 @@ FM.SpatialComponent = function (pX, pY, pOwner) {
      * @type FM.Vector
      * @public
      */
-    this.position = new FM.Vector(pX, pY);
+    this.position = new FM.Vector(Math.floor(pX), Math.floor(pY));
     /**
      * Position of the game object at last frame.
      * @type FM.Vector
      * @public
      */
-    this.previous = new FM.Vector(pX, pY);
+    this.previous = new FM.Vector(Math.floor(pX), Math.floor(pY));
     /**
      * Angle of the object defined in radians.
      * @type float

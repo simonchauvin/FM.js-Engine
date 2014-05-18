@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: FileAsset</title>
+    <title>JSDoc: Class: Asset</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Class: FileAsset</h1>
+    <h1 class="page-title">Class: Asset</h1>
     
     
 
@@ -27,10 +27,10 @@
     
 <header>
     <h2>
-    FileAsset
+    Asset
     </h2>
     
-        <div class="class-description">FM.FileAsset</div>
+        <div class="class-description">FM.Asset</div>
     
 </header>  
 
@@ -41,7 +41,7 @@
     
         
 <dt>
-    <h4 class="name" id="FileAsset"><span class="type-signature"></span>new FileAsset<span class="signature">(pName, pPath)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Asset"><span class="type-signature"></span>new Asset<span class="signature">(pName, pPath)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -49,7 +49,7 @@
     
     
     <div class="description">
-        The file asset represents a file that can be used by the FM.js engine.
+        The asset class represents an asset that can be used by the FM.js engine.
     </div>
     
 
@@ -160,7 +160,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="FileAsset.js.html">system/FileAsset.js</a>, <a href="FileAsset.js.html#line10">line 10</a>
+        <a href="Asset.js.html">system/Asset.js</a>, <a href="Asset.js.html#line10">line 10</a>
     </li></ul></dd>
     
     
@@ -204,14 +204,143 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="content"><span class="type-signature"></span>content<span class="type-signature"> :string</span></h4>
+    <h4 class="name" id="completionLevel"><span class="type-signature"></span>completionLevel<span class="type-signature"> :number</span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        Content of the file.
+        Tracks the loading of the asset from 0 (not loaded) to 1 
+(fully loaded).
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">number</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Asset.js.html">system/Asset.js</a>, <a href="Asset.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="loaded"><span class="type-signature"></span>loaded<span class="type-signature"> :boolean</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Whether the asset is loaded or not.
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">boolean</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Asset.js.html">system/Asset.js</a>, <a href="Asset.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="name"><span class="type-signature"></span>name<span class="type-signature"> :string</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Name of the asset.
     </div>
     
     
@@ -250,7 +379,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="FileAsset.js.html">system/FileAsset.js</a>, <a href="FileAsset.js.html#line24">line 24</a>
+        <a href="Asset.js.html">system/Asset.js</a>, <a href="Asset.js.html#line16">line 16</a>
     </li></ul></dd>
     
     
@@ -265,33 +394,32 @@
     
 </dd>
 
-        </dl>
-    
-    
-    
-        <h3 class="subsection-title">Methods</h3>
         
-        <dl>
             
 <dt>
-    <h4 class="name" id="load"><span class="type-signature"></span>load<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="path"><span class="type-signature"></span>path<span class="type-signature"> :string</span></h4>
     
     
 </dt>
 <dd>
     
-    
     <div class="description">
-        Load the file.
+        Path of the asset.
     </div>
     
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">string</span>
 
+
+            </li>
+        </ul>
     
-    
-    
-    
-    
-    
+
     
 <dl class="details">
     
@@ -315,7 +443,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="FileAsset.js.html">system/FileAsset.js</a>, <a href="FileAsset.js.html#line28">line 28</a>
+        <a href="Asset.js.html">system/Asset.js</a>, <a href="Asset.js.html#line21">line 21</a>
     </li></ul></dd>
     
     
@@ -328,19 +456,11 @@
 
     
     
-
-    
-
-    
-    
-    
-    
-    
-    
-    
 </dd>
 
         </dl>
+    
+    
     
     
     
@@ -362,7 +482,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sun May 18 2014 14:39:11 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sun May 18 2014 14:39:10 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

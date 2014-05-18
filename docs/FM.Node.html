@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Circle</title>
+    <title>JSDoc: Class: Node</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Class: Circle</h1>
+    <h1 class="page-title">Class: Node</h1>
     
     
 
@@ -27,10 +27,10 @@
     
 <header>
     <h2>
-    Circle
+    Node
     </h2>
     
-        <div class="class-description">FM.Circle</div>
+        <div class="class-description">FM.Node</div>
     
 </header>  
 
@@ -41,7 +41,7 @@
     
         
 <dt>
-    <h4 class="name" id="Circle"><span class="type-signature"></span>new Circle<span class="signature">(pX, pY, pRadius)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Node"><span class="type-signature"></span>new Node<span class="signature">(pLevel, pBounds)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -49,7 +49,8 @@
     
     
     <div class="description">
-        Circle object.
+        The node is used to subdivide the game space to optimize the performance
+for collisions testing.
     </div>
     
 
@@ -83,7 +84,7 @@
 	
         <tr>
             
-                <td class="name"><code>pX</code></td>
+                <td class="name"><code>pLevel</code></td>
             
             
             <td class="type">
@@ -99,20 +100,20 @@
             
             
             
-            <td class="description last">X position of the circle.</td>
+            <td class="description last">The level of depth of the quad tree to create.</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>pY</code></td>
+                <td class="name"><code>pBounds</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">int</span>
+<span class="param-type"><a href="FM.Rectangle.html">FM.Rectangle</a></span>
 
 
             
@@ -122,30 +123,8 @@
             
             
             
-            <td class="description last">Y position of the circle.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>pRadius</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">int</span>
-
-
-            
-            </td>
-            
-            
-            
-            
-            
-            <td class="description last">Radius of the circle.</td>
+            <td class="description last">The rectangle delimiting the quad tree in the
+screen space.</td>
         </tr>
 	
 	
@@ -183,7 +162,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Circle.js.html">Circle.js</a>, <a href="Circle.js.html#line11">line 11</a>
+        <a href="Node.js.html">system/Node.js</a>, <a href="Node.js.html#line12">line 12</a>
     </li></ul></dd>
     
     
@@ -221,208 +200,81 @@
     
     
     
-    
-        <h3 class="subsection-title">Members</h3>
-        
-        <dl>
-            
-<dt>
-    <h4 class="name" id="radius"><span class="type-signature"></span>radius<span class="type-signature"> :int</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Radius.
-    </div>
-    
-    
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">int</span>
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Circle.js.html">Circle.js</a>, <a href="Circle.js.html#line30">line 30</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="x"><span class="type-signature"></span>x<span class="type-signature"> :int</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        x position.
-    </div>
-    
-    
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">int</span>
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Circle.js.html">Circle.js</a>, <a href="Circle.js.html#line18">line 18</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="y"><span class="type-signature"></span>y<span class="type-signature"> :int</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        y position.
-    </div>
-    
-    
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">int</span>
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Circle.js.html">Circle.js</a>, <a href="Circle.js.html#line24">line 24</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        </dl>
     
     
     
         <h3 class="subsection-title">Methods</h3>
         
         <dl>
+            
+<dt>
+    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Clears the node.
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Node.js.html">system/Node.js</a>, <a href="Node.js.html#line229">line 229</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
             
 <dt>
     <h4 class="name" id="destroy"><span class="type-signature"></span>destroy<span class="signature">()</span><span class="type-signature"></span></h4>
@@ -433,7 +285,7 @@
     
     
     <div class="description">
-        Destroy the circle and its objects.
+        Destroy the node.
     </div>
     
 
@@ -466,7 +318,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Circle.js.html">Circle.js</a>, <a href="Circle.js.html#line33">line 33</a>
+        <a href="Node.js.html">system/Node.js</a>, <a href="Node.js.html#line246">line 246</a>
     </li></ul></dd>
     
     
@@ -487,6 +339,385 @@
     
     
     
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="insert"><span class="type-signature"></span>insert<span class="signature">(gameObject)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        /*
+Insert the object into the node. If the node
+exceeds the capacity, it will split and add all
+objects to their corresponding nodes.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>gameObject</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="FM.GameObject.html">FM.GameObject</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The game object to insert in the node.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Node.js.html">system/Node.js</a>, <a href="Node.js.html#line147">line 147</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">(gameObject)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        /*
+Remove the object from the node.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>gameObject</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="FM.GameObject.html">FM.GameObject</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The game object to insert in the node.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Node.js.html">system/Node.js</a>, <a href="Node.js.html#line185">line 185</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="retrieve"><span class="type-signature"></span>retrieve<span class="signature">(gameObject)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        /*
+Return all objects that could collide with the given object.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>gameObject</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="FM.GameObject.html">FM.GameObject</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The game object to test if it can
+collide with any other object.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Node.js.html">system/Node.js</a>, <a href="Node.js.html#line199">line 199</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The list of objects that can collide with the given one.
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Array</span>
+
+
+	</dd>
+</dl>
+
+        
     
     
 </dd>
@@ -513,7 +744,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sun May 18 2014 14:39:10 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sun May 18 2014 14:39:12 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

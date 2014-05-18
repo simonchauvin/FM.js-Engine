@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: system/QuadTree.js</title>
+    <title>JSDoc: Source: system/Asset.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: system/QuadTree.js</h1>
+    <h1 class="page-title">Source: system/Asset.js</h1>
     
     
 
@@ -27,81 +27,38 @@
         <article>
             <pre class="prettyprint source"><code>/*global FM*/
 /**
- * The quad tree is used to subdivide the game space to optimize the performance
- * for collisions testing.
- * @class FM.QuadTree
- * @param {int} pLevel The level of depth of the quad tree to create.
- * @param {FM.Rectangle} pBounds The rectangle delimiting the quad tree in the
- * screen space.
+ * The asset class represents an asset that can be used by the FM.js engine.
+ * @class FM.Asset
+ * @param {string} pName Name of the asset.
+ * @param {string} pPath The path of the asset.
  * @constructor
  * @author Simon Chauvin
  */
-FM.QuadTree = function (pLevel, pBounds) {
+FM.Asset = function (pName, pPath) {
     "use strict";
     /**
-     * The root node (top level).
-     * @type FM.Node
-     * @private
+     * Name of the asset.
+     * @type string
      */
-    this.root = new FM.Node(pLevel, pBounds);
+    this.name = pName;
+    /**
+     * Path of the asset.
+     * @type string
+     */
+    this.path = pPath;
+    /**
+     * Whether the asset is loaded or not.
+     * @type boolean
+     */
+    this.loaded = false;
+    /**
+     * Tracks the loading of the asset from 0 (not loaded) to 1 
+     * (fully loaded).
+     * @type number
+     */
+    this.completionLevel = 0;
 };
-FM.QuadTree.prototype.constructor = FM.QuadTree;
-/*
- * Insert the object into the quadtree. If the node
- * exceeds the capacity, it will split and add all
- * objects to their corresponding nodes.
- * @method FM.QuadTree#insert
- * @memberOf FM.QuadTree
- * @param {FM.GameObject} gameObject The game object to insert in the quad
- * tree.
- */
-FM.QuadTree.prototype.insert = function (gameObject) {
-    "use strict";
-    this.root.insert(gameObject);
-};
-/*
- * Remove the object from the quadtree.
- * @method FM.QuadTree#remove
- * @memberOf FM.QuadTree
- * @param {FM.GameObject} gameObject The game object to insert in the quad
- * tree.
- */
-FM.QuadTree.prototype.remove = function (gameObject) {
-    "use strict";
-    this.root.remove(gameObject);
-};
-/*
- * Return all objects that could collide with the given object.
- * @method FM.QuadTree#retrieve
- * @memberOf FM.QuadTree
- * @param {FM.GameObject} gameObject The game object to test if it can
- * collide with any other object.
- * @return {Array} The list of objects that can collide with the given one.
- */
-FM.QuadTree.prototype.retrieve = function (gameObject) {
-    "use strict";
-    return this.root.retrieve(gameObject);
-};
-/**
- * Clears the quadtree.
- * @method FM.QuadTree#clear
- * @memberOf FM.QuadTree
- */
-FM.QuadTree.prototype.clear = function () {
-    "use strict";
-    this.root.clear();
-};
-/**
- * Destroy the quad tree.
- * @method FM.QuadTree#destroy
- * @memberOf FM.QuadTree
- */
-FM.QuadTree.prototype.destroy = function () {
-    "use strict";
-    this.root.destroy();
-    this.root = null;
-};
-</code></pre>
+FM.Asset.prototype.constructor = FM.Asset;</code></pre>
         </article>
     </section>
 
